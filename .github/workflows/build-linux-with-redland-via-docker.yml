@@ -42,11 +42,8 @@ jobs:
           path: KoncludeDocker
                     
         
-      - name: Prepare Building
-        run: |
-          cd KoncludeDocker
-          
       - name: Build
+        working-directory: KoncludeDocker
         run: | 
           ./build_release.sh
           
