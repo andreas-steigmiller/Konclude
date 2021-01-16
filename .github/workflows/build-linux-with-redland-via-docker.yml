@@ -47,25 +47,25 @@ jobs:
       - name: Build Run Image
         working-directory: KoncludeDocker
         run: | 
-          ./run/snap.h
+          ./run/snap.sh
           
         
       - name: Build Develop Image
         working-directory: KoncludeDocker
         run: | 
-          ./develop/snap.h         
+          ./develop/snap.sh         
   
           
       - name: Build Build Image
         working-directory: KoncludeDocker
         run: | 
-          ./build/snap.h     
+          ./build/snap.sh     
     
           
       - name: Build Deploy Image
         working-directory: KoncludeDocker
         run: | 
-          ./deploy/snap.h 
+          ./deploy/snap.sh 
           
   
       - name: Build
