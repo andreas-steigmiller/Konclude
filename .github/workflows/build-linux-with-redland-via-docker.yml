@@ -40,7 +40,35 @@ jobs:
           repository: andreas-steigmiller/KoncludeDocker
           path: KoncludeDocker
                     
+      - name: Prepare Docker image caching
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+          continue-on-error: true  
         
+      - name: Build Run Image
+        working-directory: KoncludeDocker
+        run: | 
+          ./run/snap.h
+          
+        
+      - name: Build Develop Image
+        working-directory: KoncludeDocker
+        run: | 
+          ./develop/snap.h         
+  
+          
+      - name: Build Build Image
+        working-directory: KoncludeDocker
+        run: | 
+          ./build/snap.h     
+    
+          
+      - name: Build Deploy Image
+        working-directory: KoncludeDocker
+        run: | 
+          ./deploy/snap.h 
+          
+  
       - name: Build
         working-directory: KoncludeDocker
         run: | 
