@@ -42,7 +42,7 @@ jobs:
                     
       - name: Prepare Docker image caching
         uses: satackey/action-docker-layer-caching@v0.0.11
-          continue-on-error: true  
+        continue-on-error: true
         
       - name: Build Run Image
         working-directory: KoncludeDocker
