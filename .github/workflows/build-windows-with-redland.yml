@@ -29,6 +29,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2          
 
+      - name: Compile Windows        
         if: startsWith(matrix.config.os, 'windows')
         run: |
           qmake Konclude.pro
