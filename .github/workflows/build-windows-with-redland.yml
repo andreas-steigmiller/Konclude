@@ -44,6 +44,7 @@ jobs:
       - name: Compile Windows        
         if: startsWith(matrix.config.os, 'windows')
         run: |
+          qmake Konclude.pro
           msbuild Konclude-VS15.sln /p:Configuration=Release /p:Platform="Win64"
 
       - name: Run Examples Windows
