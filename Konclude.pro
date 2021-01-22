@@ -34,8 +34,11 @@ unix:!macx: LIBS += $$PWD/External/librdf/Linux/x64/lib/release/librasqal.a
 unix:!macx: LIBS += $$PWD/External/librdf/Linux/x64/lib/release/libxml2.a
 unix:!macx: LIBS += -lz -lltdl -lgmp -ldl
 
-INCLUDEPATH += $$PWD/External/librdf/Linux/x64/include
-DEPENDPATH += $$PWD/External/librdf/Linux/x64/include
+unix: INCLUDEPATH += $$PWD/External/librdf/Linux/x64/include
+unix: DEPENDPATH += $$PWD/External/librdf/Linux/x64/include
+
+win32: INCLUDEPATH += $$PWD/External/librdf/Windows/x64/include
+win32: DEPENDPATH += $$PWD/External/librdf/Windows/x64/include
 
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/librdf.a
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/libraptor2.a
