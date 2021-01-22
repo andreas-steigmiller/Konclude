@@ -33,7 +33,7 @@ jobs:
         if: startsWith(matrix.config.os, 'windows')
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          sdk: 8.1
+          sdk: 10.0.10240.0
 
       - name: Compile Windows        
         if: startsWith(matrix.config.os, 'windows')
