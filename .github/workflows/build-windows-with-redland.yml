@@ -41,6 +41,19 @@ jobs:
           Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile sdksetup.exe -UseBasicParsing
           Start-Process -Wait sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"          
 
+      - name: Search Windows Kit
+        if: startsWith(matrix.config.os, 'windows')
+        run: |
+          cd "C:\Program Files (x86)\Windows Kits\8.1\Lib\"
+          dir
+          cd winv6.3
+          dir
+          cd um
+          dir 
+          cd x64
+          dir
+
+
       - name: Compile Windows        
         if: startsWith(matrix.config.os, 'windows')
         run: |
