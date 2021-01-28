@@ -56,6 +56,12 @@ jobs:
           echo %JAVA_HOME%
           echo %%QTDIR%%
           echo %QTDIR%
+          
+      - name: Environment Checking
+        shell: powershell
+        run: |
+          Get-ChildItem Env:JAVA_HOME
+          Get-ChildItem Env:QTDIR
 
 
       - name: Compile Windows        
