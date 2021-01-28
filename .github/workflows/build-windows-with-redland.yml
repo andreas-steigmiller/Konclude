@@ -52,13 +52,12 @@ jobs:
           dir 
           cd x64
           dir
+          echo %JAVA_HOME%
 
 
       - name: Compile Windows        
         if: startsWith(matrix.config.os, 'windows')
         run: |
-          qmake Konclude.pro
-          nmake
           msbuild Konclude-VS15.sln /p:Configuration=Release /p:Platform="Win64"
 
       - name: Run Examples Windows
