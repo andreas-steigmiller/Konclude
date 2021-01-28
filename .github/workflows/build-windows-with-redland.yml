@@ -60,9 +60,12 @@ jobs:
       - name: Environment Checking
         shell: powershell
         run: |
+          $env:QTDIR = 'QTDIR D:\a\Konclude\Qt\5.15.2\msvc2019_64'
           Get-ChildItem Env:JAVA_HOME
           Get-ChildItem Env:QTDIR
 
+
+D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\qmake.exe
 
       - name: Compile Windows        
         if: startsWith(matrix.config.os, 'windows')
