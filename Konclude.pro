@@ -44,10 +44,7 @@ win32: LIBS += $$PWD/External/librdf/Windows/x64/lib/Release/librdf.lib
 win32: LIBS += $$PWD/External/librdf/Windows/x64/lib/Release/raptor2.lib
 win32: LIBS += $$PWD/External/librdf/Windows/x64/lib/Release/rasqal.lib
 win32: LIBS += $$PWD/External/librdf/Windows/x64/lib/Release/libsv.lib
-win32: LIBS += D:\a\Konclude\Konclude\External\librdf\Windows\x64\lib\Release\librdf.lib
-win32: LIBS += D:\a\Konclude\Konclude\External\librdf\Windows\x64\lib\Release\raptor2.lib
-win32: LIBS += D:\a\Konclude\Konclude\External\librdf\Windows\x64\lib\Release\rasqal.lib
-win32: LIBS += D:\a\Konclude\Konclude\External\librdf\Windows\x64\lib\Release\libsv.lib
+
 
 
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/librdf.a
