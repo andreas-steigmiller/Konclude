@@ -41,7 +41,7 @@ jobs:
         shell: powershell
         run: |
           Get-ChildItem Env:PATH          
-          $env:PATH = '$ENV:PATH;D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin'
+          $Env:PATH = '$Env:PATH;D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin'
           Get-ChildItem Env:PATH
           
       - name: Install Windows 8.1 SDK
@@ -56,6 +56,14 @@ jobs:
         run: |
           msbuild Konclude-VS15.sln /p:Configuration=Release /p:Platform="Win64"
 
+
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        if: startsWith(matrix.config.os, 'windows')  
+        with:
+          name: Konclude-compiled-windows
+          path: x64\Release\VS2015\Konclude.exe
 
       - name: Run Examples Windows
         if: startsWith(matrix.config.os, 'windows')  
