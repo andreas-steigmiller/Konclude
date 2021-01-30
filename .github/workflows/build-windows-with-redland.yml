@@ -71,6 +71,20 @@ jobs:
       - name: Run Examples Windows
         if: startsWith(matrix.config.os, 'windows')  
         run: | 
+          
+          Get-ChildItem Env:PATH          
+          $env:PATH -split ';'
+          $Env:PATH += ';.\External\librdf\Windows\x64\bin'
+          $Env:PATH += ';D:/a/Konclude/External/librdf/Windows/x64/bin'
+          Get-ChildItem Env:PATH
+          $env:PATH -split ';'
+          
+          echo "list bin dir"
+          
+          dir x64\Release\VS2015
+          
+          x64\Release\VS2015\Konclude.exe
+          
           x64\Release\VS2015\Konclude.exe classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
           x64\Release\VS2015\Konclude.exe satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
           x64\Release\VS2015\Konclude.exe owllinkfile -i Tests/galen-classify-request.xml -o response.xml
