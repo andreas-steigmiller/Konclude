@@ -43,6 +43,7 @@ jobs:
           Get-ChildItem Env:PATH          
           $env:PATH -split ';'
           $Env:PATH += ';.\External\librdf\Windows\x64\bin'
+          $Env:PATH += ';D:/a/Konclude/External/librdf/Windows/x64/bin'
           Get-ChildItem Env:PATH
           $env:PATH -split ';'
           
