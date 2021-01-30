@@ -41,7 +41,7 @@ jobs:
         shell: powershell
         run: |
           Get-ChildItem Env:PATH          
-          $Env:PATH = '$Env:PATH;D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin'
+          $Env:PATH = $Env:PATH + ';D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin'
           Get-ChildItem Env:PATH
           
       - name: Install Windows 8.1 SDK
