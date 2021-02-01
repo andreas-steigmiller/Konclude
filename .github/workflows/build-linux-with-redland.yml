@@ -27,7 +27,7 @@ jobs:
         with:
           path: "konclude-static"
         
-      - name: Prepare Environment
+      - name: Install Dependencies
         run: |
           sudo apt-get install -y \
           apt-utils \
@@ -48,15 +48,20 @@ jobs:
           gtk-doc-tools \
           libgmp3-dev \
           zlib1g-dev 
-          
+       
+      - name: Prepare Environment
+        run: |
           DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"                                                           
           ROOT="$(realpath $DIR/../..)"
           PROJ="$ROOT/Konclude/"
           mkdir src
           mkdir lib
+          echo $ROOT
+          ls
 
           # download, build and install qt
-          wget -q https://download.qt.io/official_releases/qt/5.12/5.12.10/single/qt-everywhere-src-5.12.10.tar.xz \
+          cd $ROOT/src \
+          && wget -q https://download.qt.io/official_releases/qt/5.12/5.12.10/single/qt-everywhere-src-5.12.10.tar.xz \
           && tar -xJf qt-everywhere-src-5.12.10.tar.xz \
           && mv qt-everywhere-src-5.12.10 qt-static \
           && cd $ROOT/src/qt-static \
