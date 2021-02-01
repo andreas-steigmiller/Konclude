@@ -75,9 +75,9 @@ jobs:
           
       - name: Compile Qt
         run: |
-          ROOT="$(pwd)"          
-          cd $ROOT/src/qt-static \          
-          && make -j > /dev/null
+          ROOT="$(pwd)"
+          cd $ROOT/src/qt-static
+          make -j
 
       - name: Install Qt
         run: |
