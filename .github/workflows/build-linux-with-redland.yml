@@ -57,18 +57,32 @@ jobs:
           echo $ROOT
 
 
-      - name: Install and Compile Qt
+      - name: Download Qt
         run: |
           ROOT="$(pwd)"
           # download, build and install qt
           cd $ROOT/src \
           && wget -q https://download.qt.io/official_releases/qt/5.12/5.12.10/single/qt-everywhere-src-5.12.10.tar.xz \
           && tar -xJf qt-everywhere-src-5.12.10.tar.xz \
-          && mv qt-everywhere-src-5.12.10 qt-static \
-          && cd $ROOT/src/qt-static \
+          && mv qt-everywhere-src-5.12.10 qt-static
+          
+      - name: Prepare Qt
+        run: |
+          ROOT="$(pwd)"          
+          cd $ROOT/src/qt-static \
           && export MAKE=/usr/bin/make \
-          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform linux-g++-64 -no-icu -confirm-license -opensource \
-          && make -j > /dev/null \
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform linux-g++-64 -no-icu -confirm-license -opensource
+          
+      - name: Compile Qt
+        run: |
+          ROOT="$(pwd)"          
+          cd $ROOT/src/qt-static \          
+          && make -j > /dev/null
+
+      - name: Install Qt
+        run: |
+          ROOT="$(pwd)"          
+          cd $ROOT/src/qt-static \
           && make install
 
       - name: Install Libxml2
