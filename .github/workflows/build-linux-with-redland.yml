@@ -28,7 +28,7 @@ jobs:
           path: "/usr/local/src/konclude-static"
         
       - name: Prepare Environment
-        uses: |
+        run: |
           apt-get install -y \
           apt-utils \
           git \
