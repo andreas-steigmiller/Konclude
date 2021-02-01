@@ -74,12 +74,33 @@ jobs:
           && export MAKE=/usr/bin/make \
           && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform linux-g++-64 -no-icu -confirm-license -opensource
           
-      - name: Compile Qt
+      - name: Compile Qt 1
         timeout-minutes: 420
         run: |
           ROOT="$(pwd)"
           cd $ROOT/src/qt-static
-          make -j
+          timeout 30m make -j
+          
+      - name: Compile Qt 2
+        timeout-minutes: 420
+        run: |
+          ROOT="$(pwd)"
+          cd $ROOT/src/qt-static
+          timeout 30m make -j     
+          
+      - name: Compile Qt 3
+        timeout-minutes: 420
+        run: |
+          ROOT="$(pwd)"
+          cd $ROOT/src/qt-static
+          timeout 30m make -j      
+          
+      - name: Compile Qt 4
+        timeout-minutes: 420
+        run: |
+          ROOT="$(pwd)"
+          cd $ROOT/src/qt-static
+          timeout 30m make -j               
 
       - name: Install Qt
         run: |
