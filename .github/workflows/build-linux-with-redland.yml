@@ -79,7 +79,7 @@ jobs:
         run: |
           ROOT="$(pwd)"
           cd $ROOT/src/qt-static
-          timeout 35m make -j > /dev/null || echo "compilation paused"
+          timeout 30m make -j > /dev/null || echo "compilation paused"
           
       - name: Compile Qt 2
         timeout-minutes: 420
