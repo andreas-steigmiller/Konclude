@@ -51,9 +51,7 @@ jobs:
        
       - name: Prepare Environment
         run: |
-          DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"                                                           
-          ROOT="$(realpath $DIR/../..)"
-          PROJ="$ROOT/Konclude/"
+          ROOT="$(pwd)"
           mkdir src
           mkdir lib
           echo $ROOT
