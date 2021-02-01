@@ -79,28 +79,28 @@ jobs:
         run: |
           ROOT="$(pwd)"
           cd $ROOT/src/qt-static
-          timeout 30m make -j
+          timeout 30m make -j || echo "compilation paused"
           
       - name: Compile Qt 2
         timeout-minutes: 420
         run: |
           ROOT="$(pwd)"
           cd $ROOT/src/qt-static
-          timeout 30m make -j     
+          timeout 30m make -j || echo "compilation paused"
           
       - name: Compile Qt 3
         timeout-minutes: 420
         run: |
           ROOT="$(pwd)"
           cd $ROOT/src/qt-static
-          timeout 30m make -j      
+          timeout 30m make -j || echo "compilation paused"
           
       - name: Compile Qt 4
         timeout-minutes: 420
         run: |
           ROOT="$(pwd)"
           cd $ROOT/src/qt-static
-          timeout 30m make -j               
+          make -j               
 
       - name: Install Qt
         run: |
