@@ -12,7 +12,7 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu Docker",
+            name: "Ubuntu Latest Redland",
             os: ubuntu-latest,
             build_type: "Release", 
             cc: "gcc", 
@@ -55,8 +55,11 @@ jobs:
           mkdir src
           mkdir lib
           echo $ROOT
-          ls
 
+
+      - name: Install and Compile Qt
+        run: |
+          ROOT="$(pwd)"
           # download, build and install qt
           cd $ROOT/src \
           && wget -q https://download.qt.io/official_releases/qt/5.12/5.12.10/single/qt-everywhere-src-5.12.10.tar.xz \
@@ -68,6 +71,9 @@ jobs:
           && make -j > /dev/null \
           && make install
 
+      - name: Install Libxml2
+        run: |
+          ROOT="$(pwd)"
           # download, build and install libxml2
           cd $ROOT/src \
           && wget ftp://xmlsoft.org/libxml2/libxml2-2.9.9.tar.gz \
@@ -78,6 +84,9 @@ jobs:
           && make -j > /dev/null \
           && make install
 
+      - name: Install Redland Raptor
+        run: |
+          ROOT="$(pwd)"
           # download, build and install raptor
           cd $ROOT/src \
           && wget http://download.librdf.org/source/raptor2-2.0.15.tar.gz \
@@ -91,6 +100,9 @@ jobs:
           && make -j > /dev/null \
           && make install
 
+      - name: Install Redland Rasqal
+        run: |
+          ROOT="$(pwd)"
           # download, build and install rasqal
           cd $ROOT/src \
           && git clone git://github.com/konclude/rasqal.git \
@@ -107,6 +119,9 @@ jobs:
           && make -j > /dev/null \
           && make install
 
+      - name: Install Redland RDFlib
+        run: |
+          ROOT="$(pwd)"
           # download, build and install redland rdflib
           cd $ROOT \
           && wget http://download.librdf.org/source/redland-1.0.17.tar.gz \
@@ -129,6 +144,9 @@ jobs:
           && make install
 
 
+      - name: Prepare Konclude Sources
+        run: |
+          ROOT="$(pwd)"
           # remove intermediate files (to ensure a clean build later)
           cd $ROOT \
           && rm -rf konclude-static/Release \
