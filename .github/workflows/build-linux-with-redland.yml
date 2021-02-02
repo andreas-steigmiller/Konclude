@@ -13,8 +13,8 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu Latest Redland",
-            os: ubuntu-latest,
+            name: "Ubuntu 16.04 Redland",
+            os: ubuntu-16.04,
             build_type: "Release", 
             cc: "gcc", 
             cxx: "g++"
