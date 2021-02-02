@@ -20,6 +20,7 @@ jobs:
           }
 
 
+
     steps:
 
       - name: Prepare Directories
@@ -45,7 +46,6 @@ jobs:
         working-directory: KoncludeDocker
         run: | 
           ./run/snap.sh
-                    
           
         
       - name: Build Develop Image
