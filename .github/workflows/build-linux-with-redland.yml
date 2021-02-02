@@ -74,33 +74,12 @@ jobs:
           && export MAKE=/usr/bin/make \
           && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform linux-g++-64 -no-icu -confirm-license -opensource
           
-      - name: Compile Qt 1
+      - name: Compile Qt
         timeout-minutes: 420
         run: |
           ROOT="$(pwd)"
           cd $ROOT/src/qt-static
-          timeout 30m make > /dev/null || echo "compilation paused"
-          
-      - name: Compile Qt 2
-        timeout-minutes: 420
-        run: |
-          ROOT="$(pwd)"
-          cd $ROOT/src/qt-static
-          timeout 30m make || echo "compilation paused"
-          
-      - name: Compile Qt 3
-        timeout-minutes: 420
-        run: |
-          ROOT="$(pwd)"
-          cd $ROOT/src/qt-static
-          timeout 30m make || echo "compilation paused"
-          
-      - name: Compile Qt 4
-        timeout-minutes: 420
-        run: |
-          ROOT="$(pwd)"
-          cd $ROOT/src/qt-static
-          make -j               
+          make           
 
       - name: Install Qt
         run: |
@@ -118,7 +97,7 @@ jobs:
           && mv libxml2-2.9.9 libxml2-static \
           && cd libxml2-static \
           && ./configure --prefix=$ROOT/lib/libxml2-static \
-          && make -j > /dev/null \
+          && make \
           && make install
 
       - name: Install Redland Raptor
@@ -134,7 +113,7 @@ jobs:
           && export LIBXML_LIBS="-L$ROOT/lib/libxml2-static/lib -lxml2" \
           && export LIBXML_LIBS="$ROOT/lib/libxml2-static/libxml2.a" \
           && ./configure --prefix=$ROOT/lib/raptor2-static --with-xml2-config=$ROOT/lib/libxml2-static/bin/xml2-config \
-          && make -j > /dev/null \
+          && make \
           && make install
 
       - name: Install Redland Rasqal
@@ -153,7 +132,7 @@ jobs:
           && git log --oneline | grep -q 0c42ebc \
           \
           && ./autogen.sh --prefix=$ROOT/lib/rasqal-static \
-          && make -j > /dev/null \
+          && make \
           && make install
 
       - name: Install Redland RDFlib
@@ -177,7 +156,7 @@ jobs:
           && sed -i -e 's#RASQAL_VERSION=`$PKG_CONFIG rasqal --modversion 2>/dev/null`#if test -n "$RASQAL_VERSION"; then echo "Assuming rasqal version $RASQAL_VERSION"; else RASQAL_VERSION=`$PKG_CONFIG rasqal --modversion 2>/dev/null`; fi#g' configure \
           \
           && ./configure --prefix=$ROOT/lib/redland-static \
-          && make -j > /dev/null \
+          && make \
           && make install
 
 
@@ -227,6 +206,6 @@ jobs:
           export QTLIB=$ROOT/lib/qt-static/lib
           sed -i -e 's\unix:!macx: LIBS += -lz -lltdl -lgmp -ldl\unix:!macx: LIBS += -lz -lgmp -ldl /usr/lib/x86_64-linux-gnu/libltdl.a\g' Konclude.pro
           qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/linux-g++-64 Konclude.pro
-          make -j 2
+          make
           ./Release/Konclude owllinkfile -c Configs/default-config.xml -v -e -r Tests/Test-response.xml -q Tests/galen-ALEHIF+-classify-request.xml -w 1
                     
