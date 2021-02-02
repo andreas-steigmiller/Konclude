@@ -140,7 +140,7 @@ jobs:
       - name: Check Redland Rasqal Libs
         run: |
           ROOT="$(pwd)"
-          cd $ROOT/lib/libxml2-static/lib
+          cd $ROOT/lib/rasqal-static/lib
           ls
 
       - name: Install Redland RDFlib
