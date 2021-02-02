@@ -97,7 +97,7 @@ jobs:
           && tar -xvzf libxml2-2.9.9.tar.gz \
           && mv libxml2-2.9.9 libxml2-static \
           && cd libxml2-static \
-          && ./configure --prefix=$ROOT/lib/libxml2-static \
+          && ./configure --without-python --prefix=$ROOT/lib/libxml2-static \
           && make \
           && make install
 
