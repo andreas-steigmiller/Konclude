@@ -136,6 +136,13 @@ jobs:
           && make \
           && make install
 
+
+      - name: Check Redland Rasqal Libs
+        run: |
+          ROOT="$(pwd)"
+          cd $ROOT/lib/libxml2-static/lib
+          ls
+
       - name: Install Redland RDFlib
         run: |
           ROOT="$(pwd)"
