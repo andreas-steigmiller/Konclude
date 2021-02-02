@@ -48,7 +48,8 @@ jobs:
           libtool \
           gtk-doc-tools \
           libgmp3-dev \
-          zlib1g-dev 
+          zlib1g-dev \
+          libxcb-xfixes0-dev
        
       - name: Prepare Environment
         run: |
