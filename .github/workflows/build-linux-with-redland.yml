@@ -209,6 +209,7 @@ jobs:
         
       - name: Compile Konclude
         run: | 
+          ROOT="$(pwd)"          
           BUILD_DIR=$ROOT/konclude-static
           cd $BUILD_DIR
           export PATH=$ROOT/lib/qt-static/bin:$PATH
