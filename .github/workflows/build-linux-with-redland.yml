@@ -177,6 +177,8 @@ jobs:
           && rm -rf konclude-static/Release \
           && rm -rf konclude-static/release \
           && rm -rf konclude-static/GeneratedFiles
+          
+          mkdir -p $ROOT/konclude-static/External/librdf/Linux/x64/lib
 
 
           cp $ROOT/lib/libxml2-static/lib/libxml2.so.2.9.9 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release \
