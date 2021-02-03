@@ -143,7 +143,7 @@ jobs:
           cd $ROOT/lib/rasqal-static/lib
           ls
 
-      - name: Install Redland RDFlib
+      - name: Compüile Redland RDFlib
         run: |
           ROOT="$(pwd)"
           # download, build and install redland rdflib
@@ -163,8 +163,19 @@ jobs:
           && export RASQAL_VERSION=0.9.33 \
           && sed -i -e 's#RASQAL_VERSION=`$PKG_CONFIG rasqal --modversion 2>/dev/null`#if test -n "$RASQAL_VERSION"; then echo "Assuming rasqal version $RASQAL_VERSION"; else RASQAL_VERSION=`$PKG_CONFIG rasqal --modversion 2>/dev/null`; fi#g' configure \
           \
-          && ./configure --prefix=$ROOT/lib/redland-static \
-          && make \
+          && ./configure --prefix=$ROOT/lib/redland-static
+          
+          
+      - name: Upload 
+        uses: actions/upload-artifact@v2
+        with:
+          name: Redland RDF Libraries
+          path: redland-static
+          
+          
+      - name: Install Redland RDFlib
+        run: |
+          make \
           && make install
 
 
