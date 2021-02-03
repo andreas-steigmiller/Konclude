@@ -163,7 +163,8 @@ jobs:
           && export RASQAL_VERSION=0.9.33 \
           && sed -i -e 's#RASQAL_VERSION=`$PKG_CONFIG rasqal --modversion 2>/dev/null`#if test -n "$RASQAL_VERSION"; then echo "Assuming rasqal version $RASQAL_VERSION"; else RASQAL_VERSION=`$PKG_CONFIG rasqal --modversion 2>/dev/null`; fi#g' configure \
           \
-          && ./configure --prefix=$ROOT/lib/redland-static
+          && ./configure --prefix=$ROOT/lib/redland-static \
+          && sed -i -e 's#librdf_storage_virtuoso_la_LIBADD = -lodbc librdf.la -lrasqal#librdf_storage_virtuoso_la_LIBADD = -lodbc librdf.la#g' src/Makefile
           
           
       - name: Upload 
