@@ -137,13 +137,8 @@ jobs:
           && make install
 
 
-      - name: Check Redland Rasqal Libs
-        run: |
-          ROOT="$(pwd)"
-          cd $ROOT/lib/rasqal-static/lib
-          ls
 
-      - name: Compüile Redland RDFlib
+      - name: Compile Redland RDFlib
         run: |
           ROOT="$(pwd)"
           # download, build and install redland rdflib
@@ -206,8 +201,17 @@ jobs:
           && cp $ROOT/lib/redland-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release
 
 
+
+      - name: Check Konclude Sources
+        run: |
+          ROOT="$(pwd)"
+          cd $ROOT/konclude-static/External/librdf/Linux/x64/lib
+          pwd
+          ls
+          
+
         
-      - name: Compile Konclude
+      - name: Prepare Konclude Compilation
         run: | 
           ROOT="$(pwd)"          
           BUILD_DIR=$ROOT/konclude-static
@@ -218,6 +222,18 @@ jobs:
           export QTLIB=$ROOT/lib/qt-static/lib
           sed -i -e 's\unix:!macx: LIBS += -lz -lltdl -lgmp -ldl\unix:!macx: LIBS += -lz -lgmp -ldl /usr/lib/x86_64-linux-gnu/libltdl.a\g' Konclude.pro
           qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/linux-g++-64 Konclude.pro
+          
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude Source Code Directory
+          path: konclude-static          
+          
+      - name: Compile Konclude
+        run: | 
+          ROOT="$(pwd)"          
+          BUILD_DIR=$ROOT/konclude-static
+          cd $BUILD_DIR          
           make
           ./Release/Konclude owllinkfile -c Configs/default-config.xml -v -e -r Tests/Test-response.xml -q Tests/galen-ALEHIF+-classify-request.xml -w 1
                     
