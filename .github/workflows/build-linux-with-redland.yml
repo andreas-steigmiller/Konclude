@@ -49,7 +49,8 @@ jobs:
           gtk-doc-tools \
           libgmp3-dev \
           zlib1g-dev \
-          libxcb-xfixes0-dev
+          libxcb-xfixes0-dev \
+          liblzma-dev
        
       - name: Prepare Environment
         run: |
@@ -224,10 +225,7 @@ jobs:
           qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/linux-g++-64 Konclude.pro
           
           
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Konclude Source Code Directory
-          path: konclude-static          
+     
           
       - name: Compile Konclude
         run: | 
@@ -237,3 +235,8 @@ jobs:
           make
           ./Release/Konclude owllinkfile -c Configs/default-config.xml -v -e -r Tests/Test-response.xml -q Tests/galen-ALEHIF+-classify-request.xml -w 1
                     
+                    
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude Release
+          path: konclude-static                         
