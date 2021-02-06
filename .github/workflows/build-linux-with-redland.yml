@@ -60,6 +60,21 @@ jobs:
           echo $ROOT
 
 
+      - name: Install Libxml2
+        run: |
+          ROOT="$(pwd)"
+          # download, build and install libxml2
+          cd $ROOT/src \
+          && wget ftp://xmlsoft.org/libxml2/libxml2-2.9.9.tar.gz \
+          && tar -xvzf libxml2-2.9.9.tar.gz \
+          && mv libxml2-2.9.9 libxml2-static \
+          && cd libxml2-static \
+          && ./configure --help \
+          && ./configure --without-python --prefix=$ROOT/lib/libxml2-static \
+          && make \
+          && make install
+
+
       - name: Download Qt
         run: |
           ROOT="$(pwd)"
@@ -89,18 +104,6 @@ jobs:
           cd $ROOT/src/qt-static \
           && make install
 
-      - name: Install Libxml2
-        run: |
-          ROOT="$(pwd)"
-          # download, build and install libxml2
-          cd $ROOT/src \
-          && wget ftp://xmlsoft.org/libxml2/libxml2-2.9.9.tar.gz \
-          && tar -xvzf libxml2-2.9.9.tar.gz \
-          && mv libxml2-2.9.9 libxml2-static \
-          && cd libxml2-static \
-          && ./configure --without-python --prefix=$ROOT/lib/libxml2-static \
-          && make \
-          && make install
 
       - name: Install Redland Raptor
         run: |
