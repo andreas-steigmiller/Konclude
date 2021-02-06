@@ -68,8 +68,7 @@ jobs:
           && wget ftp://xmlsoft.org/libxml2/libxml2-2.9.9.tar.gz \
           && tar -xvzf libxml2-2.9.9.tar.gz \
           && mv libxml2-2.9.9 libxml2-static \
-          && cd libxml2-static \
-          && export LZMA_LIBS="-lzma" \          
+          && cd libxml2-static \        
           && ./configure --help \
           && ./configure --without-python --prefix=$ROOT/lib/libxml2-static \
           && make \
