@@ -69,6 +69,7 @@ jobs:
           && tar -xvzf libxml2-2.9.9.tar.gz \
           && mv libxml2-2.9.9 libxml2-static \
           && cd libxml2-static \
+          && export LZMA_LIBS="-lzma" \          
           && ./configure --help \
           && ./configure --without-python --prefix=$ROOT/lib/libxml2-static \
           && make \
@@ -236,6 +237,7 @@ jobs:
           BUILD_DIR=$ROOT/konclude-static
           cd $BUILD_DIR          
           make
+          ldd ./Release/Konclude
           ./Release/Konclude owllinkfile -c Configs/default-config.xml -v -e -r Tests/Test-response.xml -q Tests/galen-ALEHIF+-classify-request.xml -w 1
                     
                     
