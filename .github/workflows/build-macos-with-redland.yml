@@ -26,33 +26,8 @@ jobs:
       - name: Checkout Konclude code
         uses: actions/checkout@v2       
         with:
-          path: "konclude-static"
-        
-      - name: Install Dependencies
-        run: |
-          sudo apt-get install -y \
-          apt-utils \
-          git \
-          build-essential \
-          make \
-          wget \
-          xz-utils \
-          python \
-          flex \
-          bison \
-          gperf \
-          python-dev \
-          autotools-dev \
-          automake \
-          autoconf \
-          libtool \
-          gtk-doc-tools \
-          libgmp3-dev \
-          zlib1g-dev \
-          libxcb-xfixes0-dev \
-          liblzma-dev \
-          libpcre3-dev
-       
+          path: "konclude-static"        
+      
       - name: Prepare Environment
         run: |
           ROOT="$(pwd)"
