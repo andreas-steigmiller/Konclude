@@ -61,6 +61,7 @@ jobs:
           mkdir src
           mkdir lib
           echo $ROOT
+          ls /usr/lib/x86_64-linux-gnu/
 
 
       - name: Install Libxml2
@@ -214,7 +215,6 @@ jobs:
           cd $ROOT/konclude-static/External/librdf/Linux/x64/lib/release
           pwd
           ls
-          locate libjasper.a
           
 
         
