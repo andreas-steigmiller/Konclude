@@ -75,11 +75,9 @@ jobs:
           cache-name: cache-qt-compilation
         with:
           path: src/qt-static
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/src/qt-static/makefile') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('src/qt-static/makefile') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-          
+            ${{ runner.os }}-build-${{ env.cache-name }}
           
           
       - name: Compile Qt
@@ -94,138 +92,6 @@ jobs:
           ROOT="$(pwd)"          
           cd $ROOT/src/qt-static \
           && make install
-      - name: Install Redland Raptor
-        run: |
-          ROOT="$(pwd)"
-          # download, build and install raptor
-          cd $ROOT/src \
-          && wget http://download.librdf.org/source/raptor2-2.0.15.tar.gz \
-          && tar -xvzf raptor2-2.0.15.tar.gz \
-          && mv raptor2-2.0.15 raptor2-static \
-          && cd raptor2-static \
-          && export LIBS="-L$ROOT/lib/libxml2-static/lib -lxml2" \
-          && export LIBXML_LIBS="-L$ROOT/lib/libxml2-static/lib -lxml2" \
-          && export LIBXML_LIBS="$ROOT/lib/libxml2-static/libxml2.a" \
-          && ./configure --prefix=$ROOT/lib/raptor2-static --with-xml2-config=$ROOT/lib/libxml2-static/bin/xml2-config \
-          && make \
-          && make install
-          
-      - name: Install Redland Rasqal
-        run: |
-          ROOT="$(pwd)"
-          # download, build and install rasqal
-          cd $ROOT/src \
-          && git clone git://github.com/konclude/rasqal.git \
-          && mv rasqal rasqal-static \
-          && cd rasqal-static \
-          \
-          && export RAPTOR2_CFLAGS="-I $ROOT/lib/raptor2-static/include/raptor2" \
-          && export RAPTOR2_LIBS="-L$ROOT/lib/raptor2-static/lib -lraptor2 -L$ROOT/lib/libxml2-static/lib -lxml2 -lm -ldl" \
-          && export RAPTOR_VERSION=2.0.15 \
-          && sed -i -e 's#RAPTOR_VERSION=`$PKG_CONFIG raptor2 --modversion 2>/dev/null`#if test -n "$RAPTOR_VERSION"; then echo "Assuming raptor version $RAPTOR_VERSION"; else RAPTOR_VERSION=`$PKG_CONFIG raptor2 --modversion 2>/dev/null`; fi#g' configure.ac \
-          && git log --oneline | grep -q 0c42ebc \
-          \
-          && ./autogen.sh --prefix=$ROOT/lib/rasqal-static \
-          && make \
-          && make install
-          
-      - name: Compile Redland RDFlib
-        run: |
-          ROOT="$(pwd)"
-          # download, build and install redland rdflib
-          cd $ROOT \
-          && wget http://download.librdf.org/source/redland-1.0.17.tar.gz \
-          && tar -xvzf redland-1.0.17.tar.gz \
-          && mv redland-1.0.17 redland-static \
-          && cd redland-static \
-          \
-          && export RAPTOR2_CFLAGS="-I $ROOT/lib/raptor2-static/include/raptor2" \
-          && export RAPTOR2_LIBS="-L$ROOT/lib/raptor2-static/lib -lraptor2 -L$ROOT/lib/libxml2-static/lib -lxml2 -lm -ldl" \
-          && export RAPTOR_VERSION=2.0.15 \
-          && sed -i -e 's#RAPTOR_VERSION=`$PKG_CONFIG raptor2 --modversion 2>/dev/null`#if test -n "$RAPTOR_VERSION"; then echo "Assuming raptor version $RAPTOR_VERSION"; else RAPTOR_VERSION=`$PKG_CONFIG raptor2 --modversion 2>/dev/null`; fi#g' configure \
-          \
-          && export RASQAL_CFLAGS="-I $ROOT/lib/rasqal-static/include/rasqal" \
-          && export RASQAL_LIBS="-L$ROOT/lib/rasqal-static/lib -lrasqal -L$ROOT/lib/raptor-static/lib -lraptor2 -L$ROOT/lib/libxml2-static/lib -lxml2 -lm -ldl -lm" \
-          && export RASQAL_VERSION=0.9.33 \
-          && sed -i -e 's#RASQAL_VERSION=`$PKG_CONFIG rasqal --modversion 2>/dev/null`#if test -n "$RASQAL_VERSION"; then echo "Assuming rasqal version $RASQAL_VERSION"; else RASQAL_VERSION=`$PKG_CONFIG rasqal --modversion 2>/dev/null`; fi#g' configure \
-          \
-          && ./configure --prefix=$ROOT/lib/redland-static \
-          && sed -i -e 's#librdf_storage_virtuoso_la_LIBADD = -lodbc librdf.la -lrasqal#librdf_storage_virtuoso_la_LIBADD = -lodbc librdf.la#g' src/Makefile \
-          && make \
-          && make install
-          
-      - name: Prepare Konclude Sources
-        run: |
-          ROOT="$(pwd)"
-          # remove intermediate files (to ensure a clean build later)
-          cd $ROOT \
-          && rm -rf konclude-static/Release \
-          && rm -rf konclude-static/release \
-          && rm -rf konclude-static/GeneratedFiles
-          
-          mkdir -p $ROOT/konclude-static/External/librdf/Linux/x64/lib/release
-          cp $ROOT/lib/libxml2-static/lib/libxml2.so.2.9.9 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.so.2.9.9 \
-          && cp $ROOT/lib/libxml2-static/lib/libxml2.so.2 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.so.2 \
-          && cp $ROOT/lib/libxml2-static/lib/libxml2.so $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.so \
-          && cp $ROOT/lib/libxml2-static/lib/libxml2.la $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.la \
-          && cp $ROOT/lib/libxml2-static/lib/libxml2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.a \
-          \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.so.0.0.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.so.0.0.0 \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.so.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.so.0 \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.so $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.so \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.la $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.la \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.a \
-          \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.so.3.0.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.so.3.0.0 \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.so.3 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.so.3 \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.so $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.so \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.la $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.la \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.a \
-          \
-          && cp $ROOT/lib/redland-static/lib/librdf.so.0.0.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.so.0.0.0 \
-          && cp $ROOT/lib/redland-static/lib/librdf.so.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.so.0 \
-          && cp $ROOT/lib/redland-static/lib/librdf.so $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.so \
-          && cp $ROOT/lib/redland-static/lib/librdf.la $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.la \
-          && cp $ROOT/lib/redland-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.a
-          
-      - name: Check Konclude Sources
-        run: |
-          ROOT="$(pwd)"
-          cd $ROOT/konclude-static/External/librdf/Linux/x64/lib/release
-          pwd
-          ls
-          locate libjasper.a
-          
-        
-      - name: Prepare Konclude Compilation
-        run: | 
-          ROOT="$(pwd)"          
-          BUILD_DIR=$ROOT/konclude-static
-          cd $BUILD_DIR
-          export PATH=$ROOT/lib/qt-static/bin:$PATH
-          export QTDIR=$ROOT/lib/qt-static
-          export QTINC=$ROOT/lib/qt-static/include
-          export QTLIB=$ROOT/lib/qt-static/lib
-          sed -i -e 's\unix:!macx: LIBS += -lz -lltdl -lgmp -ldl\unix:macx: LIBS += -lz -lgmp -ldl -llzma -lpcre /usr/lib/x86_64-linux-gnu/libjasper.a /usr/lib/x86_64-linux-gnu/libltdl.a\g' Konclude.pro
-          qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/linux-g++-64 Konclude.pro
           
           
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Konclude Sources
-          path: konclude-static            
           
-      - name: Compile Konclude
-        run: | 
-          ROOT="$(pwd)"          
-          BUILD_DIR=$ROOT/konclude-static
-          cd $BUILD_DIR          
-          make
-          ldd ./Release/Konclude
-          ./Release/Konclude.app/Contents/MacOS/Konclude owllinkfile -c Configs/default-config.xml -v -e -r Tests/Test-response.xml -q Tests/galen-ALEHIF+-classify-request.xml -w 1
-                    
-                    
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Konclude Release
-          path: konclude-static        
