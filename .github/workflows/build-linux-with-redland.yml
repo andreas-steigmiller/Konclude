@@ -51,7 +51,9 @@ jobs:
           zlib1g-dev \
           libxcb-xfixes0-dev \
           liblzma-dev \
-          libpcre3-dev
+          libpcre3-dev \
+          libjasper1 \
+          libjasper-dev
        
       - name: Prepare Environment
         run: |
