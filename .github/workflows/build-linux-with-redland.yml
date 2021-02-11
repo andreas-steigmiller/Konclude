@@ -224,7 +224,7 @@ jobs:
           export QTDIR=$ROOT/lib/qt-static
           export QTINC=$ROOT/lib/qt-static/include
           export QTLIB=$ROOT/lib/qt-static/lib
-          sed -i -e 's\unix:!macx: LIBS += -lz -lltdl -lgmp -ldl\unix:!macx: LIBS += -lz -lgmp -ldl -llzma -lpcre /usr/lib/x86_64-linux-gnu/libltdl.a\g' Konclude.pro
+          sed -i -e 's\unix:!macx: LIBS += -lz -lltdl -lgmp -ldl\unix:!macx: LIBS += -lz -lgmp -ldl -llzma -lpcre libjasper.a /usr/lib/x86_64-linux-gnu/libltdl.a\g' Konclude.pro
           qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/linux-g++-64 Konclude.pro
           
           
