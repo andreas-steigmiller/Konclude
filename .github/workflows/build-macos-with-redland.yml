@@ -62,7 +62,7 @@ jobs:
           ROOT="$(pwd)"          
           cd $ROOT/src/qt-static \
           && export MAKE=/usr/bin/make \
-          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform linux-g++-64 -no-icu -confirm-license -opensource
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform macos-g++-64 -no-icu -confirm-license -opensource
           
       - name: Compile Qt
         timeout-minutes: 420
