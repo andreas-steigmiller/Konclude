@@ -13,11 +13,11 @@ jobs:
       matrix:
         config:
         - {
-            name: "macOS Latest GCC",
+            name: "macOS Latest Clang",
             os: macos-latest,
             build_type: "Release", 
-            cc: "gcc", 
-            cxx: "g++"
+            cc: "clang", 
+            cxx: "clang++"
           }
 
 
@@ -62,7 +62,7 @@ jobs:
           ROOT="$(pwd)"          
           cd $ROOT/src/qt-static \
           && export MAKE=/usr/bin/make \
-          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform macx-g++ -no-icu -confirm-license -opensource
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform macx-clang -no-icu -confirm-license -opensource
           
       - name: Compile Qt
         timeout-minutes: 420
