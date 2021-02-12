@@ -40,6 +40,7 @@ jobs:
           source ~/.bash_profile 
           bison -V
           wget http://docbook.sourceforge.net/release/xsl/current/html/chunk.xsl
+          dnf reinstall docbook-style-xsl
         
       - name: Prepare Environment
         run: |
@@ -95,7 +96,9 @@ jobs:
           && sed -i -e 's#RAPTOR_VERSION=`$PKG_CONFIG raptor2 --modversion 2>/dev/null`#if test -n "$RAPTOR_VERSION"; then echo "Assuming raptor version $RAPTOR_VERSION"; else RAPTOR_VERSION=`$PKG_CONFIG raptor2 --modversion 2>/dev/null`; fi#g' configure.ac \
           && git log --oneline | grep -q 0c42ebc \
           \
+          && ./autogen.sh --help \
           && ./autogen.sh --prefix=$ROOT/lib/rasqal-static \
+          && ls \
           && make \
           && make install
           
