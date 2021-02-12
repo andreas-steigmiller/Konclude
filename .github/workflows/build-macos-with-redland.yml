@@ -65,7 +65,7 @@ jobs:
         run: |
           ROOT="$(pwd)"
           # download, build and install raptor          
-          LDFLAGS:  -L/usr/local/opt/bison/lib
+          export LDFLAGS="-L/usr/local/opt/bison/lib"
           cd $ROOT/src \
           && wget http://download.librdf.org/source/raptor2-2.0.15.tar.gz \
           && tar -xvzf raptor2-2.0.15.tar.gz \
