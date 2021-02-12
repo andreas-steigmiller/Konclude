@@ -84,7 +84,7 @@ jobs:
           ROOT="$(pwd)"
           # download, build and install rasqal
           cd $ROOT/src \
-          && git clone git://github.com/konclude/rasqal.git \
+          && git clone git://github.com/andreas-steigmiller/rasqal.git \
           && mv rasqal rasqal-static \
           && cd rasqal-static \
           \
