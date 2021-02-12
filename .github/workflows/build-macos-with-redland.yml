@@ -29,12 +29,13 @@ jobs:
           path: "konclude-static"        
     
       - name: Install Dependencies
-        run: |
+        run: |          
+          brew install autoconf automake libtool gtk-doc bison        
+          echo "checking bison version"  
+          bison -V   
           brew unlink bison
-          brew install autoconf automake libtool gtk-doc bison          
           brew link bison --force
-          echo 'export PATH="/usr/local/opt/bison/bin:$PATH"' >> /Users/runner/.bash_profile
-          bison -V          
+          echo 'export PATH="/usr/local/opt/bison/bin:$PATH"' >> /Users/runner/.bash_profile                 
           source ~/.bash_profile 
           bison -V
         
