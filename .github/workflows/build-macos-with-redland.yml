@@ -95,9 +95,7 @@ jobs:
           && sed -i -e 's#RAPTOR_VERSION=`$PKG_CONFIG raptor2 --modversion 2>/dev/null`#if test -n "$RAPTOR_VERSION"; then echo "Assuming raptor version $RAPTOR_VERSION"; else RAPTOR_VERSION=`$PKG_CONFIG raptor2 --modversion 2>/dev/null`; fi#g' configure.ac \
           && git log --oneline | grep -q 0c42ebc \
           \
-          && LIBTOOLIZE=glibtoolize \
-          && ./autogen.sh --help \
-          && ./autogen.sh --prefix=$ROOT/lib/rasqal-static \
+          && ./autogen.sh --prefix=$ROOT/lib/rasqal-static --disable-gtk-doc \
           && ls \
           && make \
           && make install
