@@ -61,7 +61,10 @@ jobs:
           && make \
           && make install
           
-          
+      - name: Check Libxml2 libs
+        run: |
+          ROOT="$(pwd)"
+          ls -al $ROOT/lib/libxml2-static/lib/
 
       - name: Install Redland Raptor
         run: |
