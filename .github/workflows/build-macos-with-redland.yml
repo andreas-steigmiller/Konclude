@@ -35,7 +35,8 @@ jobs:
           bison -V   
           brew unlink bison
           brew link bison --force
-          echo 'export PATH="/usr/local/opt/bison/bin:$PATH"' >> /Users/runner/.bash_profile                 
+          echo 'export PATH="/usr/local/opt/bison/bin:$PATH"' >> /Users/runner/.bash_profile     
+          cp /usr/local/opt/bison/bin/bison /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bison            
           source ~/.bash_profile 
           bison -V
         
@@ -65,7 +66,7 @@ jobs:
         run: |
           ROOT="$(pwd)"
           # download, build and install raptor          
-          export LDFLAGS="-L/usr/local/opt/bison/lib"
+          echo 'export PATH="/usr/local/opt/bison/bin:$PATH"' >> /Users/runner/.bash_profile 
           cd $ROOT/src \
           && wget http://download.librdf.org/source/raptor2-2.0.15.tar.gz \
           && tar -xvzf raptor2-2.0.15.tar.gz \
