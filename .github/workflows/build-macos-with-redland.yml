@@ -32,9 +32,9 @@ jobs:
         run: |
           brew install autoconf automake libtool gtk-doc bison
           brew unlink bison
-          echo 'export PATH="/usr/local/opt/bison/bin:$PATH"' >> ~/.zshrc
-          export LDFLAGS="-L/usr/local/opt/bison/lib
-          source ~/.zshrc
+          brew link bison --force
+          bison -V          
+          source ~/.bash_profile 
           bison -V
         
       - name: Prepare Environment
