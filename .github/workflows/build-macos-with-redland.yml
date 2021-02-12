@@ -30,7 +30,12 @@ jobs:
     
       - name: Install Dependencies
         run: |
-          brew install autoconf automake libtool gtk-doc 
+          brew install autoconf automake libtool gtk-doc bison
+          brew unlink bison
+          echo 'export PATH="/usr/local/opt/bison/bin:$PATH"' >> ~/.zshrc
+          export LDFLAGS="-L/usr/local/opt/bison/lib
+          source ~/.zshrc
+          bison -V
         
       - name: Prepare Environment
         run: |
@@ -50,47 +55,6 @@ jobs:
           && cd libxml2-static \
           && ./configure --without-python --prefix=$ROOT/lib/libxml2-static \
           && make \
-          && make install
-          
-      - name: Download Qt
-        run: |
-          ROOT="$(pwd)"
-          # download, build and install qt
-          cd $ROOT/src \
-          && wget -q https://download.qt.io/official_releases/qt/5.12/5.12.10/single/qt-everywhere-src-5.12.10.tar.xz \
-          && tar -xJf qt-everywhere-src-5.12.10.tar.xz \
-          && mv qt-everywhere-src-5.12.10 qt-static
-          
-      - name: Prepare Qt
-        run: |
-          ROOT="$(pwd)"          
-          cd $ROOT/src/qt-static \
-          && export MAKE=/usr/bin/make \
-          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform macx-clang -no-icu -confirm-license -opensource
-          
-          
-      - name: Cache Qt Compilation
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-qt-compilation
-        with:
-          path: src/qt-static
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('src/qt-static/makefile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}
-          
-          
-      - name: Compile Qt
-        timeout-minutes: 420
-        run: |
-          ROOT="$(pwd)"
-          cd $ROOT/src/qt-static
-          make           
-          
-      - name: Install Qt
-        run: |
-          ROOT="$(pwd)"          
-          cd $ROOT/src/qt-static \
           && make install
           
           
@@ -154,6 +118,51 @@ jobs:
           && sed -i -e 's#librdf_storage_virtuoso_la_LIBADD = -lodbc librdf.la -lrasqal#librdf_storage_virtuoso_la_LIBADD = -lodbc librdf.la#g' src/Makefile \
           && make \
           && make install
+          
+          
+          
+
+      - name: Download Qt
+        run: |
+          ROOT="$(pwd)"
+          # download, build and install qt
+          cd $ROOT/src \
+          && wget -q https://download.qt.io/official_releases/qt/5.12/5.12.10/single/qt-everywhere-src-5.12.10.tar.xz \
+          && tar -xJf qt-everywhere-src-5.12.10.tar.xz \
+          && mv qt-everywhere-src-5.12.10 qt-static
+          
+      - name: Prepare Qt
+        run: |
+          ROOT="$(pwd)"          
+          cd $ROOT/src/qt-static \
+          && export MAKE=/usr/bin/make \
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform macx-clang -no-icu -confirm-license -opensource
+          
+          
+      - name: Cache Qt Compilation
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-qt-compilation
+        with:
+          path: src/qt-static
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('src/qt-static/makefile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+          
+          
+      - name: Compile Qt
+        timeout-minutes: 420
+        run: |
+          ROOT="$(pwd)"
+          cd $ROOT/src/qt-static
+          make           
+          
+      - name: Install Qt
+        run: |
+          ROOT="$(pwd)"          
+          cd $ROOT/src/qt-static \
+          && make install
+                    
           
       - name: Prepare Konclude Sources
         run: |
