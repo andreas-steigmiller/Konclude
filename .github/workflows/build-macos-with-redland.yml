@@ -40,7 +40,6 @@ jobs:
           source ~/.bash_profile 
           bison -V
           wget http://docbook.sourceforge.net/release/xsl/current/html/chunk.xsl
-          dnf reinstall docbook-style-xsl
         
       - name: Prepare Environment
         run: |
