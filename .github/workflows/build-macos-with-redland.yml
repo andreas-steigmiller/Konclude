@@ -83,6 +83,12 @@ jobs:
           && make \
           && make install
           
+          
+      - name: Check Raptor libs
+        run: |
+          ROOT="$(pwd)"
+          ls -al $ROOT/lib/raptor2-static       
+          
       - name: Install Redland Rasqal
         run: |
           ROOT="$(pwd)"
@@ -102,6 +108,13 @@ jobs:
           && ls \
           && make \
           && make install
+          
+          
+          
+      - name: Check Redland libs
+        run: |
+          ROOT="$(pwd)"
+          ls -al $ROOT/lib/rasqal-static              
           
       - name: Compile Redland RDFlib
         run: |
@@ -129,6 +142,12 @@ jobs:
           && make install
           
           
+                    
+          
+      - name: Check Redland RDFlib libs
+        run: |
+          ROOT="$(pwd)"
+          ls -al $ROOT/lib/redland-static             
           
 
       - name: Download Qt
@@ -182,17 +201,13 @@ jobs:
           && rm -rf konclude-static/release \
           && rm -rf konclude-static/GeneratedFiles
           
-          mkdir -p $ROOT/konclude-static/External/librdf/Linux/x64/lib/release
-          cp $ROOT/lib/libxml2-static/lib/libxml2.2.dylib $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.2.dylib \
-          && cp $ROOT/lib/libxml2-static/lib/libxml2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.a \
+          mkdir -p $ROOT/konclude-static/External/librdf/Linux/x64/lib/release          
+          cp $ROOT/lib/libxml2-static/lib/libxml2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.a \
           \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.2.dylib $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.2.dylib \
           && cp $ROOT/lib/raptor2-static/lib/libraptor2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.a \
           \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.2.dylib $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.2.dylib \
           && cp $ROOT/lib/rasqal-static/lib/librasqal.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.a \
           \
-          && cp $ROOT/lib/redland-static/lib/librdf.2.dylib $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.2.dylib \
           && cp $ROOT/lib/redland-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.a
           
       - name: Check Konclude Sources
