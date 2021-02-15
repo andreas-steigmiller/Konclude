@@ -87,7 +87,7 @@ jobs:
       - name: Check Raptor libs
         run: |
           ROOT="$(pwd)"
-          ls -al $ROOT/lib/raptor2-static       
+          ls -al $ROOT/lib/raptor2-static/lib/       
           
       - name: Install Redland Rasqal
         run: |
@@ -111,10 +111,10 @@ jobs:
           
           
           
-      - name: Check Redland libs
+      - name: Check Rasqal libs
         run: |
           ROOT="$(pwd)"
-          ls -al $ROOT/lib/rasqal-static              
+          ls -al $ROOT/lib/rasqal-static/lib/              
           
       - name: Compile Redland RDFlib
         run: |
@@ -147,7 +147,7 @@ jobs:
       - name: Check Redland RDFlib libs
         run: |
           ROOT="$(pwd)"
-          ls -al $ROOT/lib/redland-static             
+          ls -al $ROOT/lib/redland-static/lib/             
           
 
       - name: Download Qt
