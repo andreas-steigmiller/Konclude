@@ -192,4 +192,62 @@ jobs:
           && make install
                     
           
+
+      - name: Prepare Konclude Sources
+        run: |
+          ROOT="$(pwd)"
+          # remove intermediate files (to ensure a clean build later)
+          cd $ROOT \
+          && rm -rf konclude-static/Release \
+          && rm -rf konclude-static/release \
+          && rm -rf konclude-static/GeneratedFiles
           
+          mkdir -p $ROOT/konclude-static/External/librdf/Linux/x64/lib/release          
+          cp $ROOT/lib/libxml2-static/lib/libxml2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.a \
+          \
+          && cp $ROOT/lib/raptor2-static/lib/libraptor2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.a \
+          \
+          && cp $ROOT/lib/rasqal-static/lib/librasqal.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.a \
+          \
+          && cp $ROOT/lib/redland-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.a
+          
+      - name: Check Konclude Sources
+        run: |
+          ROOT="$(pwd)"
+          cd $ROOT/konclude-static/External/librdf/Linux/x64/lib/release
+          pwd
+          ls
+          
+        
+      - name: Prepare Konclude Compilation
+        run: | 
+          ROOT="$(pwd)"          
+          BUILD_DIR=$ROOT/konclude-static
+          cd $BUILD_DIR
+          export PATH=$ROOT/lib/qt-static/bin:$PATH
+          export QTDIR=$ROOT/lib/qt-static
+          export QTINC=$ROOT/lib/qt-static/include
+          export QTLIB=$ROOT/lib/qt-static/lib
+          sed -i -e 's#unix:!macx: LIBS += -lz -lltdl -lgmp -ldl#unix:macx: LIBS += -lz -lgmp -ldl -llzma#g' Konclude.pro
+          qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/macx-clang Konclude.pro
+        
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude Sources
+          path: konclude-static            
+          
+      - name: Compile Konclude
+        run: | 
+          ROOT="$(pwd)"          
+          BUILD_DIR=$ROOT/konclude-static
+          cd $BUILD_DIR          
+          make
+          ldd ./Release/Konclude
+          ./Release/Konclude.app/Contents/MacOS/Konclude owllinkfile -c Configs/default-config.xml -v -e -r Tests/Test-response.xml -q Tests/galen-ALEHIF+-classify-request.xml -w 1
+                    
+                    
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude Release
+          path: konclude-static                  
