@@ -30,7 +30,7 @@ jobs:
     
       - name: Install Dependencies
         run: |          
-          brew install autoconf automake libtool gtk-doc bison mpfr       
+          brew install autoconf automake libtool gtk-doc bison mpfr libgcrypt       
           echo "checking bison version"  
           bison -V   
           brew unlink bison
