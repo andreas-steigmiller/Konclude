@@ -39,7 +39,10 @@ jobs:
           cp /usr/local/opt/bison/bin/bison /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bison            
           source ~/.bash_profile 
           bison -V
+          echo "checking mpfr"
           brew info mpfr
+          echo "checking libs"
+          ls -al /usr/local/lib
         
       - name: Prepare Environment
         run: |
