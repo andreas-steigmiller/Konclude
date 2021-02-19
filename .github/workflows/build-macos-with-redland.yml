@@ -30,7 +30,7 @@ jobs:
     
       - name: Install Dependencies
         run: |          
-          brew install autoconf automake libtool gtk-doc bison        
+          brew install autoconf automake libtool gtk-doc bison mpfr       
           echo "checking bison version"  
           bison -V   
           brew unlink bison
@@ -39,7 +39,7 @@ jobs:
           cp /usr/local/opt/bison/bin/bison /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bison            
           source ~/.bash_profile 
           bison -V
-          wget http://docbook.sourceforge.net/release/xsl/current/html/chunk.xsl
+          brew info mpfr
         
       - name: Prepare Environment
         run: |
