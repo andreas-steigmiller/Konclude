@@ -43,7 +43,8 @@ jobs:
           brew info mpfr
           echo "checking libs"
           ls -al /usr/local/lib
-          ls /usr/local/lib/../Cellar/libgcrypt/1.9.1/lib/libgcrypt.a
+          echo "gcrypt libs"
+          ls -al /usr/local/lib/../Cellar/libgcrypt/1.9.1/lib/
         
       - name: Prepare Environment
         run: |
