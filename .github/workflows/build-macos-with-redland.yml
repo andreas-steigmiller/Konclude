@@ -233,7 +233,7 @@ jobs:
           export QTDIR=$ROOT/lib/qt-static
           export QTINC=$ROOT/lib/qt-static/include
           export QTLIB=$ROOT/lib/qt-static/lib
-          sed -i -e 's#unix:!macx: LIBS += -lz -lltdl -lgmp -ldl#unix:macx: LIBS += -lz -ldl -llzma -lcurl -lxslt -L/usr/local/lib /usr/local/lib/../Cellar/libgcrypt/1.9.1/lib/libgcrypt.a  /usr/local/lib/libmpfr.a -lgmp -lgpg-error -lltdl#g' Konclude.pro
+          sed -i -e 's#unix:!macx: LIBS += -lz -lltdl -lgmp -ldl#unix:macx: LIBS += -lz -ldl -llzma -lcurl -lxslt -L/usr/local/lib /usr/local/lib/../Cellar/libgcrypt/1.9.1/lib/libgcrypt.a  /usr/local/lib/libmpfr.a -lgmp -lgpg-error -lltdl -lpcre#g' Konclude.pro
           qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/macx-clang Konclude.pro
         
           
