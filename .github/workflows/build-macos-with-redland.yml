@@ -54,6 +54,22 @@ jobs:
           echo $ROOT          
           echo "usr libs"
           ls -al /usr/lib
+          echo " "
+          echo "opt/xz"
+          ls -al /usr/local/opt/xz/lib/
+          echo " "
+          echo "opt/xz"
+          ls -al /usr/local/opt/gmp/lib/
+          echo " "
+          echo "opt/xz"
+          ls -al /usr/local/opt/libgpg-error/lib/
+          echo " "
+          echo "opt/xz"
+          ls -al /usr/local/opt/libtool/lib/
+          echo " "
+          echo "opt/xz"
+          ls -al /usr/local/opt/pcre/lib/
+          
           
       - name: Install Libxml2
         run: |
