@@ -248,7 +248,6 @@ jobs:
           BUILD_DIR=$ROOT/konclude-static
           cd $BUILD_DIR          
           make
-          ldd ./Release/Konclude
           ./Release/Konclude.app/Contents/MacOS/Konclude owllinkfile -c Configs/default-config.xml -v -e -r Tests/Test-response.xml -q Tests/galen-ALEHIF+-classify-request.xml -w 1
                     
                     
