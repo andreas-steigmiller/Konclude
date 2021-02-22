@@ -289,7 +289,7 @@ jobs:
           
           BUILD_DIR=$ROOT/konclude-static
           PROJ=$ROOT/konclude-static
-          RELEA="$ROOT/Release/Konclude-$revisionTagName-$revisionCount-Linux-x64-GCC4.8.4-Static-Qt-5.13"
+          RELEA="$ROOT/Release/Konclude-$revisionTagName-$revisionCount-MacOs-x64-Clang-Static-Qt-5.12"
           
           mkdir $RELEA
           mkdir "$RELEA/Configs"
