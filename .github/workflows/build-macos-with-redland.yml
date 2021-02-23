@@ -328,3 +328,19 @@ jobs:
         with:
           name: Konclude-v0.6.2-965-MacOs-x64-Clang-Static-Qt-5.12
           path: Release/Konclude-v0.6.2-965-MacOs-x64-Clang-Static-Qt-5.12
+          
+      - name: Konclude Examples Test
+        run: | 
+          ROOT="$(pwd)"  
+          cd Release/Konclude-v0.6.2-965-MacOs-x64-Clang-Static-Qt-5.12
+          
+          ./Konclude classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
+          ./Konclude satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
+          ./Konclude owllinkfile -i Tests/galen-classify-request.xml -o response.xml
+          ./Konclude owllinkfile -i Tests/roberts-family-full-D-classify-realize-request.xml
+          ./Konclude owllinkfile -c Configs/default-config.xml -i Tests/1b-satisfiability-request.xml
+          ./Konclude sparqlfile -s Tests/lubm-univ-bench-sparql-load-and-query-test.sparql -o Tests/query-answers.xml -c Configs/querying-config.xml
+          ./Konclude sparqlfile -s Tests/roberts-family-full-sparql-existential-variables-query-test.sparql -i Tests/roberts-family-full-D.owl.xml
+          
+          
+          
