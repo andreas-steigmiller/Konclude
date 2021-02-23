@@ -321,6 +321,10 @@ jobs:
 
           cp "$PROJ/Configs/default-config.xml" "$RELEA/Configs"
           cp "$PROJ/Configs/querying-config.xml" "$RELEA/Configs"
+          
+          chmod 777 $RELEA/Binaries/Konclude
+          chmod 777 $RELEA/Konclude
+          chmod 777 $RELEA/Konclude.sh
                     
                                  
                     
