@@ -321,16 +321,10 @@ jobs:
 
           cp "$PROJ/Configs/default-config.xml" "$RELEA/Configs"
           cp "$PROJ/Configs/querying-config.xml" "$RELEA/Configs"
-          
-          releaseZipName="Konclude-$revisionTagName-$revisionCount-MacOs-x64-Clang-Static-Qt-5.12"
-          
-          
-          cd "$ROOT/Release/"
-          zip -r -q "${releaseZipName}.zip" "${releaseZipName}" 
-
-                           
+                    
+                                 
                     
       - uses: actions/upload-artifact@v2
         with:
           name: Konclude Release
-          path: Release/Konclude-v0.6.2-965-MacOs-x64-Clang-Static-Qt-5.12.zip
+          path: Release/Konclude-v0.6.2-965-MacOs-x64-Clang-Static-Qt-5.12
