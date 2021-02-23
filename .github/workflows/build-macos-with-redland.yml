@@ -289,7 +289,7 @@ jobs:
           
           BUILD_DIR=$ROOT/konclude-static
           PROJ=$ROOT/konclude-static
-          RELEA="$ROOT/Release/Konclude-$revisionTagName-$revisionCount-MacOs-x64-Clang-Static-Qt-5.12"
+          RELEA="$ROOT/Release/Konclude-$revisionTagName-$revisionCount-OSX-x64-Clang-Static-Qt5.12.10"
           
           mkdir $RELEA
           mkdir "$RELEA/Configs"
@@ -326,13 +326,13 @@ jobs:
                     
       - uses: actions/upload-artifact@v2
         with:
-          name: Konclude-v0.6.2-965-MacOs-x64-Clang-Static-Qt-5.12
+          name: Konclude-v0.6.2-965-OSX-x64-Clang-Static-Qt5.12.10
           path: Release
           
       - name: Konclude Examples Test
         run: | 
           ROOT="$(pwd)"  
-          cd Release/Konclude-v0.6.2-965-MacOs-x64-Clang-Static-Qt-5.12
+          cd Release/Konclude-v0.6.2-965-OSX-x64-Clang-Static-Qt5.12.10
           
           ./Konclude classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
           ./Konclude satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
