@@ -326,5 +326,5 @@ jobs:
                     
       - uses: actions/upload-artifact@v2
         with:
-          name: Konclude Release
+          name: Konclude-v0.6.2-965-MacOs-x64-Clang-Static-Qt-5.12
           path: Release/Konclude-v0.6.2-965-MacOs-x64-Clang-Static-Qt-5.12
