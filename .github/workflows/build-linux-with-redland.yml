@@ -262,4 +262,54 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: Konclude Release
-          path: konclude-static                         
+          path: konclude-static       
+
+
+      - name: Create Konclude Release
+        run: | 
+          ROOT="$(pwd)"   
+          revisionCount="966"
+          revisionTagName="v0.6.2"
+          revisionHashName="fa20b125"
+          mkdir Release          
+          
+          BUILD_DIR=$ROOT/konclude-static
+          PROJ=$ROOT/konclude-static
+          RELEA="$ROOT/Release/Konclude-$revisionTagName-$revisionCount-Linux-x64-GCC-Static-Qt5.12.10"
+          
+          mkdir $RELEA
+          mkdir "$RELEA/Configs"
+          mkdir "$RELEA/Tests"
+          mkdir "$RELEA/Binaries"
+          
+          cd $BUILD_DIR
+          cp "$BUILD_DIR/Release/Konclude" "$RELEA/Binaries"
+          
+          cp "$PROJ/LGPL-3.0.txt" "$RELEA"
+          cp "$PROJ/GPL.txt" "$RELEA"
+          cp "$PROJ/Readme.md" "$RELEA"
+          cp "$PROJ/Tests/1b-satisfiability-request.xml" "$RELEA/Tests"
+          cp "$PROJ/Tests/galen.owl.xml" "$RELEA/Tests"
+          cp "$PROJ/Tests/galen-classify-request.xml" "$RELEA/Tests"
+          cp "$PROJ/Tests/roberts-family-full-D.owl.xml" "$RELEA/Tests"
+          cp "$PROJ/Tests/roberts-family-full-D-classify-realize-request.xml" "$RELEA/Tests"
+          cp "$PROJ/Tests/lubm-univ-bench.owl.xml" "$RELEA/Tests"
+          cp "$PROJ/Tests/lubm-univ-bench-data-1.ttl" "$RELEA/Tests"
+          cp "$PROJ/Tests/lubm-univ-bench-sparql-load-and-query-test.sparql" "$RELEA/Tests"
+          cp "$PROJ/Tests/lubm-univ-bench-sparql-load-and-complex-query-rasqal-test.sparql" "$RELEA/Tests"
+          cp "$PROJ/Tests/roberts-family-full-sparql-existential-variables-query-test.sparql" "$RELEA/Tests"
+          cp "$PROJ/Tests/test-request.xml" "$RELEA/Tests"
+          cp "$PROJ/Scripts/Konclude" "$RELEA"
+          cp "$PROJ/Scripts/Konclude.sh" "$RELEA"
+          cp "$PROJ/Configs/default-config.xml" "$RELEA/Configs"
+          cp "$PROJ/Configs/querying-config.xml" "$RELEA/Configs"
+          
+          chmod 777 $RELEA/Binaries/Konclude
+          chmod 777 $RELEA/Konclude
+          chmod 777 $RELEA/Konclude.sh
+                    
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude-v0.6.2-966-Linux-x64-GCC-Static-Qt5.12.10
+          path: Release
