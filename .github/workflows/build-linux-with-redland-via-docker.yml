@@ -71,3 +71,23 @@ jobs:
         run: | 
           ./build_release.sh
           
+          
+  
+      - name: Check
+        run: | 
+          ls -al Release
+          
+          
+                  
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude-v0.6.2-966-Linux-x64-GCC4.8.4-Static-Qt-5.13
+          path: Release/Konclude-v0.6.2-966-Linux-x64-GCC4.8.4-Static-Qt-5.13
+          
+                    
+                  
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude-v0.6.2-966-Sources
+          path: Release/Konclude-v0.6.2-966-Sources
+                    
