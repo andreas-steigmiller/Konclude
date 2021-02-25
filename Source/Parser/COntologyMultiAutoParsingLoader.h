@@ -45,6 +45,8 @@
 
 #include "Reasoner/Revision/COntologyConfigurationExtension.h"
 
+#include "Reasoner/Ontology/CConcreteOntology.h"
+
 // Logger includes
 #include "Logger/CLogger.h"
 #include "Logger/CLogIdentifier.h"
@@ -57,6 +59,7 @@ namespace Konclude {
 	using namespace Control::Command;
 	using namespace Reasoner::Generator;
 	using namespace Reasoner::Revision;
+	using namespace Reasoner::Ontology;
 
 	namespace Parser {
 
