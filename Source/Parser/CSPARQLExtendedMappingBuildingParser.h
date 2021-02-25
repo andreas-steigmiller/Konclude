@@ -17,9 +17,10 @@
  *		License along with Konclude. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#ifdef KONCLUDE_REDLAND_INTEGRATION
 
-#ifndef KONCLUDE_PARSER_CSPARQLExtendedMappingBuildingParser_H
-#define KONCLUDE_PARSER_CSPARQLExtendedMappingBuildingParser_H
+#ifndef KONCLUDE_PARSER_CSPARQLEXTENDEDMAPPINGBUILDINGPARSER_H
+#define KONCLUDE_PARSER_CSPARQLEXTENDEDMAPPINGBUILDINGPARSER_H
 
 // Libraries includes
 
@@ -118,4 +119,6 @@ namespace Konclude {
 
 }; // end namespace Konclude
 
-#endif // KONCLUDE_PARSER_CSPARQLExtendedMappingBuildingParser_H
+#endif // KONCLUDE_PARSER_CSPARQLEXTENDEDMAPPINGBUILDINGPARSER_H
+
+#endif // KONCLUDE_REDLAND_INTEGRATION
