@@ -32,7 +32,8 @@ unix:!macx: LIBS += $$PWD/External/librdf/Linux/x64/lib/release/librdf.a
 unix:!macx: LIBS += $$PWD/External/librdf/Linux/x64/lib/release/libraptor2.a
 unix:!macx: LIBS += $$PWD/External/librdf/Linux/x64/lib/release/librasqal.a
 unix:!macx: LIBS += $$PWD/External/librdf/Linux/x64/lib/release/libxml2.a
-unix:!macx: LIBS += -lz -lltdl -lgmp -ldl
+unix:!macx: LIBS += $$PWD/External/jemalloc/Linux/x64/lib/release/libjemalloc.a
+unix:!macx: LIBS += -lz -lltdl -lgmp -ldl -L External/jemalloc/Linux/x64/lib/release/ -ljemalloc
 
 unix: INCLUDEPATH += $$PWD/External/librdf/Linux/x64/include
 unix: DEPENDPATH += $$PWD/External/librdf/Linux/x64/include
@@ -45,11 +46,10 @@ win32: LIBS += $$PWD/External/librdf/Windows/x64/lib/Release/raptor2.lib
 win32: LIBS += $$PWD/External/librdf/Windows/x64/lib/Release/rasqal.lib
 win32: LIBS += $$PWD/External/librdf/Windows/x64/lib/Release/libsv.lib
 
-
-
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/librdf.a
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/libraptor2.a
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/librasqal.a
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/libxml2.a
+unix:!macx: PRE_TARGETDEPS += $$PWD/External/hoard/Linux/x64/lib/release/libhoard.a
 
 
