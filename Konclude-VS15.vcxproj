@@ -190,7 +190,7 @@
     <Link>
       <AdditionalDependencies>libxslt.lib;libcurl.lib;libxml2.lib;libhoard.lib;librdf.lib;qtmain.lib;Qt5Core.lib;Qt5Xml.lib;Qt5Network.lib;Qt5Concurrent.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)Konclude.exe</OutputFile>
-      <AdditionalLibraryDirectories>\External\librdf\Windows\x64\lib\vcpkg;.\External\hoard\Windows\x64\lib\Release;.\External\librdf\Windows\x64\lib\Release;$(Qt5_Dir)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.\External\librdf\Windows\x64\lib\vcpkg;.\External\hoard\Windows\x64\lib\Release;.\External\librdf\Windows\x64\lib\Release;$(Qt5_Dir)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
