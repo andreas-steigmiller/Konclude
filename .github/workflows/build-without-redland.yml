@@ -81,7 +81,7 @@ jobs:
       - name: Run Examples Ubuntu
         if: startsWith(matrix.config.os, 'ubuntu')
         run: |
-          catchsegv Release/Konclude sparqlfile -s Tests/roberts-family-full-sparql-existential-variables-query-test.sparql -i Tests/roberts-family-full-D.owl.xml    
+          catchsegv Release/Konclude owllinkfile -i Tests/roberts-family-full-D-classify-realize-request.xml
           
           Release/Konclude classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
           Release/Konclude satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
