@@ -60,6 +60,13 @@ jobs:
           msbuild Konclude-VS15.sln /p:Configuration=Release /p:Platform="Win64"
 
 
+      - name: Prepare Windows Execution
+        if: startsWith(matrix.config.os, 'windows')
+        run: |
+          Copy-Item ".\External\vcpkg\Windows\x64\bin\*" -Destination "."
+          Copy-Item ".\External\vcpkg\Windows\x64\bin\*" -Destination "x64\Release\VS2015"
+          dir
+
 
       - name: Upload
         uses: actions/upload-artifact@v2
