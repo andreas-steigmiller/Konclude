@@ -82,6 +82,7 @@ jobs:
         if: startsWith(matrix.config.os, 'ubuntu')
         run: |
           catchsegv Release/Konclude owllinkfile -i Tests/roberts-family-full-D-classify-realize-request.xml
+          echo "file Release/Konclude\nrun owllinkfile -i Tests/roberts-family-full-D-classify-realize-request.xml\nbacktrace\nquit" | gdb
           
           Release/Konclude classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
           Release/Konclude satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
