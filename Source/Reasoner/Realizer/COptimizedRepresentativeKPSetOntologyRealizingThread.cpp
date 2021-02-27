@@ -1587,9 +1587,13 @@ namespace Konclude {
 
 											possInstanceItemIt = possInstanceItemMap->erase(possInstanceItemIt);
 											if (possInstanceItemMap == prefferedInstanceItemTestingSet) {
-												possibleInstanceItemSet->remove(otherPossibleInstanceItem->getIndividualId());
+												if (possibleInstanceItemSet) {
+													possibleInstanceItemSet->remove(otherPossibleInstanceItem->getIndividualId());
+												}
 											} else {
-												prefferedInstanceItemTestingSet->remove(otherPossibleInstanceItem->getIndividualId());
+												if (prefferedInstanceItemTestingSet) {
+													prefferedInstanceItemTestingSet->remove(otherPossibleInstanceItem->getIndividualId());
+												}
 											}
 											iterateNextPossibleInstance = false;
 
