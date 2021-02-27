@@ -77,6 +77,15 @@ jobs:
         run: |
           qmake KoncludeWithoutRedland.pro
           nmake
+          
+
+                    
+      - uses: actions/upload-artifact@v2
+        if: startsWith(matrix.config.os, 'ubuntu-16.04')
+        with:
+          name: Konclude-Linux-Debug
+          path: Release/Konclude
+          
 
       - name: Run Examples Ubuntu
         if: startsWith(matrix.config.os, 'ubuntu')
