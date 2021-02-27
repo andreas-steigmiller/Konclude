@@ -79,7 +79,19 @@ jobs:
           nmake
           
 
-                    
+      - name: Uplaod Ubuntu Dependencies
+        if: startsWith(matrix.config.os, 'ubuntu-16.04')
+        run: | 
+          ldd Release/Konclude
+          
+     
+      - uses: actions/upload-artifact@v2
+        if: startsWith(matrix.config.os, 'ubuntu-16.04')
+        with:
+          name: libQt5Gui.so.5
+          path: /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5
+               
+     
       - uses: actions/upload-artifact@v2
         if: startsWith(matrix.config.os, 'ubuntu-16.04')
         with:
