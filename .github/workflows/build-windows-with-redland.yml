@@ -75,13 +75,63 @@ jobs:
           name: Konclude-compiled-windows
           path: x64\Release\VS2015\Konclude.exe
 
+          
+
+      - name: Create Konclude Release
+        run: | 
+          $ROOT="$(pwd)"   
+          $revisionCount="966"
+          $revisionTagName="v0.6.2"
+          $revisionHashName="fa20b125"
+          mkdir Release          
+          
+          $BUILD_DIR=$ROOT
+          $PROJ=$ROOT
+          $RELEA="$ROOT\Release\Konclude-$revisionTagName-$revisionCount-Windows-x64-MSVC-Dynamic-Qt5.15.2"
+          
+          mkdir $RELEA
+          mkdir "$RELEA/Configs"
+          mkdir "$RELEA/Tests"
+          mkdir "$RELEA/Binaries"
+          
+          cd $BUILD_DIR
+          copy "$BUILD_DIR\x64\Release\VS2015\Konclude.exe" "$RELEA/Binaries"
+          
+          copy "$PROJ\LGPL-3.0.txt" "$RELEA"
+          copy "$PROJ\GPL.txt" "$RELEA"
+          copy "$PROJ\Readme.md" "$RELEA"
+          copy "$PROJ\Tests\1b-satisfiability-request.xml" "$RELEA/Tests"
+          copy "$PROJ\Tests\galen.owl.xml" "$RELEA/Tests"
+          copy "$PROJ\Tests\galen-classify-request.xml" "$RELEA/Tests"
+          copy "$PROJ\Tests\roberts-family-full-D.owl.xml" "$RELEA/Tests"
+          copy "$PROJ\Tests\roberts-family-full-D-classify-realize-request.xml" "$RELEA/Tests"
+          copy "$PROJ\Tests\lubm-univ-bench.owl.xml" "$RELEA/Tests"
+          copy "$PROJ\Tests\lubm-univ-bench-data-1.ttl" "$RELEA/Tests"
+          copy "$PROJ\Tests\lubm-univ-bench-sparql-load-and-query-test.sparql" "$RELEA/Tests"
+          copy "$PROJ\Tests\lubm-univ-bench-sparql-load-and-complex-query-rasqal-test.sparql" "$RELEA/Tests"
+          copy "$PROJ\Tests\roberts-family-full-sparql-existential-variables-query-test.sparql" "$RELEA/Tests"
+          copy "$PROJ\Tests\test-request.xml" "$RELEA/Tests"
+          copy "$PROJ\Scripts\Konclude.bat" "$RELEA"
+          copy "$PROJ\Configs\default-config.xml" "$RELEA/Configs"
+          copy "$PROJ\Configs\querying-config.xml" "$RELEA/Configs"          
+                    
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude-v0.6.2-966-Windows-x64-MSVC-Dynamic-Qt5.15.2
+          path: Release          
+          
+
       - name: Run Examples Windows
         if: startsWith(matrix.config.os, 'windows')  
         run: | 
-          x64\Release\VS2015\Konclude.exe classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
-          x64\Release\VS2015\Konclude.exe satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
-          x64\Release\VS2015\Konclude.exe owllinkfile -i Tests/galen-classify-request.xml -o response.xml
-          x64\Release\VS2015\Konclude.exe owllinkfile -i Tests/roberts-family-full-D-classify-realize-request.xml
-          x64\Release\VS2015\Konclude.exe owllinkfile -c Configs/default-config.xml -i Tests/1b-satisfiability-request.xml
-          x64\Release\VS2015\Konclude.exe sparqlfile -s Tests/lubm-univ-bench-sparql-load-and-query-test.sparql -o Tests/query-answers.xml -c Configs/querying-config.xml
-          x64\Release\VS2015\Konclude.exe sparqlfile -s Tests/roberts-family-full-sparql-existential-variables-query-test.sparql -i Tests/roberts-family-full-D.owl.xml
+          $ROOT="$(pwd)"   
+          $RELEA="$ROOT/Release/Konclude-$revisionTagName-$revisionCount-Windows-x64-MSVC-Dynamic-Qt5.15.2"
+          cd $RELEA
+          Konclude classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
+          Konclude satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
+          Konclude owllinkfile -i Tests/galen-classify-request.xml -o response.xml
+          Konclude owllinkfile -i Tests/roberts-family-full-D-classify-realize-request.xml
+          Konclude owllinkfile -c Configs/default-config.xml -i Tests/1b-satisfiability-request.xml
+          Konclude sparqlfile -s Tests/lubm-univ-bench-sparql-load-and-query-test.sparql -o Tests/query-answers.xml -c Configs/querying-config.xml
+          Konclude sparqlfile -s Tests/roberts-family-full-sparql-existential-variables-query-test.sparql -i Tests/roberts-family-full-D.owl.xml
+                    
