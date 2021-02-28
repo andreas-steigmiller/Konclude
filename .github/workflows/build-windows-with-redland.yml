@@ -125,6 +125,9 @@ jobs:
         if: startsWith(matrix.config.os, 'windows')  
         run: | 
           $ROOT="$(pwd)"   
+          $revisionCount="966"
+          $revisionTagName="v0.6.2"
+          $revisionHashName="fa20b125"          
           $RELEA="$ROOT/Release/Konclude-$revisionTagName-$revisionCount-Windows-x64-MSVC-Dynamic-Qt5.15.2"
           cd $RELEA
           Konclude classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
