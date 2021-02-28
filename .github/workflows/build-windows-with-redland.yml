@@ -130,11 +130,11 @@ jobs:
           $revisionHashName="fa20b125"          
           $RELEA="$ROOT/Release/Konclude-$revisionTagName-$revisionCount-Windows-x64-MSVC-Dynamic-Qt5.15.2"
           cd $RELEA
-          Konclude classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
-          Konclude satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
-          Konclude owllinkfile -i Tests/galen-classify-request.xml -o response.xml
-          Konclude owllinkfile -i Tests/roberts-family-full-D-classify-realize-request.xml
-          Konclude owllinkfile -c Configs/default-config.xml -i Tests/1b-satisfiability-request.xml
-          Konclude sparqlfile -s Tests/lubm-univ-bench-sparql-load-and-query-test.sparql -o Tests/query-answers.xml -c Configs/querying-config.xml
-          Konclude sparqlfile -s Tests/roberts-family-full-sparql-existential-variables-query-test.sparql -i Tests/roberts-family-full-D.owl.xml
+          Konclude.bat classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
+          Konclude.bat satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
+          Konclude.bat owllinkfile -i Tests/galen-classify-request.xml -o response.xml
+          Konclude.bat owllinkfile -i Tests/roberts-family-full-D-classify-realize-request.xml
+          Konclude.bat owllinkfile -c Configs/default-config.xml -i Tests/1b-satisfiability-request.xml
+          Konclude.bat sparqlfile -s Tests/lubm-univ-bench-sparql-load-and-query-test.sparql -o Tests/query-answers.xml -c Configs/querying-config.xml
+          Konclude.bat sparqlfile -s Tests/roberts-family-full-sparql-existential-variables-query-test.sparql -i Tests/roberts-family-full-D.owl.xml
                     
