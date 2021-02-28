@@ -64,8 +64,8 @@ jobs:
         if: startsWith(matrix.config.os, 'windows')
         run: |
           Copy-Item ".\External\vcpkg\Windows\x64\bin\*" -Destination "."
-          Copy-Item ".\External\vcpkg\Windows\x64\bin\*" -Destination "x64\Release\VS2015"
           dir
+          dir D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin
 
 
       - name: Upload
