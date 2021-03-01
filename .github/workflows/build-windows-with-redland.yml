@@ -115,12 +115,12 @@ jobs:
           copy "$PROJ\Configs\default-config.xml" "$RELEA/Configs"
           copy "$PROJ\Configs\querying-config.xml" "$RELEA/Configs"          
           
-          Copy-Item ".\External\vcpkg\Windows\x64\bin\*.dll" -Destination "$RELEA/Binaries" 
-          Copy-Item "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Core.dll" -Destination "$RELEA/Binaries" 
-          Copy-Item "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Gui.dll" -Destination "$RELEA/Binaries" 
-          Copy-Item "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Network.dll" -Destination "$RELEA/Binaries" 
-          Copy-Item "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Concurrent.dll" -Destination "$RELEA/Binaries" 
-          Copy-Item "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Xml.dll" -Destination "$RELEA/Binaries" 
+          copy ".\External\vcpkg\Windows\x64\bin\*.dll" "$RELEA/Binaries" 
+          copy "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Core.dll" "$RELEA/Binaries" 
+          copy "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Gui.dll" "$RELEA/Binaries" 
+          copy "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Network.dll" "$RELEA/Binaries" 
+          copy "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Concurrent.dll" "$RELEA/Binaries" 
+          copy "D:\a\Konclude\Qt\5.15.2\msvc2019_64\bin\Qt5Xml.dll" "$RELEA/Binaries" 
                     
       - uses: actions/upload-artifact@v2
         with:
