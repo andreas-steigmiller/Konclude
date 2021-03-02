@@ -165,8 +165,8 @@ jobs:
                     
       - uses: actions/upload-artifact@v2
         with:
-          name: Konclude-${{needs.tags.outputs.git_tag}}-Windows-x64-MSVC-Dynamic-Qt${{ matrix.config.qt }}
-          path: Windows Prepared Release Directory
+          name: Windows Prepared Release Directory
+          path: .
 
       - name: Zip the asset into a zip file
         id: zip_asset
@@ -454,8 +454,8 @@ jobs:
                     
       - uses: actions/upload-artifact@v2
         with:
-          name: Konclude-${{needs.tags.outputs.git_tag}}-OSX-x64-Clang-Static-Qt${{ matrix.config.qt }}
-          path: MacOS Prepared Release Directory          
+          name: MacOS Prepared Release Directory  
+          path: Release/Konclude-${{needs.tags.outputs.git_tag}}-OSX-x64-Clang-Static-Qt${{ matrix.config.qt }}        
 
 
       - name: Zip the asset into a zip file
@@ -788,8 +788,8 @@ jobs:
                     
       - uses: actions/upload-artifact@v2
         with:
-          name: Konclude-${{needs.tags.outputs.git_tag}}-Linux-x64-GCC-Static-Qt${{ matrix.config.qt }}
-          path: Linux Prepared Release Directory
+          name: Linux Prepared Release Directory
+          path: Release/Konclude-${{needs.tags.outputs.git_tag}}-Linux-x64-GCC-Static-Qt${{ matrix.config.qt }}
 
 
 
