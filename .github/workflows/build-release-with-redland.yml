@@ -636,7 +636,7 @@ jobs:
         run: |
           ROOT="$(pwd)" 
           wget https://github.com/jemalloc/jemalloc/releases/download/5.2.1/jemalloc-5.2.1.tar.bz2
-          tar -xvfj jemalloc-5.2.1.tar.bz2
+          tar -xjf jemalloc-5.2.1.tar.bz2
           mv jemalloc-5.2.1 jemalloc-static
           cd jemalloc-static
           ./configure --prefix=$ROOT/lib/jemalloc-static
