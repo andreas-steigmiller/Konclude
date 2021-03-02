@@ -63,7 +63,7 @@ jobs:
             os: windows-2016,
             build_type: "Release",
             cc: "cl",
-            cxx: "cl"
+            cxx: "cl",
             qt: "5.15.2"
           }   
 
