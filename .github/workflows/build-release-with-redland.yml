@@ -504,7 +504,7 @@ jobs:
   build_linux:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-    timeout-minutes: 600
+    needs: [release, tags]    
     strategy:
       fail-fast: false
       matrix:
