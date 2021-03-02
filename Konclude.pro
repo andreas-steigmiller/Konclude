@@ -50,6 +50,5 @@ unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/librdf
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/libraptor2.a
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/librasqal.a
 unix:!macx: PRE_TARGETDEPS += $$PWD/External/librdf/Linux/x64/lib/release/libxml2.a
-unix:!macx: PRE_TARGETDEPS += $$PWD/External/hoard/Linux/x64/lib/release/libhoard.a
 
 
