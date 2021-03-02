@@ -19,6 +19,7 @@ jobs:
         id: get_tags
         run: |
           ls -al
+          git fetch --prune --unshallow
           git_tag=`git describe --tags --abbrev=0`
           
 
