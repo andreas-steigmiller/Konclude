@@ -630,6 +630,18 @@ jobs:
           && make \
           && make install
           
+          
+   
+      - name: Install Jemalloc
+        run: |
+          mkdir jemalloc
+          cd jemalloc
+          git clone https://github.com/jemalloc/jemalloc.git
+          cd jemalloc
+          ./configure --prefix=$ROOT/lib/jemalloc-static
+          make
+          make install
+          
 
       - name: Download Qt
         run: |
@@ -684,29 +696,11 @@ jobs:
           && rm -rf konclude-static/GeneratedFiles
           
           mkdir -p $ROOT/konclude-static/External/librdf/Linux/x64/lib/release
-          cp $ROOT/lib/libxml2-static/lib/libxml2.so.2.9.9 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.so.2.9.9 \
-          && cp $ROOT/lib/libxml2-static/lib/libxml2.so.2 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.so.2 \
-          && cp $ROOT/lib/libxml2-static/lib/libxml2.so $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.so \
-          && cp $ROOT/lib/libxml2-static/lib/libxml2.la $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.la \
-          && cp $ROOT/lib/libxml2-static/lib/libxml2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.a \
-          \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.so.0.0.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.so.0.0.0 \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.so.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.so.0 \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.so $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.so \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.la $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.la \
-          && cp $ROOT/lib/raptor2-static/lib/libraptor2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.a \
-          \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.so.3.0.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.so.3.0.0 \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.so.3 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.so.3 \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.so $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.so \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.la $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.la \
-          && cp $ROOT/lib/rasqal-static/lib/librasqal.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.a \
-          \
-          && cp $ROOT/lib/redland-static/lib/librdf.so.0.0.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.so.0.0.0 \
-          && cp $ROOT/lib/redland-static/lib/librdf.so.0 $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.so.0 \
-          && cp $ROOT/lib/redland-static/lib/librdf.so $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.so \
-          && cp $ROOT/lib/redland-static/lib/librdf.la $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.la \
-          && cp $ROOT/lib/redland-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.a          
+          cp $ROOT/lib/libxml2-static/lib/libxml2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.a 
+          cp $ROOT/lib/raptor2-static/lib/libraptor2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.a
+          cp $ROOT/lib/rasqal-static/lib/librasqal.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.a
+          cp $ROOT/lib/redland-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.a          
+          cp $ROOT/lib/jemalloc-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libjemalloc.a      
           
         
       - name: Prepare Konclude Compilation
