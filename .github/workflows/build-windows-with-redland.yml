@@ -18,7 +18,7 @@ jobs:
       - name: Identify git tags
         id: get_tags
         run: |
-          dir
+          ls -al
           git_tag=`git describe --tags --abbrev=0`
           
 
