@@ -123,15 +123,12 @@ jobs:
 
       - name: Create Konclude Release
         run: | 
-          $ROOT="$(pwd)"   
-          
-          $revisionTag=${{needs.tags.outputs.git_tag}}
-
+          $ROOT="$(pwd)"             
           mkdir Release          
           
           $BUILD_DIR=$ROOT
           $PROJ=$ROOT
-          $RELEA="$ROOT\Release\Konclude-$revisionTag-Windows-x64-MSVC-Dynamic-Qt${{ matrix.config.qt }}"
+          $RELEA="$ROOT\Release\Konclude-${{needs.tags.outputs.git_tag}}-Windows-x64-MSVC-Dynamic-Qt${{ matrix.config.qt }}"
           
           mkdir $RELEA
           mkdir "$RELEA/Configs"
