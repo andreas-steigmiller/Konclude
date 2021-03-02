@@ -81,7 +81,8 @@ jobs:
         
       - name: Install Qt
         uses: jurplel/install-qt-action@v2   
-        version: ${{ matrix.config.qt }}
+        with:
+          version: ${{ matrix.config.qt }}
 
       - name: Prepare Visual Studio
         uses: ilammy/msvc-dev-cmd@v1
