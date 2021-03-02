@@ -18,9 +18,11 @@ jobs:
       - name: Identify git tags
         id: get_tags
         run: |
-          ls -al
           git fetch --prune --unshallow --tags
           git_tag=`git describe --tags --abbrev=0`
+          echo $git_tag
+          echo "::set-output name=git_tag::$git_tag"
+
           
 
 
