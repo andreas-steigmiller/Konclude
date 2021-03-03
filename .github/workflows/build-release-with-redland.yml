@@ -165,7 +165,7 @@ jobs:
                     
       - uses: actions/upload-artifact@v2
         with:
-          name: Windows Prepared Release Directory
+          name: Konclude Windows Prepared Release Directory
           path: .
 
       - name: Zip the asset into a zip file
@@ -389,7 +389,7 @@ jobs:
           export QTDIR=$ROOT/lib/qt-static
           export QTINC=$ROOT/lib/qt-static/include
           export QTLIB=$ROOT/lib/qt-static/lib
-          sed -i -e 's#unix:!macx: LIBS += -lz -lltdl -lgmp -ldl#unix:macx: LIBS += -lz -ldl /usr/local/opt/xz/lib/liblzma.a -lcurl -lxslt -L/usr/local/lib /usr/local/lib/../Cellar/libgcrypt/1.9.1/lib/libgcrypt.a  /usr/local/lib/libmpfr.a /usr/local/opt/gmp/lib/libgmp.a /usr/local/opt/libgpg-error/lib/libgpg-error.a /usr/local/opt/libtool/lib/libltdl.a /usr/local/opt/pcre/lib/libpcre.a -liconv#g' Konclude.pro
+          sed -i -e 's#unix:!macx: LIBS += -lz -lltdl -lgmp -ldl#unix:macx: LIBS += -lz -ldl /usr/local/opt/xz/lib/liblzma.a -lcurl -lxslt -L/usr/local/lib /usr/local/lib/../Cellar/libgcrypt/1.9.2/lib/libgcrypt.a  /usr/local/lib/libmpfr.a /usr/local/opt/gmp/lib/libgmp.a /usr/local/opt/libgpg-error/lib/libgpg-error.a /usr/local/opt/libtool/lib/libltdl.a /usr/local/opt/pcre/lib/libpcre.a -liconv#g' Konclude.pro
           qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/macx-clang Konclude.pro
           
       - uses: actions/upload-artifact@v2
@@ -454,7 +454,7 @@ jobs:
                     
       - uses: actions/upload-artifact@v2
         with:
-          name: MacOS Prepared Release Directory  
+          name: Konclude MacOS Prepared Release Directory  
           path: Release/Konclude-${{needs.tags.outputs.git_tag}}-OSX-x64-Clang-Static-Qt${{ matrix.config.qt }}        
 
 
@@ -605,7 +605,7 @@ jobs:
           && make \
           && make install
           
-      - name: Compile Redland RDFlib
+      - name: Install Redland RDFlib
         run: |
           ROOT="$(pwd)"
           # download, build and install redland rdflib
@@ -701,7 +701,7 @@ jobs:
           cp $ROOT/lib/raptor2-static/lib/libraptor2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.a
           cp $ROOT/lib/rasqal-static/lib/librasqal.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.a
           cp $ROOT/lib/redland-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.a          
-          cp $ROOT/lib/jemalloc-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libjemalloc.a      
+          cp $ROOT/lib/jemalloc-static/lib/libjemalloc.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libjemalloc.a      
           
         
       - name: Prepare Konclude Compilation
@@ -783,7 +783,7 @@ jobs:
                     
       - uses: actions/upload-artifact@v2
         with:
-          name: Linux Prepared Release Directory
+          name: Konclude Linux Prepared Release Directory
           path: Release/Konclude-${{needs.tags.outputs.git_tag}}-Linux-x64-GCC-Static-Qt${{ matrix.config.qt }}
 
 
