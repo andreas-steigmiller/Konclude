@@ -697,11 +697,12 @@ jobs:
           && rm -rf konclude-static/GeneratedFiles
           
           mkdir -p $ROOT/konclude-static/External/librdf/Linux/x64/lib/release
+          mkdir -p $ROOT/konclude-static/External/jemalloc/Linux/x64/lib/release
           cp $ROOT/lib/libxml2-static/lib/libxml2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libxml2.a 
           cp $ROOT/lib/raptor2-static/lib/libraptor2.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libraptor2.a
           cp $ROOT/lib/rasqal-static/lib/librasqal.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librasqal.a
           cp $ROOT/lib/redland-static/lib/librdf.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/librdf.a          
-          cp $ROOT/lib/jemalloc-static/lib/libjemalloc.a $ROOT/konclude-static/External/librdf/Linux/x64/lib/release/libjemalloc.a      
+          cp $ROOT/lib/jemalloc-static/lib/libjemalloc.a $ROOT/konclude-static/External/jemalloc/Linux/x64/lib/release/libjemalloc.a      
           
         
       - name: Prepare Konclude Compilation
