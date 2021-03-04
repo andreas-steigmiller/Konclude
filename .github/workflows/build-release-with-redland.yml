@@ -171,7 +171,8 @@ jobs:
       - name: Zip the asset into a zip file
         id: zip_asset
         run: |
-          7z a -tzip Release/Konclude-${{needs.tags.outputs.git_tag}}-Windows-x64-MSVC-Dynamic-Qt${{ matrix.config.qt }}.zip Release/Konclude-${{needs.tags.outputs.git_tag}}-Windows-x64-MSVC-Dynamic-Qt${{ matrix.config.qt }}*
+          cd Release
+          7z a -tzip Konclude-${{needs.tags.outputs.git_tag}}-Windows-x64-MSVC-Dynamic-Qt${{ matrix.config.qt }}.zip Konclude-${{needs.tags.outputs.git_tag}}-Windows-x64-MSVC-Dynamic-Qt${{ matrix.config.qt }}*
 
       - name: Run Examples Windows
         if: startsWith(matrix.config.os, 'windows')  
@@ -476,7 +477,8 @@ jobs:
       - name: Zip the asset into a zip file
         id: zip_asset
         run: |
-          7z a -tzip Release/Konclude-${{needs.tags.outputs.git_tag}}-OSX-x64-Clang-Static-Qt${{ matrix.config.qt }}.zip Release/Konclude-${{needs.tags.outputs.git_tag}}-OSX-x64-Clang-Static-Qt${{ matrix.config.qt }}*          
+          cd Release
+          7z a -tzip Konclude-${{needs.tags.outputs.git_tag}}-OSX-x64-Clang-Static-Qt${{ matrix.config.qt }}.zip Konclude-${{needs.tags.outputs.git_tag}}-OSX-x64-Clang-Static-Qt${{ matrix.config.qt }}*          
           
           
       - name: Konclude Examples Test
@@ -807,7 +809,8 @@ jobs:
       - name: Zip the asset into a zip file
         id: zip_asset
         run: |
-          7z a -tzip Release/Konclude-${{needs.tags.outputs.git_tag}}-Linux-x64-GCC-Static-Qt${{ matrix.config.qt }}.zip Release/Konclude-${{needs.tags.outputs.git_tag}}-Linux-x64-GCC-Static-Qt${{ matrix.config.qt }}*          
+          cd Release
+          7z a -tzip Konclude-${{needs.tags.outputs.git_tag}}-Linux-x64-GCC-Static-Qt${{ matrix.config.qt }}.zip Konclude-${{needs.tags.outputs.git_tag}}-Linux-x64-GCC-Static-Qt${{ matrix.config.qt }}*          
           
           
       - name: Konclude Examples Test
