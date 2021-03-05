@@ -406,7 +406,7 @@ jobs:
           export QTDIR=$ROOT/lib/qt-static
           export QTINC=$ROOT/lib/qt-static/include
           export QTLIB=$ROOT/lib/qt-static/lib
-          sed -i -e 's#unix: LIBS += -lz -lltdl -lgmp -ldl -L External/jemalloc/Linux/x64/lib/release/ -ljemalloc#unix:macx: LIBS += -lz -ldl /usr/local/opt/xz/lib/liblzma.a -lcurl -lxslt -L/usr/local/lib /usr/local/lib/../Cellar/libgcrypt/1.9.2/lib/libgcrypt.a  /usr/local/lib/libmpfr.a /usr/local/opt/gmp/lib/libgmp.a /usr/local/opt/libgpg-error/lib/libgpg-error.a /usr/local/opt/libtool/lib/libltdl.a /usr/local/opt/pcre/lib/libpcre.a -liconv -L External/jemalloc/Linux/x64/lib/release/ -ljemalloc#g' Konclude.pro
+          sed -i -e 's#unix: LIBS += -lz -lltdl -lgmp -ldl -L External/jemalloc/Linux/x64/lib/release/ -ljemalloc#unix:macx: LIBS += -lz -ldl /usr/local/opt/xz/lib/liblzma.a -lcurl -lxslt -L/usr/local/lib /usr/local/lib/../Cellar/libgcrypt/1.9.2/lib/libgcrypt.a  /usr/local/lib/libmpfr.a /usr/local/opt/gmp/lib/libgmp.a /usr/local/opt/libgpg-error/lib/libgpg-error.a /usr/local/opt/libtool/lib/libltdl.a /usr/local/opt/pcre/lib/libpcre.a -liconv -L External/jemalloc/Linux/x64/lib/release/ -ljemalloc -ldb#g' Konclude.pro
           qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/macx-clang Konclude.pro
           
       - uses: actions/upload-artifact@v2
