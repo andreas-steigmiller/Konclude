@@ -1021,7 +1021,7 @@ jobs:
      
      
       - name: Upload release assets
-        id: upload_assets
+        id: upload_assets_release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -1031,8 +1031,8 @@ jobs:
           asset_name: Konclude-${{needs.tags.outputs.git_tag}}-Linux-Docker-x64-GCC4.8.4-Static-Qt${{ matrix.config.qt }}.zip
           asset_content_type: application/octet-stream     
           
-      - name: Upload source assets
-        id: upload_assets
+      - name: Upload sources assets
+        id: upload_assets_sources
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
