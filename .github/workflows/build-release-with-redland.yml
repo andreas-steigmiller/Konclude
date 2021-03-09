@@ -12,6 +12,8 @@ jobs:
     outputs:
       git_tag: ${{ steps.get_tags.outputs.git_tag }}
       revision_hash: ${{ steps.get_tags.outputs.revision_hash }}
+      revision_tag: ${{ steps.get_tags.outputs.revision_tag }}      
+      revision_build: ${{ steps.get_tags.outputs.revision_build }}      
     steps:
       - name: Checkout code
         uses: actions/checkout@v2    
@@ -26,6 +28,12 @@ jobs:
           revision_hash=grep KONCLUDE_VERSION_GIT_REVISION_HASH_STRING revision-git.h | cut -d'"' -f 2
           echo $revision_hash
           echo "::set-output name=revision_hash::$revision_hash"
+          IFS='-'
+          read -ra ADDR <<< "$git_tag"
+          revision_tag=${ADDR[0]}
+          revision_build=${ADDR[1]}
+          echo "::set-output name=revision_tag::$revision_tag"
+          echo "::set-output name=revision_build::$revision_build"
 
           
 
@@ -839,3 +847,200 @@ jobs:
           asset_content_type: application/octet-stream     
           
                     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  build_docker:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    needs: [release, tags]    
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Ubuntu Latest Docker Static",
+            os: ubuntu-latest,
+            build_type: "Release", 
+            cc: "gcc", 
+            cxx: "g++",
+            qt: 5.12.10,
+            qt_major: 5.12
+          }
+
+
+    steps:
+          
+
+      - name: Prepare Directories
+        run: |
+          mkdir Konclude
+          mkdir KoncludeDocker
+          
+      - name: Checkout Konclude code
+        uses: actions/checkout@v2
+        with:
+          path: Konclude
+          
+
+      - name: Checkout Konclude Docker
+        uses: actions/checkout@v2
+        with:
+          repository: andreas-steigmiller/KoncludeDocker
+          path: KoncludeDocker
+
+
+
+      - name: Cache Docker Konclude Run Image
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-docker-konclude-run-Image
+        with:
+          path: KoncludeDocker/KoncludeDockerRunImage.tar.gz
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+            
+      - name: Build Run Image
+        working-directory: KoncludeDocker
+        run: | 
+          FILE=KoncludeDockerRunImage.tar.gz
+          if test -f "$FILE"; then
+            docker load < $FILE
+          fi
+          ./run/snap.sh
+          docker save koncluderun:latest | gzip >  $FILE
+          
+        
+        
+
+      - name: Cache Docker Konclude Develop Image
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-docker-konclude-develop-Image
+        with:
+          path: KoncludeDocker/KoncludeDockerDevelopImage.tar.gz
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/develop/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+            
+      - name: Build Develop Image
+        working-directory: KoncludeDocker
+        run: | 
+          FILE=KoncludeDockerDevelopImage.tar.gz
+          if test -f "$FILE"; then
+            docker load < $FILE
+          fi
+          ./develop/snap.sh
+          docker save koncludedev:latest | gzip >  $FILE   
+  
+          
+          
+
+      - name: Cache Docker Konclude Build Image
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-docker-konclude-build-Image
+        with:
+          path: KoncludeDocker/KoncludeDockerBuildImage.tar.gz
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/build/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+                      
+      - name: Build Build Image
+        working-directory: KoncludeDocker
+        run: | 
+          FILE=KoncludeDockerBuildImage.tar.gz
+          if test -f "$FILE"; then
+            docker load < $FILE
+          fi
+          ./build/snap.sh
+          docker save koncludedev:latest | gzip >  $FILE
+    
+          
+      - name: Build Deploy Image
+        working-directory: KoncludeDocker
+        run: | 
+          FILE=KoncludeDockerImage.tar.gz
+          ./deploy/snap.sh 
+          docker save konclude:latest | gzip >  $FILE
+          
+  
+         
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude Docker Image
+          path: KoncludeDocker/KoncludeDockerImage.tar.gz
+          
+  
+  
+      - name: Build
+        working-directory: KoncludeDocker
+        run: | 
+          ./build_release.sh ${{needs.tags.outputs.revision_build}}  ${{needs.tags.outputs.revision_tag}} ${{needs.tags.outputs.revision_hash}}
+
+          
+                  
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude-${{needs.tags.outputs.git_tag}}-Linux-Docker-x64-GCC4.8.4-Static-Qt{{ matrix.config.qt }}
+          path: Release/Konclude-${{needs.tags.outputs.git_tag}}-Linux-Docker-x64-GCC4.8.4-Static-Qt{{ matrix.config.qt }}.zip
+          
+                    
+                  
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude-${{needs.tags.outputs.git_tag}}-Sources
+          path: Release/Konclude-${{needs.tags.outputs.git_tag}}-Sources.zip
+
+          
+      - name: Konclude Examples Test
+        run: | 
+          ROOT="$(pwd)"  
+          cd Release/Konclude-${{needs.tags.outputs.git_tag}}-Linux-Docker-x64-GCC4.8.4-Static-Qt${{ matrix.config.qt }}
+          
+          ./Konclude classification -i Tests/roberts-family-full-D.owl.xml -o roberts-family-full-class-hierarchy.owl.xml
+          ./Konclude satisfiability -i Tests/roberts-family-full-D.owl.xml -x http://www.co-ode.org/roberts/family-tree.owl#Aunt
+          ./Konclude owllinkfile -i Tests/galen-classify-request.xml -o response.xml
+          ./Konclude owllinkfile -i Tests/roberts-family-full-D-classify-realize-request.xml
+          ./Konclude owllinkfile -c Configs/default-config.xml -i Tests/1b-satisfiability-request.xml
+          ./Konclude sparqlfile -s Tests/lubm-univ-bench-sparql-load-and-query-test.sparql -o Tests/query-answers.xml -c Configs/querying-config.xml
+          ./Konclude sparqlfile -s Tests/roberts-family-full-sparql-existential-variables-query-test.sparql -i Tests/roberts-family-full-D.owl.xml
+     
+     
+      - name: Upload release assets
+        id: upload_assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: Release/Konclude-${{needs.tags.outputs.git_tag}}-Linux-Docker-x64-GCC4.8.4-Static-Qt{{ matrix.config.qt }}.zip
+          asset_name: Konclude-${{needs.tags.outputs.git_tag}}-Linux-Docker-x64-GCC4.8.4-Static-Qt${{ matrix.config.qt }}.zip
+          asset_content_type: application/octet-stream     
+          
+      - name: Upload source assets
+        id: upload_assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: Release/Konclude-${{needs.tags.outputs.git_tag}}-Sources.zip
+          asset_name: Konclude-${{needs.tags.outputs.git_tag}}-Sources.zip
+          asset_content_type: application/octet-stream     
+          
+
+
