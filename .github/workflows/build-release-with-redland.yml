@@ -865,7 +865,7 @@ jobs:
   build_docker:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-    needs: [release, tags, build_windows, build_macosx, build_windows]    
+    needs: [release, tags, build_windows, build_macosx, build_linux]    
     strategy:
       fail-fast: false
       matrix:
