@@ -70,6 +70,7 @@ jobs:
   build_windows:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 600
     needs: [release, tags]
     strategy:
       fail-fast: false
@@ -219,6 +220,7 @@ jobs:
   build_macosx:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 600
     needs: [release, tags]
     strategy:
       fail-fast: false
@@ -517,6 +519,7 @@ jobs:
   build_linux:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 600
     needs: [release, tags]    
     strategy:
       fail-fast: false
@@ -856,6 +859,7 @@ jobs:
   build_docker:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 600
     needs: [release, tags, build_windows, build_macosx, build_linux]    
     strategy:
       fail-fast: false
