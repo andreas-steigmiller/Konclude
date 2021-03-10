@@ -215,13 +215,82 @@ jobs:
           
           
           
+
+
+  prebuild_qt_macosx:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 600
+    needs: [release, tags]
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "MacOS Latest Clang Static",
+            os: macos-latest,
+            build_type: "Release", 
+            cc: "clang", 
+            cxx: "clang++",
+            qt: 5.12.10,
+            qt_major: 5.12
+          }
+
+    steps:
+   
+    
+      - name: Install Dependencies
+        run: |          
+          brew install autoconf automake libtool gtk-doc bison mpfr libgcrypt libiconv 
+                 
+      - name: Prepare Environment
+        run: |
+          ROOT="$(pwd)"
+          mkdir src
+          mkdir lib
+          
+      - name: Download Qt
+        run: |
+          ROOT="$(pwd)"
+          # download, build and install qt
+          cd $ROOT/src \
+          && wget -q https://download.qt.io/official_releases/qt/${{ matrix.config.qt_major }}/${{ matrix.config.qt }}/single/qt-everywhere-src-${{ matrix.config.qt }}.tar.xz \
+          && tar -xJf qt-everywhere-src-${{ matrix.config.qt }}.tar.xz \
+          && mv qt-everywhere-src-${{ matrix.config.qt }} qt-static
+          
+      - name: Prepare Qt
+        run: |
+          ROOT="$(pwd)"          
+          cd $ROOT/src/qt-static \
+          && export MAKE=/usr/bin/make \
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform macx-clang -no-icu -confirm-license -opensource
+          
+          
+      - name: Cache Qt Compilation
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-qt-compilation
+        with:
+          path: src/qt-static
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}-${{ hashFiles('src/qt-static/**/makefile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}
+          
+      - name: Compile Qt
+        run: |
+          ROOT="$(pwd)"
+          cd $ROOT/src/qt-static
+          make           
+
+          
+          
           
 
   build_macosx:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags]
+    needs: [prebuild_qt_macosx]
     strategy:
       fail-fast: false
       matrix:
@@ -516,11 +585,120 @@ jobs:
 
 
 
-  build_linux:
+
+
+
+
+
+
+
+
+
+  prebuild_qt_linux:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
     needs: [release, tags]    
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Ubuntu 16.04 GCC Static",
+            os: ubuntu-16.04,
+            build_type: "Release", 
+            cc: "gcc", 
+            cxx: "g++",
+            qt: 5.12.10,
+            qt_major: 5.12
+          }
+
+
+    steps:
+          
+      - name: Checkout Konclude code
+        uses: actions/checkout@v2       
+        with:
+          path: "konclude-static"
+        
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install -y \
+          apt-utils \
+          git \
+          build-essential \
+          make \
+          wget \
+          xz-utils \
+          python \
+          flex \
+          bison \
+          gperf \
+          python-dev \
+          autotools-dev \
+          automake \
+          autoconf \
+          libtool \
+          gtk-doc-tools \
+          libgmp3-dev \
+          zlib1g-dev \
+          libxcb-xfixes0-dev \
+          liblzma-dev \
+          libpcre3-dev \
+          libjasper1 \
+          libjasper-dev
+       
+      - name: Prepare Environment
+        run: |
+          ROOT="$(pwd)"
+          mkdir src
+          mkdir lib
+          
+
+
+      - name: Download Qt
+        run: |
+          ROOT="$(pwd)"
+          # download, build and install qt
+          cd $ROOT/src \
+          && wget -q https://download.qt.io/official_releases/qt/${{ matrix.config.qt_major }}/${{ matrix.config.qt }}/single/qt-everywhere-src-${{ matrix.config.qt }}.tar.xz \
+          && tar -xJf qt-everywhere-src-${{ matrix.config.qt }}.tar.xz \
+          && mv qt-everywhere-src-${{ matrix.config.qt }} qt-static
+          
+          
+      - name: Prepare Qt
+        run: |
+          ROOT="$(pwd)"          
+          cd $ROOT/src/qt-static \
+          && export MAKE=/usr/bin/make \
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform linux-g++-64 -no-icu -no-jasper -no-libpng -no-libjpeg -no-tiff -qt-pcre -confirm-license -opensource
+          
+          
+      - name: Cache Qt Compilation
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-qt-compilation
+        with:
+          path: src/qt-static
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}-${{ hashFiles('src/qt-static/**/makefile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}
+                    
+          
+      - name: Compile Qt
+        run: |
+          ROOT="$(pwd)"
+          cd $ROOT/src/qt-static
+          make           
+          
+
+
+
+  build_linux:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 600
+    needs: [prebuild_qt_linux]    
     strategy:
       fail-fast: false
       matrix:
