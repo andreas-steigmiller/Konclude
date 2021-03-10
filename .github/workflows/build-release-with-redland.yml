@@ -227,7 +227,7 @@ jobs:
       matrix:
         config:
         - {
-            name: "MacOS Latest Clang Static",
+            name: "MacOS Latest Clang Qt",
             os: macos-latest,
             build_type: "Release", 
             cc: "clang", 
@@ -290,7 +290,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [prebuild_qt_macosx]
+    needs: [prebuild_qt_macosx, release, tags]
     strategy:
       fail-fast: false
       matrix:
@@ -488,7 +488,12 @@ jobs:
           sed -i -e 's#unix: LIBS += -lz -lltdl -lgmp -ldl -L External/jemalloc/Linux/x64/lib/release/ -ljemalloc#unix:macx: LIBS += -lz -ldl /usr/local/opt/xz/lib/liblzma.a -lcurl -lxslt -L/usr/local/lib /usr/local/lib/../Cellar/libgcrypt/1.9.2/lib/libgcrypt.a  /usr/local/lib/libmpfr.a /usr/local/opt/gmp/lib/libgmp.a /usr/local/opt/libgpg-error/lib/libgpg-error.a /usr/local/opt/libtool/lib/libltdl.a /usr/local/opt/pcre/lib/libpcre.a -liconv -L External/jemalloc/Linux/x64/lib/release/ -ljemalloc -ldb#g' Konclude.pro
           qmake -r CONFIG+=release CONFIG+=x86_64 CONFIG-=debug CONFIG+=static -spec $ROOT/lib/qt-static/mkspecs/macx-clang Konclude.pro
           
-
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude MacOS Sources
+          path: konclude-static  
+          
       - name: Compile Konclude
         run: | 
           ROOT="$(pwd)"          
@@ -498,6 +503,11 @@ jobs:
           otool -L ./Release/Konclude.app/Contents/MacOS/Konclude
           ./Release/Konclude.app/Contents/MacOS/Konclude owllinkfile -c Configs/default-config.xml -v -e -r Tests/Test-response.xml -q Tests/galen-ALEHIF+-classify-request.xml -w 1
                     
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Konclude MacOS Compilation
+          path: konclude-static             
+               
            
       - name: Create Konclude Release
         run: | 
@@ -604,7 +614,7 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu 16.04 GCC Static",
+            name: "Ubuntu 16.04 GCC Qt",
             os: ubuntu-16.04,
             build_type: "Release", 
             cc: "gcc", 
@@ -698,7 +708,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [prebuild_qt_linux]    
+    needs: [prebuild_qt_linux, release, tags]    
     strategy:
       fail-fast: false
       matrix:
@@ -1162,7 +1172,7 @@ jobs:
       - name: Build
         working-directory: KoncludeDocker
         run: | 
-          ./build_release.sh ${{needs.tags.outputs.revision_build}}  ${{needs.tags.outputs.revision_tag}} ${{needs.tags.outputs.revision_hash}}
+          ./build_release_parameterized.sh ${{needs.tags.outputs.revision_build}}  ${{needs.tags.outputs.revision_tag}} ${{needs.tags.outputs.revision_hash}}
 
           
                   
