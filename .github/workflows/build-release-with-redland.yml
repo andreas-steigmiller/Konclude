@@ -71,7 +71,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags]
+    needs: [release, tags, build_docker]
     strategy:
       fail-fast: false
       matrix:
@@ -221,7 +221,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags]
+    needs: [release, tags, build_docker]
     strategy:
       fail-fast: false
       matrix:
@@ -608,7 +608,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags]    
+    needs: [release, tags, build_docker]    
     strategy:
       fail-fast: false
       matrix:
@@ -1044,11 +1044,11 @@ jobs:
 
 
 
-  build_docker:
+  prebuild_qt_docker:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags, build_windows, build_macosx, build_linux]    
+    needs: [release, tags]    
     strategy:
       fail-fast: false
       matrix:
@@ -1126,6 +1126,103 @@ jobs:
           if test -f "$FILE"; then
             docker load < $FILE
           fi
+          df -h
+          sleep 15
+          done) &          
+          ./develop/snap.sh
+          docker save koncludedev:latest | gzip >  $FILE   
+  
+          
+          
+          
+          
+
+
+  build_docker:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 600
+    needs: [release, tags, prebuild_qt_docker]    
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Ubuntu Latest Docker Static",
+            os: ubuntu-latest,
+            build_type: "Release", 
+            cc: "gcc", 
+            cxx: "g++",
+            qt: 5.12.10,
+            qt_major: 5.12
+          }
+
+
+    steps:
+          
+
+      - name: Prepare Directories
+        run: |
+          mkdir Konclude
+          mkdir KoncludeDocker
+          
+      - name: Checkout Konclude code
+        uses: actions/checkout@v2
+        with:
+          path: Konclude
+          
+
+      - name: Checkout Konclude Docker
+        uses: actions/checkout@v2
+        with:
+          repository: andreas-steigmiller/KoncludeDocker
+          path: KoncludeDocker
+
+
+
+      - name: Cache Docker Konclude Run Image
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-docker-konclude-run-Image
+        with:
+          path: KoncludeDocker/KoncludeDockerRunImage.tar.gz
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+            
+      - name: Build Run Image
+        working-directory: KoncludeDocker
+        run: | 
+          FILE=KoncludeDockerRunImage.tar.gz
+          if test -f "$FILE"; then
+            docker load < $FILE
+          fi
+          ./run/snap.sh
+          docker save koncluderun:latest | gzip >  $FILE
+          
+        
+        
+
+      - name: Cache Docker Konclude Develop Image
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-docker-konclude-develop-Image
+        with:
+          path: KoncludeDocker/KoncludeDockerDevelopImage.tar.gz
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/develop/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+            
+      - name: Build Develop Image
+        working-directory: KoncludeDocker
+        run: | 
+          FILE=KoncludeDockerDevelopImage.tar.gz
+          if test -f "$FILE"; then
+            docker load < $FILE
+          fi
+          df -h
+          sleep 15
+          done) &          
           ./develop/snap.sh
           docker save koncludedev:latest | gzip >  $FILE   
   
@@ -1149,6 +1246,10 @@ jobs:
           if test -f "$FILE"; then
             docker load < $FILE
           fi
+          (while true; do 
+          df -h
+          sleep 15
+          done) &
           ./build/snap.sh
           docker save koncludedev:latest | gzip >  $FILE
     
