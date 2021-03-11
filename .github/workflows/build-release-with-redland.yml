@@ -1092,40 +1092,23 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
-            
-
-      - name: Cache Docker Konclude Run Buildcache
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-konclude-docker4-run-Buildcache
-        with:
-          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerRunBuildcache.tar.gz
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}            
+   
                         
             
       - name: Build Run Image
         working-directory: KoncludeDocker
         run: |           
-          go get github.com/tonistiigi/buildcache/cmd/buildcache
           mkdir DockerCacheDirectory
           DOCKERIMAGE="koncluderun:latest"
           FILEIMAGE="DockerCacheDirectory/KoncludeDockerRunImage.tar.gz"
-          FILECACHE="DockerCacheDirectory/KoncludeDockerRunBuildcache.tar.gz"
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
-          fi
-          if test -f "$FILECACHE"; then
-            docker load -i $FILECACHE
           fi
           docker images
           ./run/snap.sh
           docker images
-          docker inspect $DOCKERIMAGE
-          docker save $DOCKERIMAGE | gzip >  $FILEIMAGE   
-          sudo buildcache save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
-          sudo chown $USER $FILECACHE
+          docker inspect $DOCKERIMAGE          
+          docker save $DOCKERIMAGE $(docker history -q $DOCKERIMAGE) | gzip >  $FILEIMAGE   
           
         
 
@@ -1186,40 +1169,25 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
-            
-
-      - name: Cache Docker Konclude Run Buildcache
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-konclude-docker4-run-Buildcache
-        with:
-          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerRunBuildcache.tar.gz
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}            
+   
                         
             
       - name: Build Run Image
         working-directory: KoncludeDocker
         run: |           
-          go get github.com/tonistiigi/buildcache/cmd/buildcache
           mkdir DockerCacheDirectory
           DOCKERIMAGE="koncluderun:latest"
           FILEIMAGE="DockerCacheDirectory/KoncludeDockerRunImage.tar.gz"
-          FILECACHE="DockerCacheDirectory/KoncludeDockerRunBuildcache.tar.gz"
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
-          fi
-          if test -f "$FILECACHE"; then
-            docker load -i $FILECACHE
           fi
           docker images
           ./run/snap.sh
           docker images
-          docker inspect $DOCKERIMAGE
-          docker save $DOCKERIMAGE | gzip >  $FILEIMAGE   
-          sudo buildcache save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
-          sudo chown $USER $FILECACHE
+          docker inspect $DOCKERIMAGE          
+          docker save $DOCKERIMAGE $(docker history -q $DOCKERIMAGE) | gzip >  $FILEIMAGE   
+          
+        
           
         
         
