@@ -1103,9 +1103,11 @@ jobs:
           if test -f "$FILE"; then
             docker load -i $FILE
           fi
-          docker images  
+          docker images
+          docker inspect koncluderun:latest
           ./run/snap.sh
           docker images
+          docker inspect koncluderun:latest
           docker save koncluderun:latest | gzip >  $FILE
           
         
@@ -1129,12 +1131,14 @@ jobs:
             docker load -i $FILE
           fi
           docker images
+          docker inspect koncludedev:latest
           (while true; do 
           df -h
           sleep 15
           done) &          
           ./develop/snap.sh
           docker images
+          docker inspect koncludedev:latest
           docker save koncludedev:latest | gzip >  $FILE   
   
           
@@ -1197,13 +1201,18 @@ jobs:
             
       - name: Build Run Image
         working-directory: KoncludeDocker
-        run: | 
+        run: |         
           FILE=KoncludeDockerRunImage.tar.gz
           if test -f "$FILE"; then
             docker load -i $FILE
           fi
+          docker images
+          docker inspect koncluderun:latest          
           ./run/snap.sh
           docker save koncluderun:latest | gzip >  $FILE
+          docker images
+          docker inspect koncluderun:latest
+          
           
         
         
@@ -1225,13 +1234,17 @@ jobs:
           if test -f "$FILE"; then
             docker load -i $FILE
           fi
+          docker images
+          docker inspect koncludedev:latest          
           (while true; do 
           df -h
           sleep 15
           done) &          
           ./develop/snap.sh
           docker save koncludedev:latest | gzip >  $FILE   
-  
+          docker images
+          docker inspect koncludedev:latest
+
           
           
 
