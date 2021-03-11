@@ -1126,6 +1126,7 @@ jobs:
           if test -f "$FILE"; then
             docker load < $FILE
           fi
+          (while true; do 
           df -h
           sleep 15
           done) &          
@@ -1220,6 +1221,7 @@ jobs:
           if test -f "$FILE"; then
             docker load < $FILE
           fi
+          (while true; do 
           df -h
           sleep 15
           done) &          
