@@ -1089,7 +1089,7 @@ jobs:
       - name: Cache Docker Konclude Run Image
         uses: actions/cache@v2
         env:
-          cache-name: cache-konclude-docker-run-Image
+          cache-name: cache-konclude-docker2-run-Image
         with:
           path: KoncludeDocker/KoncludeDockerRunImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
@@ -1098,12 +1098,14 @@ jobs:
             
       - name: Build Run Image
         working-directory: KoncludeDocker
-        run: | 
+        run: |           
           FILE=KoncludeDockerRunImage.tar.gz
           if test -f "$FILE"; then
             docker load < $FILE
           fi
+          docker images list  
           ./run/snap.sh
+          docker images list
           docker save koncluderun:latest | gzip >  $FILE
           
         
@@ -1112,7 +1114,7 @@ jobs:
       - name: Cache Docker Konclude Develop Image
         uses: actions/cache@v2
         env:
-          cache-name: cache-konclude-docker-develop-Image
+          cache-name: cache-konclude-docker2-develop-Image
         with:
           path: KoncludeDocker/KoncludeDockerDevelopImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/develop/Dockerfile') }}
@@ -1123,11 +1125,16 @@ jobs:
         working-directory: KoncludeDocker
         run: | 
           FILE=KoncludeDockerDevelopImage.tar.gz
+          if test -f "$FILE"; then
+            docker load < $FILE
+          fi
+          docker images list
           (while true; do 
           df -h
           sleep 15
           done) &          
           ./develop/snap.sh
+          docker images list
           docker save koncludedev:latest | gzip >  $FILE   
   
           
@@ -1181,7 +1188,7 @@ jobs:
       - name: Cache Docker Konclude Run Image
         uses: actions/cache@v2
         env:
-          cache-name: cache-konclude-docker-run-Image
+          cache-name: cache-konclude-docker2-run-Image
         with:
           path: KoncludeDocker/KoncludeDockerRunImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
@@ -1204,7 +1211,7 @@ jobs:
       - name: Cache Docker Konclude Develop Image
         uses: actions/cache@v2
         env:
-          cache-name: cache-konclude-docker-develop-Image
+          cache-name: cache-konclude-docker2-develop-Image
         with:
           path: KoncludeDocker/KoncludeDockerDevelopImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/develop/Dockerfile') }}
@@ -1231,7 +1238,7 @@ jobs:
       - name: Cache Docker Konclude Build Image
         uses: actions/cache@v2
         env:
-          cache-name: cache-konclude-docker-build-Image
+          cache-name: cache-konclude-docker2-build-Image
         with:
           path: KoncludeDocker/KoncludeDockerBuildImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/build/Dockerfile') }}
