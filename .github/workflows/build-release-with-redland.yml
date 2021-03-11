@@ -1,4 +1,4 @@
-name: Build releases
+name: Build Releases (with Redland)
 
 # Run this workflow every time a new commit pushed to your repository
 on: [push]
@@ -1121,7 +1121,6 @@ jobs:
             docker load -i $FILECACHE
           fi
           docker images
-          docker inspect $DOCKERIMAGE
           ./run/snap.sh
           docker images
           docker inspect $DOCKERIMAGE
@@ -1169,7 +1168,6 @@ jobs:
           fi
           echo "DockerCacheDirectory/" >> .dockerignore
           docker images
-          docker inspect $DOCKERIMAGE
           (while true; do 
           df -h
           sleep 15
@@ -1264,7 +1262,6 @@ jobs:
             docker load -i $FILECACHE
           fi
           docker images
-          docker inspect $DOCKERIMAGE
           ./run/snap.sh
           docker images
           docker inspect $DOCKERIMAGE
@@ -1312,7 +1309,6 @@ jobs:
           fi
           echo "DockerCacheDirectory/" >> .dockerignore
           docker images
-          docker inspect $DOCKERIMAGE
           (while true; do 
           df -h
           sleep 15
