@@ -1122,10 +1122,7 @@ jobs:
       - name: Build Develop Image
         working-directory: KoncludeDocker
         run: | 
-          FILE=KoncludeDockerDevelopImage.tar.gz
-          if test -f "$FILE"; then
-            docker load < $FILE
-          fi
+          FILE=KoncludeDockerDevelopImage.tar.gz          
           (while true; do 
           df -h
           sleep 15
