@@ -1040,11 +1040,7 @@ jobs:
 
 
 
-
-
-
-
-  prebuild_qt_docker:
+  prebuild_qt_docker_x:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
@@ -1054,7 +1050,7 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu Latest Docker Prebuild",
+            name: "Ubuntu Latest Docker Prebuild X",
             os: ubuntu-latest,
             build_type: "Release", 
             cc: "gcc", 
@@ -1071,6 +1067,7 @@ jobs:
         run: |
           mkdir Konclude
           mkdir KoncludeDocker
+
           
       - name: Checkout Konclude code
         uses: actions/checkout@v2
@@ -1111,6 +1108,7 @@ jobs:
       - name: Build Run Image
         working-directory: KoncludeDocker
         run: |           
+          go get github.com/tonistiigi/buildcache/cmd/buildcache
           mkdir DockerCacheDirectory
           DOCKERIMAGE="koncluderun:latest"
           FILEIMAGE="DockerCacheDirectory/KoncludeDockerRunImage.tar.gz"
@@ -1126,7 +1124,101 @@ jobs:
           docker images
           docker inspect $DOCKERIMAGE
           docker save $DOCKERIMAGE | gzip >  $FILEIMAGE   
-          sudo `which buildcache` save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
+          sudo buildcache save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
+          sudo chown $USER $FILECACHE
+          
+        
+
+
+
+
+
+
+  prebuild_qt_docker:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 600
+    needs: [release, tags, prebuild_qt_docker_x]    
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Ubuntu Latest Docker Prebuild",
+            os: ubuntu-latest,
+            build_type: "Release", 
+            cc: "gcc", 
+            cxx: "g++",
+            qt: 5.12.10,
+            qt_major: 5.12
+          }
+
+
+    steps:
+          
+
+      - name: Prepare Directories
+        run: |
+          mkdir Konclude
+          mkdir KoncludeDocker
+
+          
+      - name: Checkout Konclude code
+        uses: actions/checkout@v2
+        with:
+          path: Konclude
+          
+
+      - name: Checkout Konclude Docker
+        uses: actions/checkout@v2
+        with:
+          repository: andreas-steigmiller/KoncludeDocker
+          path: KoncludeDocker
+
+
+
+      - name: Cache Docker Konclude Run Image
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-konclude-docker4-run-Image
+        with:
+          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerRunImage.tar.gz
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+            
+
+      - name: Cache Docker Konclude Run Buildcache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-konclude-docker4-run-Buildcache
+        with:
+          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerRunBuildcache.tar.gz
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}            
+                        
+            
+      - name: Build Run Image
+        working-directory: KoncludeDocker
+        run: |           
+          go get github.com/tonistiigi/buildcache/cmd/buildcache
+          mkdir DockerCacheDirectory
+          DOCKERIMAGE="koncluderun:latest"
+          FILEIMAGE="DockerCacheDirectory/KoncludeDockerRunImage.tar.gz"
+          FILECACHE="DockerCacheDirectory/KoncludeDockerRunBuildcache.tar.gz"
+          if test -f "$FILEIMAGE"; then
+            docker load -i $FILEIMAGE
+          fi
+          if test -f "$FILECACHE"; then
+            docker load -i $FILECACHE
+          fi
+          docker images
+          ./run/snap.sh
+          docker images
+          docker inspect $DOCKERIMAGE
+          docker save $DOCKERIMAGE | gzip >  $FILEIMAGE   
+          sudo buildcache save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
           sudo chown $USER $FILECACHE
           
         
@@ -1178,7 +1270,7 @@ jobs:
           docker images
           docker inspect $DOCKERIMAGE
           docker save $DOCKERIMAGE | gzip >  $FILEIMAGE   
-          sudo `which buildcache` save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
+          sudo buildcache save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
           sudo chown $USER $FILECACHE
   
           
@@ -1214,6 +1306,7 @@ jobs:
         run: |
           mkdir Konclude
           mkdir KoncludeDocker
+          
           
       - name: Checkout Konclude code
         uses: actions/checkout@v2
@@ -1269,7 +1362,7 @@ jobs:
           docker images
           docker inspect $DOCKERIMAGE
           docker save $DOCKERIMAGE | gzip >  $FILEIMAGE   
-          sudo `which buildcache` save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
+          sudo buildcache save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
           sudo chown $USER $FILECACHE
           
         
@@ -1321,7 +1414,7 @@ jobs:
           docker images
           docker inspect $DOCKERIMAGE
           docker save $DOCKERIMAGE | gzip >  $FILEIMAGE   
-          sudo `which buildcache` save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
+          sudo buildcache save -o $FILECACHE $DOCKER_IMAGE $DOCKERIMAGE
           sudo chown $USER $FILECACHE
   
           
