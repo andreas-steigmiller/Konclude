@@ -71,7 +71,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags]
+    needs: [release, tags, build_docker]
     strategy:
       fail-fast: false
       matrix:
@@ -221,7 +221,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags]
+    needs: [release, tags, build_docker]
     strategy:
       fail-fast: false
       matrix:
@@ -608,7 +608,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags]    
+    needs: [release, tags, build_docker]    
     strategy:
       fail-fast: false
       matrix:
@@ -1048,7 +1048,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags, build_windows, build_macosx, build_linux]    
+    needs: [release, tags]    
     strategy:
       fail-fast: false
       matrix:
