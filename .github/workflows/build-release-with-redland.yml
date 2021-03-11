@@ -1108,7 +1108,7 @@ jobs:
           ./run/snap.sh
           docker images
           docker inspect $DOCKERIMAGE          
-          docker save $DOCKERIMAGE $(docker history -q $DOCKERIMAGE) | gzip >  $FILEIMAGE   
+          docker save $(docker history -q $DOCKERIMAGE | tr '\n' ' ' | tr -d '<missing>') | gzip >  $FILEIMAGE  
           
         
 
@@ -1185,8 +1185,8 @@ jobs:
           ./run/snap.sh
           docker images
           docker inspect $DOCKERIMAGE          
-          docker save $DOCKERIMAGE $(docker history -q $DOCKERIMAGE) | gzip >  $FILEIMAGE   
-          
+          docker save $(docker history -q $DOCKERIMAGE | tr '\n' ' ' | tr -d '<missing>') | gzip >  $FILEIMAGE  
+         
         
           
         
