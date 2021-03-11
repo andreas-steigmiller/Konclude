@@ -71,7 +71,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags, build_docker]
+    needs: [release, tags]
     strategy:
       fail-fast: false
       matrix:
@@ -221,7 +221,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags, build_docker]
+    needs: [release, tags]
     strategy:
       fail-fast: false
       matrix:
@@ -263,7 +263,7 @@ jobs:
           ROOT="$(pwd)"          
           cd $ROOT/src/qt-static \
           && export MAKE=/usr/bin/make \
-          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform macx-clang -no-icu -confirm-license -opensource
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -nomake tools -no-webkit -no-qt3support -no-script -no-scripttools -opensource -platform macx-clang -no-icu -confirm-license -opensource
           
           
       - name: Cache Qt Compilation
@@ -432,7 +432,7 @@ jobs:
           ROOT="$(pwd)"          
           cd $ROOT/src/qt-static \
           && export MAKE=/usr/bin/make \
-          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform macx-clang -no-icu -confirm-license -opensource
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -nomake tools -no-webkit -no-qt3support -no-script -no-scripttools -opensource -platform macx-clang -no-icu -confirm-license -opensource
           
           
       - name: Cache Qt Compilation
@@ -608,7 +608,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags, build_docker]    
+    needs: [release, tags]    
     strategy:
       fail-fast: false
       matrix:
@@ -681,7 +681,7 @@ jobs:
           ROOT="$(pwd)"          
           cd $ROOT/src/qt-static \
           && export MAKE=/usr/bin/make \
-          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform linux-g++-64 -no-icu -no-jasper -no-libpng -no-libjpeg -no-tiff -qt-pcre -confirm-license -opensource
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -nomake tools -no-webkit -no-qt3support -no-script -no-scripttools -opensource -platform linux-g++-64 -no-icu -no-jasper -no-libpng -no-libjpeg -no-tiff -qt-pcre -confirm-license -opensource
           
           
       - name: Cache Qt Compilation
@@ -866,7 +866,7 @@ jobs:
           ROOT="$(pwd)"          
           cd $ROOT/src/qt-static \
           && export MAKE=/usr/bin/make \
-          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -opensource -platform linux-g++-64 -no-icu -no-jasper -no-libpng -no-libjpeg -no-tiff -qt-pcre -confirm-license -opensource
+          && ./configure -static -prefix $ROOT/qt-static -extprefix $ROOT/lib/qt-static -no-opengl -nomake examples -nomake tests -nomake tools -no-webkit -no-qt3support -no-script -no-scripttools -opensource -platform linux-g++-64 -no-icu -no-jasper -no-libpng -no-libjpeg -no-tiff -qt-pcre -confirm-license -opensource
           
           
       - name: Cache Qt Compilation
@@ -1048,13 +1048,13 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags]    
+    needs: [release, tags, build_windows, build_macosx, build_linux]    
     strategy:
       fail-fast: false
       matrix:
         config:
         - {
-            name: "Ubuntu Latest Docker Static",
+            name: "Ubuntu Latest Docker Prebuild",
             os: ubuntu-latest,
             build_type: "Release", 
             cc: "gcc", 
@@ -1122,10 +1122,7 @@ jobs:
       - name: Build Develop Image
         working-directory: KoncludeDocker
         run: | 
-          FILE=KoncludeDockerDevelopImage.tar.gz
-          if test -f "$FILE"; then
-            docker load < $FILE
-          fi
+          FILE=KoncludeDockerDevelopImage.tar.gz          
           (while true; do 
           df -h
           sleep 15
