@@ -735,7 +735,7 @@ jobs:
           wget \
           xz-utils \
           python \
-          flex
+          flex \
           gperf \
           python-dev \
           autotools-dev \
