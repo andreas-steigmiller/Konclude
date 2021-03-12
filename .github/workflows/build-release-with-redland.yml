@@ -71,7 +71,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags, build_docker]
+    needs: [release, tags]
     strategy:
       fail-fast: false
       matrix:
@@ -221,7 +221,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags, build_docker]
+    needs: [release, tags]
     strategy:
       fail-fast: false
       matrix:
@@ -273,8 +273,6 @@ jobs:
         with:
           path: src/qt-static
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}-${{ hashFiles('src/qt-static/**/makefile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}
           
       - name: Compile Qt
         run: |
@@ -363,7 +361,7 @@ jobs:
           ROOT="$(pwd)"
           # download, build and install rasqal
           cd $ROOT/src \
-          && git clone git://github.com/andreas-steigmiller/rasqal.git \
+          && git clone git://github.com/konclude/rasqal.git \
           && mv rasqal rasqal-static \
           && cd rasqal-static \
           \
@@ -442,8 +440,6 @@ jobs:
         with:
           path: src/qt-static
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}-${{ hashFiles('src/qt-static/**/makefile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}
           
       - name: Compile Qt
         run: |
@@ -608,7 +604,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 600
-    needs: [release, tags, build_docker]    
+    needs: [release, tags]    
     strategy:
       fail-fast: false
       matrix:
@@ -691,8 +687,6 @@ jobs:
         with:
           path: src/qt-static
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}-${{ hashFiles('src/qt-static/**/makefile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}
                     
           
       - name: Compile Qt
@@ -741,8 +735,7 @@ jobs:
           wget \
           xz-utils \
           python \
-          flex \
-          bison \
+          flex
           gperf \
           python-dev \
           autotools-dev \
@@ -763,6 +756,18 @@ jobs:
           ROOT="$(pwd)"
           mkdir src
           mkdir lib
+          
+      - name: Update bison
+        run: |
+          ROOT="$(pwd)"
+          sudo apt-get remove bison
+          wget http://ftp.gnu.org/gnu/bison/bison-3.7.6.tar.gz
+          tar -zxvf bison-3.7.6.tar.gz
+          cd bison-3.7.6
+          ./configure
+          make
+          sudo make install    
+          bison -V
           
       - name: Install Libxml2
         run: |
@@ -876,8 +881,6 @@ jobs:
         with:
           path: src/qt-static
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}-${{ hashFiles('src/qt-static/**/makefile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.qt }}
                     
           
       - name: Compile Qt
@@ -1088,8 +1091,6 @@ jobs:
         with:
           path: DockerCacheDirectory/KoncludeDockerRunImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}
    
                         
             
@@ -1118,8 +1119,6 @@ jobs:
         with:
           path: DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/develop/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}
             
                         
             
@@ -1196,9 +1195,6 @@ jobs:
         with:
           path: DockerCacheDirectory/KoncludeDockerRunImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}
-   
                         
             
       - name: Build Run Image
@@ -1226,9 +1222,7 @@ jobs:
         with:
           path: DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/develop/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}
-            
+           
                         
             
             
@@ -1258,8 +1252,6 @@ jobs:
         with:
           path: DockerCacheDirectory/KoncludeDockerBuildImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/build/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}
                       
       - name: Build Build Image
         working-directory: KoncludeDocker
@@ -1374,5 +1366,19 @@ jobs:
           asset_name: Konclude-${{needs.tags.outputs.git_tag}}-Sources.zip
           asset_content_type: application/octet-stream     
           
+
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      - name: Push image
+        run: |
+          docker tag konclude konclude/konclude:latest
+          docker tag konclude konclude/konclude:${{needs.tags.outputs.git_tag}}
+          docker push konclude/konclude:latest
+          docker push konclude/konclude:${{needs.tags.outputs.git_tag}}         
+
+
+
+
 
 
