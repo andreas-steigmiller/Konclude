@@ -1210,7 +1210,7 @@ jobs:
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
-          echo "DockerCacheDirectory/" >> .dockerignore
+          echo "DockerCacheDirectory/" > .dockerignore
           ./run/snap.sh
           docker save $(docker history -q $DOCKERIMAGE | tr '\n' ' ' | tr -d '<missing>') | gzip >  $FILEIMAGE  
          
@@ -1241,7 +1241,7 @@ jobs:
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
-          echo "DockerCacheDirectory/" >> .dockerignore
+          echo "DockerCacheDirectory/" > .dockerignore
           (while true; do 
           df -h
           sleep 15
@@ -1270,7 +1270,7 @@ jobs:
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
-          echo "DockerCacheDirectory/" >> .dockerignore
+          echo "DockerCacheDirectory/" > .dockerignore
           (while true; do 
           df -h
           sleep 15
@@ -1289,7 +1289,7 @@ jobs:
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
-          echo "DockerCacheDirectory/" >> .dockerignore
+          echo "DockerCacheDirectory/" > .dockerignore
           (while true; do 
           df -h
           sleep 15
@@ -1309,9 +1309,19 @@ jobs:
       - name: Build
         working-directory: KoncludeDocker
         run: | 
-          ./build_release_parameterized.sh ${{needs.tags.outputs.revision_build}}  ${{needs.tags.outputs.revision_tag}} ${{needs.tags.outputs.revision_hash}}
-          ls -al Release
+          (while true; do 
           df -h
+          sleep 15
+          done) & 
+          pwd
+          echo "DockerCacheDirectory/" > .dockerignore
+          ./build_release_parameterized.sh ${{needs.tags.outputs.revision_build}}  ${{needs.tags.outputs.revision_tag}} ${{needs.tags.outputs.revision_hash}}
+          df -h
+          pwd
+          ls -al 
+          ls -al ../Release
+          
+          
 
           
                   
