@@ -1086,7 +1086,7 @@ jobs:
         env:
           cache-name: cache-konclude-docker5-run-Image
         with:
-          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerRunImage.tar.gz
+          path: DockerCacheDirectory/KoncludeDockerRunImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
@@ -1096,9 +1096,9 @@ jobs:
       - name: Build Run Image
         working-directory: KoncludeDocker
         run: |           
-          mkdir -p DockerCacheDirectory
+          mkdir -p ../DockerCacheDirectory
           DOCKERIMAGE="koncluderun:latest"
-          FILEIMAGE="DockerCacheDirectory/KoncludeDockerRunImage.tar.gz"
+          FILEIMAGE="../DockerCacheDirectory/KoncludeDockerRunImage.tar.gz"
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
@@ -1116,7 +1116,7 @@ jobs:
         env:
           cache-name: cache-konclude-docker5-develop-Image
         with:
-          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz
+          path: DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/develop/Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
@@ -1127,9 +1127,9 @@ jobs:
       - name: Build Develop Image
         working-directory: KoncludeDocker
         run: | 
-          mkdir -p DockerCacheDirectory
+          mkdir -p ../DockerCacheDirectory
           DOCKERIMAGE="koncludedev:latest"
-          FILEIMAGE="DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz"
+          FILEIMAGE="../DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz"
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
@@ -1194,7 +1194,7 @@ jobs:
         env:
           cache-name: cache-konclude-docker5-run-Image
         with:
-          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerRunImage.tar.gz
+          path: DockerCacheDirectory/KoncludeDockerRunImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/run/Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
@@ -1204,13 +1204,13 @@ jobs:
       - name: Build Run Image
         working-directory: KoncludeDocker
         run: |           
-          mkdir -p DockerCacheDirectory
+          mkdir -p ../DockerCacheDirectory
           DOCKERIMAGE="koncluderun:latest"
-          FILEIMAGE="DockerCacheDirectory/KoncludeDockerRunImage.tar.gz"
+          FILEIMAGE="../DockerCacheDirectory/KoncludeDockerRunImage.tar.gz"
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
-          echo "DockerCacheDirectory/" > .dockerignore
+          echo "DockerCacheDirectory/" >> .dockerignore
           ./run/snap.sh
           docker save $(docker history -q $DOCKERIMAGE | tr '\n' ' ' | tr -d '<missing>') | gzip >  $FILEIMAGE  
          
@@ -1224,7 +1224,7 @@ jobs:
         env:
           cache-name: cache-konclude-docker5-develop-Image
         with:
-          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz
+          path: DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/develop/Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
@@ -1235,13 +1235,13 @@ jobs:
       - name: Build Develop Image
         working-directory: KoncludeDocker
         run: | 
-          mkdir -p DockerCacheDirectory
+          mkdir -p ../DockerCacheDirectory
           DOCKERIMAGE="koncludedev:latest"
-          FILEIMAGE="DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz"
+          FILEIMAGE="../DockerCacheDirectory/KoncludeDockerDevelopImage.tar.gz"
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
-          echo "DockerCacheDirectory/" > .dockerignore
+          echo "DockerCacheDirectory/" >> .dockerignore
           (while true; do 
           df -h
           sleep 15
@@ -1256,7 +1256,7 @@ jobs:
         env:
           cache-name: cache-konclude-docker5-build-Image
         with:
-          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerBuildImage.tar.gz
+          path: DockerCacheDirectory/KoncludeDockerBuildImage.tar.gz
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('KoncludeDocker/build/Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
@@ -1264,13 +1264,13 @@ jobs:
       - name: Build Build Image
         working-directory: KoncludeDocker
         run: |
-          mkdir -p DockerCacheDirectory
+          mkdir -p ../DockerCacheDirectory
           DOCKERIMAGE="koncludebuild:latest"
-          FILEIMAGE="DockerCacheDirectory/KoncludeDockerBuildImage.tar.gz"
+          FILEIMAGE="../DockerCacheDirectory/KoncludeDockerBuildImage.tar.gz"
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
-          echo "DockerCacheDirectory/" > .dockerignore
+          echo "DockerCacheDirectory/" >> .dockerignore
           (while true; do 
           df -h
           sleep 15
@@ -1283,13 +1283,13 @@ jobs:
       - name: Build Deploy Image
         working-directory: KoncludeDocker
         run: | 
-          mkdir -p DockerCacheDirectory
+          mkdir -p ../DockerCacheDirectory
           DOCKERIMAGE="konclude:latest"
-          FILEIMAGE="DockerCacheDirectory/KoncludeDockerImage.tar.gz"
+          FILEIMAGE="../DockerCacheDirectory/KoncludeDockerImage.tar.gz"
           if test -f "$FILEIMAGE"; then
             docker load -i $FILEIMAGE
           fi
-          echo "DockerCacheDirectory/" > .dockerignore
+          echo "DockerCacheDirectory/" >> .dockerignore
           (while true; do 
           df -h
           sleep 15
@@ -1302,7 +1302,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: Konclude Docker Image
-          path: KoncludeDocker/DockerCacheDirectory/KoncludeDockerImage.tar.gz
+          path: DockerCacheDirectory/KoncludeDockerImage.tar.gz
           
   
   
@@ -1314,7 +1314,7 @@ jobs:
           sleep 15
           done) & 
           pwd
-          echo "DockerCacheDirectory/" > .dockerignore
+          echo "DockerCacheDirectory/" >> .dockerignore
           ./build_release_parameterized.sh ${{needs.tags.outputs.revision_build}}  ${{needs.tags.outputs.revision_tag}} ${{needs.tags.outputs.revision_hash}}
           df -h
           pwd
