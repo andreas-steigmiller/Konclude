@@ -1391,7 +1391,7 @@ jobs:
      
 
       - name: Upload image assets
-        id: upload_assets_release
+        id: upload_assets_image
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
