@@ -25,7 +25,7 @@ jobs:
           git_tag=`git describe --tags --abbrev=0`
           echo $git_tag
           echo "::set-output name=git_tag::$git_tag"
-          revision_hash=grep KONCLUDE_VERSION_GIT_REVISION_HASH_STRING revision-git.h | cut -d'"' -f 2
+          revision_hash=`grep KONCLUDE_VERSION_GIT_REVISION_HASH_STRING revision-git.h | cut -d'"' -f 2`
           echo $revision_hash
           echo "::set-output name=revision_hash::$revision_hash"
           IFS='-'
