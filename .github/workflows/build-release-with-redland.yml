@@ -94,9 +94,10 @@ jobs:
         
       - name: Update Revision Information
         run: |
-          echo "#define KONCLUDE_VERSION_GIT_REVISION_NUMBER ${{needs.tags.outputs.revision_build}}" > "revision-git.h"
-          echo "#define KONCLUDE_VERSION_GIT_TAG_NAME_STRING \"${{needs.tags.outputs.revision_tag}}\"" >> "revision-git.h"
-          echo "#define KONCLUDE_VERSION_GIT_REVISION_HASH_STRING \"${{needs.tags.outputs.revision_hash}}\"" >> "revision-git.h"
+          echo "#define KONCLUDE_VERSION_GIT_REVISION_NUMBER ${{needs.tags.outputs.revision_build}} \r\n" > "revision-git.h"
+          echo "#define KONCLUDE_VERSION_GIT_TAG_NAME_STRING \"${{needs.tags.outputs.revision_tag}}\" \r\n" >> "revision-git.h"
+          echo "#define KONCLUDE_VERSION_GIT_REVISION_HASH_STRING \"${{needs.tags.outputs.revision_hash}}\" \r\n" >> "revision-git.h"
+          echo "\r\n" >> "revision-git.h"
         
         
       - name: Install Qt
