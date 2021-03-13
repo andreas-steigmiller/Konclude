@@ -1330,6 +1330,14 @@ jobs:
           path: Release/Konclude-${{needs.tags.outputs.git_tag}}-Sources.zip
 
           
+          
+      - name: Konclude Docker Test
+        run: | 
+          ROOT="$(pwd)"  
+          cd Release/Konclude-${{needs.tags.outputs.git_tag}}-Linux-Docker-x64-GCC4.8.4-Static-Qt${{ matrix.config.qt }}
+          docker run -v Tests:/data --rm konclude/konclude owllinkfile -i /data/galen-ALEHIF+-classify-request.xml -o /data/test-response.xml
+          
+          
       - name: Konclude Examples Test
         run: | 
           ROOT="$(pwd)"  
