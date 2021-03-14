@@ -1,0 +1,63 @@
+name: Build Releases TEST
+
+# Run this workflow every time a new commit pushed to your repository
+on: [push]
+
+jobs:
+
+
+  tags:
+    name: Identify tags
+    runs-on: ubuntu-latest
+    outputs:
+      git_tag: ${{ steps.get_tags.outputs.git_tag }}
+      revision_hash: ${{ steps.get_tags.outputs.revision_hash }}
+      revision_tag: ${{ steps.get_tags.outputs.revision_tag }}      
+      revision_build: ${{ steps.get_tags.outputs.revision_build }}      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2    
+    
+      - name: Identify git tags
+        id: get_tags
+        run: |
+          git fetch --prune --unshallow --tags
+          git_tag=`git describe --tags --abbrev=0`
+          echo $git_tag
+          echo "::set-output name=git_tag::$git_tag"
+          revision_hash=`grep KONCLUDE_VERSION_GIT_REVISION_HASH_STRING revision-git.h | cut -d'"' -f 2`
+          echo $revision_hash
+          echo "::set-output name=revision_hash::$revision_hash"
+          IFS='-'
+          read -ra ADDR <<< "$git_tag"
+          revision_tag=${ADDR[0]}
+          revision_build=${ADDR[1]}
+          echo "::set-output name=revision_tag::$revision_tag"
+          echo "::set-output name=revision_build::$revision_build"
+
+          
+
+
+
+
+
+  release:
+    name: Draft build release
+    runs-on: ubuntu-latest
+    needs: tags
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{needs.tags.outputs.git_tag}}
+          release_name: Konclude Release ${{needs.tags.outputs.git_tag}} 
+          body: ${{needs.tags.outputs.git_tag}}
+          draft: true
+          prerelease: true
+
+
