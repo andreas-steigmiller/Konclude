@@ -106,8 +106,6 @@ The binaries of Konclude (and possibly some shared libraries) are located in the
 
     Note that the settings of the `Configs/querying-config.xml` file are automatically enabled if the `sparqlserver` or `sparqlfile` commands are used in order to deactivate some optimizations that are not yet compatible with the integrated query answering engine. However, the `Configs/querying-config.xml` file also contains some commented out settings that may be interesting for configuring some query answering aspects in more detail (e.g., concurrency, interpretation of anonymous variables, etc.).
 
-	Also note that, at the moment, all results are internally cached/stored and there is currently no memory releasing strategy implemented, i.e., Konclude will eventually run out of memory if it is used to continuously answer (new) queries.
-
 
 - CONFIGURATION:
 
@@ -117,10 +115,13 @@ The binaries of Konclude (and possibly some shared libraries) are located in the
 
 # REQUIREMENTS, INSTALLATION, BUILD
 
-Konclude requires Qt 5.11 libraries or above [6]. If they are not included in the release (or integrated in the binary), then you should install them manually on your system. 
+On GitHub, there is an up-to-date Docker image of Konclude available (`docker pull konclude/konclude`, cf. https://hub.docker.com/r/konclude/konclude), which should run on most platforms with Docker installed.
 
+In principle, Konclude requires Qt 5.11 libraries or above [6], but they are included (or statically integrated/linked into the binary) for the released versions for most platfroms. If this is not the case, then you should install them manually on your system.
 
-On Windows-based platforms it may further be necessary to install the .Net Framework [7] and the Microsoft Visual C++ Redistributable Package [8] for executing Konclude.
+On Mac, you may be required to deactivate the 'Unidentified Developer' warning dialogue for Konclude (cf. [10]).
+
+On Windows-based platforms, it may further be necessary to install the .Net Framework [7] and the Microsoft Visual C++ Redistributable Package [8] for executing Konclude.
 
 
 Konclude can be built by running qmake (which is part of the Qt Framework) for `Konclude.pro` or `KoncludeWithoutRedland.pro`, e.g., 
@@ -131,7 +132,7 @@ and then by compiling the sources with the generated makefile, i.e., the command
 ```
 make
 ```
-has to be executed/called. Note that you may have to adapt the paths to the Redland libraries in the `Konclude.pro` file. If you have docker installed, then you may simply use the provided docker images [9] for building Konclude (which download/install all dependent libraries, compile Konclude and create a statically linked binary). For this, go into the KoncludeDocker' directory and run the following command:
+has to be executed/called. Note that you may have to adapt the paths to the Redland libraries in the `Konclude.pro` file. If you have docker installed, then you may simply use the provided Dockerfiles [9] for building Konclude (which download/install all dependent libraries, compile Konclude and create a statically linked binary). For this, go into the KoncludeDocker' directory and run the following command:
 ```
 ./build_release.sh
 ```
@@ -140,15 +141,22 @@ For more details for building with docker, see also `KoncludeDocker/README.md`.
 Setting up Konclude for building/compiling with Visual Studio 2015/2017:
 - Make sure that Qt is installed and the environment variable QTDIR is set to the QT directory
 - Install the QT VS Tools/Package extension for Visual Studio (enables more comfortable debugging)
-- Copy the QT DLLs (Qt5Networkd.dll, Qt5Network.dll, Qt5Xmld.dll, Qt5Xml.dll, Qt5Cored.dll, Qt5Core.dll) into the root directory of Konclude
+- Copy the QT DLLs (Qt5Networkd.dll, Qt5Network.dll, Qt5Xmld.dll, Qt5Xml.dll, Qt5Cored.dll, Qt5Core.dll, Qt5Concurrentd.dll, Qt5Concurrent.dll) into the root directory of Konclude
 
 
-For MacOS, the Redland RDF Libraries are currently not integrated/tested, i.e., you may want to use/compile the `KoncludeWithoutRedland.pro` project. The executable can be found under `./release/Konclude.app/Contents/MacOS/Konclude`.
 	
 		
 
 # CHANGELOG
 
+- Konclude v0.7.0-1137:
+    - Fixed crashes for SPARQL FILTER expressions in combination with Redland Rasqal.
+
+- Konclude v0.7.0-1135:
+    - (Limited) SPARQL and query answering support with Redland Rasqal.
+	- Parallelized consistency checking and query answering.
+	- Several minor reasoning improvements.
+    - Several bug fixes.
 
 - Konclude v0.6.2-965 (pre-release):
     - Support of more SPARQL features (e.g., OPTIONAL, UNION, FILTER, aggregates, etc.) via Redland Rasqal.
@@ -203,3 +211,5 @@ For MacOS, the Redland RDF Libraries are currently not integrated/tested, i.e., 
 [8] https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 [9] https://github.com/konclude/KoncludeDocker
+
+[10] https://support.apple.com/en-gb/guide/mac-help/mh40616/mac
