@@ -1453,6 +1453,37 @@ had spent waiting, which is 3-8 % on the ontologies where classification matters
 SNOMED CT releases, whose classification takes a few seconds in total. The remaining serial start-up
 cost is the interpretation of the first test results on the classifier thread.
 
+## THE BRANCH TRIGGERS OF THE PREPROCESSING
+
+For every conjunction, equivalence and disjunction the preprocessing extracts branch triggers
+(`CBranchTriggerPreProcess::createBranchingTriggers`): it flattens the (negated) definition into its
+disjuncts, and for each atomic disjunct or each universal, existential or cardinality restriction it
+records the concept, or the role's domain trigger concept, that should trigger the branching. A
+profile of the SDD 2.9.5 preprocessing (44 s, one thread) showed this extraction at 30-40 % of the
+window and half of that in malloc and free: the two work lists were `QList<QPair<CConcept*,bool>>`,
+which heap-allocates every element because the pair is larger than a pointer, each concept built and
+destroyed its own `QSet` of trigger keys, and the role-domain lookup used `operator[]` on the TBox's
+hash, which inserted a null entry for every role that had no trigger concept.
+
+Since this change the work lists and the key list are three `QVector` members of the preprocess that
+are cleared and reused for every concept, the lists are walked by index instead of `takeFirst`, the
+duplicate check is a linear scan of the keys found so far (a set is built only once a concept has
+more than 32 triggers), and the lookup without creation uses `value()`. The order in which the
+disjuncts are visited and the triggers are linked is unchanged, so the triggers and the hierarchies
+are identical.
+
+Measured on the M3 Max, master against the branch, two passes each, hierarchies identical:
+
+| ontology | preprocessing before -> after |
+|---|---|
+| SDD 2.9.5, 582 633 classes | 38.1-38.7 s -> 24.3-24.9 s |
+| SNOMED CT AU baseline | 11.3-11.5 s -> 11.3-11.4 s |
+| remodelled AU v5 | 10.2-11.1 s -> 10.1-11.4 s |
+
+SDD, whose definitions are long chains of conjuncts, gains 14 s (36 % of its preprocessing); the
+SNOMED CT releases, whose definitions are short, were not spending time here. The next largest parts
+of the SDD preprocessing are the trigger absorber (30 % of the window) and the XML parse before it.
+
 ## ENTAILMENT CHECKING, INTERRUPTION AND PROGRESS
 
 The first two were the gaps between the wrapper and ELK 0.6.0 on the methods Protege calls, measured
