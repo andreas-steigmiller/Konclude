@@ -1413,6 +1413,46 @@ saturation's time is in the rules themselves, which the profile spread over the 
 (a third), the implications, the successors and the copying of labels, with no single
 operation left that stands out like the hash did.
 
+## THE TESTING ORDER OF THE CLASSIFICATION
+
+Before the classifier runs any subsumption test, it builds the testing order: for every class it
+reads the subsumers the saturation found (`CPrecomputedSaturationSubsumerExtractor::extractSubsumers`
+walks the class's saturation node and its label), records them in the class's testing item, links
+each class under its subsumers and queues the classes without subsumers first. Profiles of the
+remodelled SNOMED CT AU and of SDD 2.9.5 showed this as the first thing the classification does and
+as serial: the classifier thread walked the saturation data of every class while all worker threads
+waited on the task semaphore. Unsampled it took 2.1-2.7 s for the remodelled AU (557 805 classes),
+3.6 s for SDD 2.9.5 (582 633 classes) and 0.75 s for a 118 354-class SDD module; the profile's
+larger share was inflated by the sampler, which slows a single busy thread disproportionately.
+
+Since #113 the extraction runs on all threads (`QtConcurrent::blockingMap` over the classes, as the
+realizer already does for its instance initialisation): a class writes only into its own testing
+item, the saturation data and the concept reference linking are read-only at that point, and the
+equivalence-candidate check (`hasSubsumerConceptItem` on the fresh subsumer set) runs in the same
+pass for the completely saturated classes. Everything that touches another class's item or the
+ontology item, that is the successor links, the counters, the test lists and the fallback to the
+build data for incompletely saturated classes, follows sequentially in the original class order, so
+the testing order and therefore the tests are exactly those of the sequential build. The individual
+dependence tracking writes into one shared vector, so the classes whose saturation nodes are
+connected to nominals are extracted a second time sequentially with the tracker; on ontologies
+without individuals that costs nothing. The option
+`Konclude.Calculation.Classification.ConcurrentSaturationSubsumerExtraction` (default `true`) selects
+the sequential build for comparison, and the reasoner manager logs the build's duration ("Testing
+order of N classes created from the saturation data in X ms, subsumer extraction Y ms").
+
+Measured on the M3 Max (16 cores) with the same binary, option on against off, hierarchies identical:
+
+| ontology | order build off -> on | classification off -> on |
+|---|---|---|
+| remodelled AU v5, 557 805 classes | 2.1-2.7 s -> 0.43-0.45 s | 34.7-36.3 s -> 33.6 s |
+| SDD 2.9.5, 582 633 classes | 3.6 s -> 0.6 s | 62.6 s -> 59.7 s |
+| SDD 20 % module, 118 354 classes | 0.75 s -> 0.13-0.16 s | 19.7 s -> 18.7-19.7 s |
+
+The build itself is five to six times faster; the classification gains the two to three seconds it
+had spent waiting, which is 3-8 % on the ontologies where classification matters and nothing on the
+SNOMED CT releases, whose classification takes a few seconds in total. The remaining serial start-up
+cost is the interpretation of the first test results on the classifier thread.
+
 ## ENTAILMENT CHECKING, INTERRUPTION AND PROGRESS
 
 The first two were the gaps between the wrapper and ELK 0.6.0 on the methods Protege calls, measured
