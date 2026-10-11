@@ -1369,6 +1369,50 @@ descendants) was built and measured against the plain count; it gave the same fi
 noise and costs a pass of its own, so the count stayed. The measurements, the modules and the
 traces are in `~/Documents/konclude-benchmarks/2026-10-09-sdd-modules/`.
 
+## THE LABEL SETS OF THE SATURATION
+
+A profile of the remodelled SNOMED CT AU with #111 (macOS `sample`, one run, the shares are
+of the sampled time) put the precomputation on one thread for 90 % of its 21 s, all of it in
+the saturation, and about a third of the saturation in the hash of a node's label set: the
+map from a concept tag to the concept's saturation descriptor and the implications waiting
+on it (`CReapplyConceptSaturationLabelSet`). It was a `CPROCESSHASH`, Qt 4's chained
+`QHash` over the task's memory pools: every entry a node of its own from the pool, a bucket
+array of a prime size that is reallocated and relinked as the label grows, a modulo per
+lookup, two dependent memory reads per hit, and a copy of a label (every saturation node
+starts as a copy of its parent's) duplicated the nodes one by one.
+
+Since #112 the label set uses `CReapplyConceptSaturationLabelHash`: open addressing with
+linear probing over one array of entries, a power-of-two capacity at most three quarters
+full, and Fibonacci hashing of the tag. A hit reads one cache line, an insertion allocates
+nothing, a copy is one `memcpy`. The pools cannot take memory back (their release is a
+no-op), so an outgrown array is not left behind: it goes to a free list in the process
+context, one per capacity, and serves the next label that grows to that size. Without the
+free lists the dead arrays cost more page faults than the hash saved on AU, and the footprint
+grew by a fifth; with them the label sets take less memory than the chained hash, which kept
+its outgrown bucket arrays and 40 bytes per node.
+
+Measured on the Mac M3 Max with the command line (precomputation, peak footprint), the
+hierarchies identical to master's in every run, two or three runs of each build in
+alternation:
+
+| | master (#111) | flat label hash |
+|---|---|---|
+| SNOMED CT AU 2026-09-29 release | 13.9-14.1 s, 16.1 GiB | 12.3-12.6 s, 14.9 GiB |
+| SNOMED CT International 2026-07 | 3.5 s, 6.1 GiB | 3.2-3.3 s, 5.7 GiB |
+| remodelled AU v5 (OWL 2 DL) | 22.8 s, 27.1 GiB | 20.1 s, 25.6 GiB |
+| SDD 5 % module (30 699 classes) | 1.47 s, 3.7 GiB | 1.32 s, 3.6 GiB |
+| SDD 20 % module (118 353 classes) | 3.1-3.5 s, 7.0-7.1 GiB | 2.95 s, 6.8 GiB |
+| 95k module of the DL variant | 8.4 s, 15.1 GiB | 7.6 s, 14.2 GiB |
+| full DL variant (SRIF(D), 40 min on the VM) | 20.4-20.7 s, 27.0 GiB | 18.0-18.2 s, 26.1 GiB |
+
+So about a tenth of the precomputation and a twentieth of the footprint. The classification
+phase is untouched by it: the two places that iterate a label set during classification are
+order-insensitive checks, and the full variant's classification, which spreads between 620
+and 930 s from run to run with either build, showed no systematic difference. The rest of the
+saturation's time is in the rules themselves, which the profile spread over the AND rule
+(a third), the implications, the successors and the copying of labels, with no single
+operation left that stands out like the hash did.
+
 ## ENTAILMENT CHECKING, INTERRUPTION AND PROGRESS
 
 The first two were the gaps between the wrapper and ELK 0.6.0 on the methods Protege calls, measured

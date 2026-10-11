@@ -28,6 +28,7 @@
 #include "ProcessSettings.h"
 #include "CProcessContext.h"
 #include "CConceptSaturationDescriptorReapplyData.h"
+#include "CReapplyConceptSaturationLabelHash.h"
 #include "CImplicationReapplyConceptSaturationDescriptor.h"
 #include "CReapplyConceptSaturationLabelSetIterator.h"
 #include "CSaturationModifiedProcessUpdateLinker.h"
@@ -122,8 +123,8 @@ namespace Konclude {
 
 					// protected variables
 					protected:
-						CPROCESSHASH<cint64,CConceptSaturationDescriptorReapplyData>* mConceptDesDepHash;
-						CPROCESSHASH<cint64,CConceptSaturationDescriptorReapplyData>* mAdditionalConceptDesDepHash;
+						CReapplyConceptSaturationLabelHash* mConceptDesDepHash;
+						CReapplyConceptSaturationLabelHash* mAdditionalConceptDesDepHash;
 						CConceptSaturationDescriptor* mConceptSatDesLinker;
 						CConceptSaturationDescriptor* mLastNominalIndepConSatDes;
 						CConceptSetFlags mConceptFlags;
