@@ -1147,6 +1147,11 @@ namespace Konclude {
 						new CBooleanConfigType(true)),
 						new CBooleanConfigType(true));
 
+				addConfigProperty(new CConfigDescription("Konclude.Calculation.Classification.ConcurrentSaturationSubsumerExtraction",
+						"Determines whether the classifier reads the subsumers of the classes from the saturation on all threads when it builds the testing order. Turning it off extracts them one class after the other on the classifier thread.",
+						new CBooleanConfigType(true)),
+						new CBooleanConfigType(true));
+
 				addConfigProperty(new CConfigDescription("Konclude.Calculation.Classification.PruneSubsumptionRelations",
 						"Determines whether unnecessary calculations for ontology classification are pruned.",
 						new CBooleanConfigType(true)),

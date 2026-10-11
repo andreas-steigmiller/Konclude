@@ -23,6 +23,11 @@
 
 // Libraries includes
 #include <QLinkedList>
+#include <QVector>
+#include <QElapsedTimer>
+#include <QThreadPool>
+#include <QtConcurrent/QtConcurrent>
+#include <functional>
 
 // Namespace includes
 #include "ClassifierSettings.h"
@@ -214,6 +219,9 @@ namespace Konclude {
 					// whether the subsumers extracted from the saturation may be declared final,
 					// which loses subsumptions, see createObviousSubsumptionSatisfiableTestingOrderFromSaturationData
 					bool mConfTrustSaturationSubsumerCompleteness;
+					// whether the subsumers are extracted from the saturation nodes on all threads when the
+					// testing order is built, see createObviousSubsumptionSatisfiableTestingOrderFromSaturationData
+					bool mConfConcurrentSubsumerExtraction;
 
 					cint64 mStatProcesedSubsumMessCount;
 					cint64 mStatIncompleteToldMessageCount;
