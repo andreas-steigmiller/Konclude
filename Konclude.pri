@@ -1390,6 +1390,7 @@ HEADERS += \
    ./Source/Reasoner/Kernel/Process/CReapplyQueue.h \
    ./Source/Reasoner/Kernel/Process/CReapplyConceptSaturationLabelSetIterator.h \
    ./Source/Reasoner/Kernel/Process/CReapplyConceptSaturationLabelSet.h \
+   ./Source/Reasoner/Kernel/Process/CReapplyConceptSaturationLabelHash.h \
    ./Source/Reasoner/Kernel/Process/CReapplyConceptLabelSetIterator.h \
    ./Source/Reasoner/Kernel/Process/CReapplyConceptLabelSet.h \
    ./Source/Reasoner/Kernel/Process/CReapplyConceptDescriptor.h \
