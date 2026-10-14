@@ -171,6 +171,8 @@ namespace Konclude {
 
 
 					replacementHash = new QHash<CConceptUnambiguousHasher,CConcept*>();
+					// nearly every concept ends up in the hash; sizing it up front avoids rehashing it while it grows
+					replacementHash->reserve(conceptCount);
 					processedSet = new CConceptTagFlags();
 					replacedConceptFlags = new CConceptTagFlags();
 					conceptReplaceHash = new QHash<CConcept*,QPair<bool,CConcept*> >();
