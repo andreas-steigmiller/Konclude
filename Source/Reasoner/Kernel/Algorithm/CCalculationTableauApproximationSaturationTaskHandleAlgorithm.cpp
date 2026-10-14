@@ -56,8 +56,14 @@ namespace Konclude {
 					mConfParallelSaturationParallelApply = true;
 					mConfParallelSaturationTailRounds = true;
 					mConfParallelSaturationExtensionRounds = true;
+					mConfParallelSaturationMaxGenerations = 16;
 					mParallelNodeMutex = nullptr;
 					mParallelOwnerDataBox = nullptr;
+					mParallelOwnerOnlyLinker = nullptr;
+					mParallelOwnerOnlyLast = nullptr;
+					mParallelOwnerOnlyCount = 0;
+					mParallelRecordContainer = nullptr;
+					mParallelRecordMemMan = nullptr;
 
 					mPosJumpFuncVec = &mPosTableauRuleJumpFuncVec[mRuleFuncCount/2];
 					mNegJumpFuncVec = &mNegTableauRuleJumpFuncVec[mRuleFuncCount/2];
@@ -208,6 +214,7 @@ namespace Konclude {
 							mConfParallelSaturationParallelApply = getenv("KONCLUDE_PARALLEL_SATURATION_SERIALAPPLY") == nullptr;
 							mConfParallelSaturationTailRounds = getenv("KONCLUDE_PARALLEL_SATURATION_NOTAIL") == nullptr;
 							mConfParallelSaturationExtensionRounds = getenv("KONCLUDE_PARALLEL_SATURATION_NOEXTENSION") == nullptr;
+							mConfParallelSaturationMaxGenerations = getenv("KONCLUDE_PARALLEL_SATURATION_ONEGENERATION") ? 1 : 16;
 							mConfForceAllConceptInsertion = false;
 							mConfForceAllCopyInsteadOfSubstituition = false;
 							mConfImplicationAddingSkipping = true;
@@ -8970,8 +8977,11 @@ namespace Konclude {
 						CParallelSaturationSlice** mSliceArray;
 						cint64 mSliceCount;
 						QAtomicInt mNextSlice;
-						// one per thread, index 0 for the owner: the records a thread produces while applying records
+						// one per thread, index 0 for the owner: the records a thread produces while applying records;
+						// two arrays, the threads apply the records of one generation into the other
 						CParallelSaturationSlice* mApplySlices;
+						CParallelSaturationSlice* mApplySlices2;
+						CParallelSaturationSlice* mApplyTarget;
 						CSatisfiableCalculationTask* mTask;
 						CTaskProcessorContext* mProcessorContext;
 						CProcessingDataBox* mOwnerDataBox;
@@ -9008,6 +9018,8 @@ namespace Konclude {
 					mProcessingDataBox = dataBox;
 					readCalculationConfig(shared->mTask);
 					mParallelThreadIndex = helperIndex+1;
+					mParallelRecordContainer = new CMemoryPoolContainer();
+					mParallelRecordMemMan = new CTaskMemoryPoolAllocationManager(mParallelRecordContainer,CParallelSaturationProcessContext::getParallelSaturationMemoryPoolProvider());
 					mParallelNodeMutex = &shared->mNodeMutex;
 					mParallelOwnerDataBox = shared->mOwnerDataBox;
 					cint64 seenGeneration = 0;
@@ -9046,12 +9058,27 @@ namespace Konclude {
 						} else if (shared->mPhase == CParallelSaturationShared::BUCKET) {
 							bucketParallelRecords(shared,mParallelThreadIndex);
 						} else {
-							applyParallelRecordsForThread(shared,&shared->mApplySlices[mParallelThreadIndex],calcAlgContext);
+							applyParallelRecordsForThread(shared,&shared->mApplyTarget[mParallelThreadIndex],calcAlgContext);
 						}
 						shared->mMutex.lock();
 						++shared->mHelpersDone;
 						shared->mOwnerWait.wakeAll();
 						shared->mMutex.unlock();
+					}
+				}
+
+
+				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::releaseParallelRecordMemory() {
+					// all records of the round have been applied: the pools go back to the provider for the next round
+					if (mParallelRecordContainer) {
+						CMemoryPoolProvider* provider = CParallelSaturationProcessContext::getParallelSaturationMemoryPoolProvider();
+						CMemoryPool* pool = mParallelRecordContainer->takeMemoryPools();
+						while (pool) {
+							CMemoryPool* nextPool = pool->getNext();
+							pool->clearNext();
+							provider->releaseMemoryPool(pool);
+							pool = nextPool;
+						}
 					}
 				}
 
@@ -9099,7 +9126,7 @@ namespace Konclude {
 
 
 				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::deferParallelRecord(CParallelSaturationDeferredRecord::KIND kind, CIndividualSaturationProcessNode* node, CIndividualSaturationProcessNode* node2, CConcept* concept, CRole* role, void* pointer, cint64 value1, cint64 value2, bool flag) {
-					CParallelSaturationDeferredRecord* record = CObjectAllocator<CParallelSaturationDeferredRecord>::allocateAndConstruct(mCalcAlgContext->getUsedProcessTaskMemoryAllocationManager());
+					CParallelSaturationDeferredRecord* record = CObjectAllocator<CParallelSaturationDeferredRecord>::allocateAndConstruct(mParallelRecordMemMan ? (CMemoryAllocationManager*)mParallelRecordMemMan : mCalcAlgContext->getUsedProcessTaskMemoryAllocationManager());
 					record->mKind = kind;
 					record->mNode = node;
 					record->mNode2 = node2;
@@ -9312,7 +9339,9 @@ namespace Konclude {
 					mParallelCurrentSlice = applySlice;
 					cint64 ownerIndex = mParallelThreadIndex;
 					for (cint64 si = 0; si < shared->mSliceCount; ++si) {
-						for (CParallelSaturationDeferredRecord* record = shared->mSliceArray[si]->mOwnerHeads[ownerIndex]; record; record = record->mNext) {
+						CParallelSaturationDeferredRecord* record = shared->mSliceArray[si]->mOwnerHeads[ownerIndex];
+						while (record) {
+							CParallelSaturationDeferredRecord* nextRecord = record->mNext;
 							switch (record->mKind) {
 								case CParallelSaturationDeferredRecord::CONCEPTADD:
 								case CParallelSaturationDeferredRecord::CONCEPTADDFILTERED:
@@ -9321,19 +9350,37 @@ namespace Konclude {
 								case CParallelSaturationDeferredRecord::DIRECTNOTDEPENDENTFLAGS:
 								case CParallelSaturationDeferredRecord::INDIRECTFLAGS:
 								case CParallelSaturationDeferredRecord::SUCCESSORNOMINAL:
-								case CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES: {
+								case CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES:
+								case CParallelSaturationDeferredRecord::CRITICALADD:
+								case CParallelSaturationDeferredRecord::EXTENSIONQUEUEFULL:
+								case CParallelSaturationDeferredRecord::FUNCROLEDEP:
+								case CParallelSaturationDeferredRecord::FUNCQUALDEP: {
 									mParallelCurrentNode = record->mNode;
 									applyParallelDeferredRecord(record,calcAlgContext);
 									mParallelCurrentNode = nullptr;
 									break;
 								}
 								default: {
-									deferParallelRecord(record->mKind,record->mNode,record->mNode2,record->mConcept,record->mRole,record->mPointer,record->mValue1,record->mValue2,record->mFlag);
+									// for the owner, at the end of the round; the record is taken out of the chain
+									record->mNext = nullptr;
+									if (mParallelOwnerOnlyLast) {
+										mParallelOwnerOnlyLast->mNext = record;
+									} else {
+										mParallelOwnerOnlyLinker = record;
+									}
+									mParallelOwnerOnlyLast = record;
+									++mParallelOwnerOnlyCount;
 									break;
 								}
 							}
+							record = nextRecord;
 						}
 					}
+					cint64 producedCount = 0;
+					for (CParallelSaturationDeferredRecord* record = applySlice->mDeferredLinker; record; record = record->mNext) {
+						++producedCount;
+					}
+					applySlice->mRecordCount = producedCount;
 					mParallelCurrentSlice = nullptr;
 					mParallelApplying = false;
 					mParallelMode = false;
@@ -9541,60 +9588,118 @@ namespace Konclude {
 					cint64 bucketedMs = processedMs;
 					cint64 parallelAppliedMs = processedMs;
 					if (mConfParallelSaturationParallelApply) {
-						for (cint64 t = 0; t < threadCount; ++t) {
-							CParallelSaturationSlice& applySlice = shared->mApplySlices[t];
-							applySlice.mNodes = nullptr;
-							applySlice.mCount = 0;
-							applySlice.mDeferredLinker = nullptr;
-							applySlice.mDeferredLast = nullptr;
-							applySlice.mCompletionLinker = nullptr;
-							applySlice.mCompletionLast = nullptr;
+						// generation 1: the records of the processing slices, bucketed by target thread and applied in
+						// parallel into the first apply array; the records this produces (generation 2, 3, ...) are
+						// bucketed and applied the same way, from one apply array into the other, while there are
+						// enough of them; the last generation (and the kinds only the owner may apply, carried along
+						// as copies) is applied serially
+						CParallelSaturationSlice* source = shared->mApplySlices;
+						CParallelSaturationSlice* target = shared->mApplySlices2;
+						CParallelSaturationSlice* applyPointers[64];
+						bool firstGeneration = true;
+						cint64 generations = 0;
+						for (;;) {
+							if (!firstGeneration) {
+								for (cint64 t = 0; t < threadCount; ++t) {
+									applyPointers[t] = &source[t];
+								}
+								shared->mSliceArray = applyPointers;
+								shared->mSliceCount = threadCount;
+							}
+							for (cint64 t = 0; t < threadCount; ++t) {
+								CParallelSaturationSlice& applySlice = target[t];
+								applySlice.mNodes = nullptr;
+								applySlice.mCount = 0;
+								applySlice.mDeferredLinker = nullptr;
+								applySlice.mDeferredLast = nullptr;
+								applySlice.mCompletionLinker = nullptr;
+								applySlice.mCompletionLast = nullptr;
+								applySlice.mRecordCount = 0;
+							}
+							for (cint64 si = 0; si < shared->mSliceCount; ++si) {
+								CParallelSaturationSlice* slice = shared->mSliceArray[si];
+								for (cint64 t = 0; t < threadCount; ++t) {
+									slice->mOwnerHeads[t] = nullptr;
+									slice->mOwnerLasts[t] = nullptr;
+								}
+							}
+							shared->mPhase = CParallelSaturationShared::BUCKET;
+							shared->mMutex.lock();
+							shared->mHelpersDone = 0;
+							++shared->mGeneration;
+							shared->mHelperWait.wakeAll();
+							shared->mMutex.unlock();
+							bucketParallelRecords(shared,0);
+							shared->mMutex.lock();
+							while (shared->mHelpersDone < shared->mHelperCount) {
+								shared->mOwnerWait.wait(&shared->mMutex);
+							}
+							shared->mMutex.unlock();
+							if (firstGeneration) {
+								bucketedMs = timer.elapsed();
+								for (cint64 si = 0; si < slices.count(); ++si) {
+									recordCount += slices[si]->mRecordCount;
+								}
+							}
+							shared->mApplyTarget = target;
+							shared->mPhase = CParallelSaturationShared::APPLY;
+							shared->mMutex.lock();
+							shared->mHelpersDone = 0;
+							++shared->mGeneration;
+							shared->mHelperWait.wakeAll();
+							shared->mMutex.unlock();
+							applyParallelRecordsForThread(shared,&target[0],calcAlgContext);
+							shared->mMutex.lock();
+							while (shared->mHelpersDone < shared->mHelperCount) {
+								shared->mOwnerWait.wait(&shared->mMutex);
+							}
+							shared->mMutex.unlock();
+							++generations;
+							cint64 producedCount = 0;
+							for (cint64 t = 0; t < threadCount; ++t) {
+								producedCount += target[t].mRecordCount;
+								CIndividualSaturationProcessNodeLinker* completionLinkerIt = target[t].mCompletionLinker;
+								while (completionLinkerIt) {
+									CIndividualSaturationProcessNodeLinker* nextLinker = completionLinkerIt->getNext();
+									completionLinkerIt->clearNext();
+									processingDataBox->addIndividualSaturationCompletionNodeLinker(completionLinkerIt);
+									completionLinkerIt = nextLinker;
+								}
+								target[t].mCompletionLinker = nullptr;
+								target[t].mCompletionLast = nullptr;
+							}
+							secondCount += producedCount;
+							CParallelSaturationSlice* swap = source;
+							source = target;
+							target = swap;
+							firstGeneration = false;
+							if (producedCount <= 2000 || generations >= mConfParallelSaturationMaxGenerations) {
+								break;
+							}
 						}
-						shared->mPhase = CParallelSaturationShared::BUCKET;
-						shared->mMutex.lock();
-						shared->mHelpersDone = 0;
-						++shared->mGeneration;
-						shared->mHelperWait.wakeAll();
-						shared->mMutex.unlock();
-						bucketParallelRecords(shared,0);
-						shared->mMutex.lock();
-						while (shared->mHelpersDone < shared->mHelperCount) {
-							shared->mOwnerWait.wait(&shared->mMutex);
-						}
-						shared->mMutex.unlock();
-						bucketedMs = timer.elapsed();
-						for (cint64 si = 0; si < slices.count(); ++si) {
-							recordCount += slices[si]->mRecordCount;
-						}
-						shared->mPhase = CParallelSaturationShared::APPLY;
-						shared->mMutex.lock();
-						shared->mHelpersDone = 0;
-						++shared->mGeneration;
-						shared->mHelperWait.wakeAll();
-						shared->mMutex.unlock();
-						applyParallelRecordsForThread(shared,&shared->mApplySlices[0],calcAlgContext);
-						shared->mMutex.lock();
-						while (shared->mHelpersDone < shared->mHelperCount) {
-							shared->mOwnerWait.wait(&shared->mMutex);
-						}
-						shared->mMutex.unlock();
 						parallelAppliedMs = timer.elapsed();
+						roundStats[29] += generations;
 						for (cint64 t = 0; t < threadCount; ++t) {
-							CParallelSaturationSlice& applySlice = shared->mApplySlices[t];
+							CParallelSaturationSlice& applySlice = source[t];
 							for (CParallelSaturationDeferredRecord* record = applySlice.mDeferredLinker; record; record = record->mNext) {
-								++secondCount;
 								if (roundStats[6]) {
 									++roundStats[7+record->mKind];
 								}
 							}
 							applyParallelDeferredRecords(&applySlice,calcAlgContext);
-							CIndividualSaturationProcessNodeLinker* completionLinkerIt = applySlice.mCompletionLinker;
-							while (completionLinkerIt) {
-								CIndividualSaturationProcessNodeLinker* nextLinker = completionLinkerIt->getNext();
-								completionLinkerIt->clearNext();
-								processingDataBox->addIndividualSaturationCompletionNodeLinker(completionLinkerIt);
-								completionLinkerIt = nextLinker;
+						}
+						for (cint64 t = 0; t < threadCount; ++t) {
+							CCalculationTableauApproximationSaturationTaskHandleAlgorithm* algorithm = t == 0 ? this : shared->mHelperArray[t-1].mAlgorithm;
+							for (CParallelSaturationDeferredRecord* record = algorithm->mParallelOwnerOnlyLinker; record; record = record->mNext) {
+								if (roundStats[6]) {
+									++roundStats[7+record->mKind];
+								}
+								applyParallelDeferredRecord(record,calcAlgContext);
 							}
+							roundStats[30] += algorithm->mParallelOwnerOnlyCount;
+							algorithm->mParallelOwnerOnlyLinker = nullptr;
+							algorithm->mParallelOwnerOnlyLast = nullptr;
+							algorithm->mParallelOwnerOnlyCount = 0;
 						}
 					} else {
 						// what the threads could not write into other nodes, applied in slice order
@@ -9619,6 +9724,11 @@ namespace Konclude {
 						delete slice;
 					}
 					slices.clear();
+					// the records of the round are not referenced any more: their pools go back for the next round
+					releaseParallelRecordMemory();
+					for (cint64 i = 0; i < shared->mHelperCount; ++i) {
+						shared->mHelperArray[i].mAlgorithm->releaseParallelRecordMemory();
+					}
 					cint64 doneMs = timer.elapsed();
 					roundStats[0] += processedMs;
 					roundStats[1] += parallelAppliedMs-processedMs;
@@ -9633,7 +9743,7 @@ namespace Konclude {
 					if (!mConfParallelSaturation) {
 						return false;
 					}
-					cint64 threadCount = mConfParallelSaturationThreadCount > 0 ? mConfParallelSaturationThreadCount : mConfProcessorCount;
+					cint64 threadCount = qMin<cint64>(64,mConfParallelSaturationThreadCount > 0 ? mConfParallelSaturationThreadCount : mConfProcessorCount);
 					if (threadCount < 2 && !getenv("KONCLUDE_PARALLEL_SATURATION_FORCE")) {
 						return false;
 					}
@@ -9773,6 +9883,14 @@ namespace Konclude {
 					shared.mSliceArray = nullptr;
 					shared.mSliceCount = 0;
 					shared.mApplySlices = new CParallelSaturationSlice[threadCount];
+					shared.mApplySlices2 = new CParallelSaturationSlice[threadCount];
+					shared.mApplyTarget = shared.mApplySlices;
+					for (cint64 t = 0; t < threadCount; ++t) {
+						shared.mApplySlices[t].mOwnerHeads = new CParallelSaturationDeferredRecord*[threadCount]();
+						shared.mApplySlices[t].mOwnerLasts = new CParallelSaturationDeferredRecord*[threadCount]();
+						shared.mApplySlices2[t].mOwnerHeads = new CParallelSaturationDeferredRecord*[threadCount]();
+						shared.mApplySlices2[t].mOwnerLasts = new CParallelSaturationDeferredRecord*[threadCount]();
+					}
 					shared.mHelperArray = new CParallelSaturationShared::CHelper[qMax<cint64>(1,shared.mHelperCount)];
 					for (cint64 i = 0; i < shared.mHelperCount; ++i) {
 						CParallelSaturationShared::CHelper& helper = shared.mHelperArray[i];
@@ -9788,6 +9906,8 @@ namespace Konclude {
 						helper.mThread = new std::thread(&CCalculationTableauApproximationSaturationTaskHandleAlgorithm::parallelHelperMain,helper.mAlgorithm,&shared,i);
 					}
 					mParallelThreadIndex = 0;
+					mParallelRecordContainer = new CMemoryPoolContainer();
+					mParallelRecordMemMan = new CTaskMemoryPoolAllocationManager(mParallelRecordContainer,CParallelSaturationProcessContext::getParallelSaturationMemoryPoolProvider());
 					mParallelNodeMutex = &shared.mNodeMutex;
 					mParallelOwnerDataBox = processingDataBox;
 					// the extension rounds let a thread create structures at other nodes (allocated from the memory of the
@@ -9973,6 +10093,9 @@ namespace Konclude {
 						// the nodes' data the helper allocated lives on in the task, and so does the helper's context,
 						// which the nodes and their label hashes keep allocating from when they grow later
 						helper.mContext->attachToContainer(satCalcTask);
+						helper.mAlgorithm->releaseParallelRecordMemory();
+						delete helper.mAlgorithm->mParallelRecordMemMan;
+						delete helper.mAlgorithm->mParallelRecordContainer;
 						delete helper.mAlgorithm;
 						if (helper.mTempMemMan) {
 							helper.mTempMemMan->releaseAllMemory();
@@ -9985,7 +10108,19 @@ namespace Konclude {
 					}
 					calcAlgContext->getUsedProcessTaskMemoryAllocationManager()->setConcurrentAllocation(false);
 					delete[] shared.mHelperArray;
+					releaseParallelRecordMemory();
+					delete mParallelRecordMemMan;
+					delete mParallelRecordContainer;
+					mParallelRecordMemMan = nullptr;
+					mParallelRecordContainer = nullptr;
+					for (cint64 t = 0; t < threadCount; ++t) {
+						delete[] shared.mApplySlices[t].mOwnerHeads;
+						delete[] shared.mApplySlices[t].mOwnerLasts;
+						delete[] shared.mApplySlices2[t].mOwnerHeads;
+						delete[] shared.mApplySlices2[t].mOwnerLasts;
+					}
 					delete[] shared.mApplySlices;
+					delete[] shared.mApplySlices2;
 					if (precomputation) {
 						CIndividualSaturationProcessNodeVector* nodeVector = processingDataBox->getIndividualSaturationProcessNodeVector(false);
 						if (nodeVector) {
@@ -10002,6 +10137,7 @@ namespace Konclude {
 						cint64 nodesAfterRounds = processingDataBox->getIndividualSaturationProcessNodeVector(false) ? processingDataBox->getIndividualSaturationProcessNodeVector(false)->getItemCount() : 0;
 						fprintf(stderr, "PARSAT extension %lld rounds, %lld node extensions, %lld nodes created, %lld records (%lld second), processing %lld ms, applying %lld + %lld ms\n", (long long)extensionRounds, (long long)extensionNodes, (long long)(nodesAfterRounds-nodesBeforeRounds), (long long)extensionStats[3], (long long)extensionStats[4], (long long)extensionStats[0], (long long)extensionStats[1], (long long)extensionStats[2]);
 						fprintf(stderr, "PARSAT critical %lld rounds, %lld node checks, %lld records (%lld second), processing %lld ms, applying %lld + %lld ms\n", (long long)criticalRounds, (long long)criticalNodes, (long long)criticalStats[3], (long long)criticalStats[4], (long long)criticalStats[0], (long long)criticalStats[1], (long long)criticalStats[2]);
+						fprintf(stderr, "PARSAT parallel application generations: levels %lld, tail %lld, extension %lld, critical %lld; owner-only records: levels %lld, tail %lld, extension %lld, critical %lld\n", (long long)levelStats[29], (long long)tailStats[29], (long long)extensionStats[29], (long long)criticalStats[29], (long long)levelStats[30], (long long)tailStats[30], (long long)extensionStats[30], (long long)criticalStats[30]);
 						const char* kindNames[22] = {"add","addfiltered","link","queue","queueuninit","directflags","directnotdep","indirectflags","nominal","cardinality","dataliteral","extqueue","disjextract","critqueue","disjunction","queueflagged","extqueuefull","criticaladd","markatmost","predmerge","funcroledep","funcqualdep"};
 						cint64* statsArrays[3] = {tailStats, extensionStats, criticalStats};
 						const char* statsNames[3] = {"tail", "extension", "critical"};
