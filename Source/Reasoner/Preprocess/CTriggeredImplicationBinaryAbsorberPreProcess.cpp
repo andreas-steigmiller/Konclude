@@ -66,12 +66,15 @@ namespace Konclude {
 
 				mLastDisjunctId = 0;
 				mOnto = nullptr;
+				mTriggerLinkerChunkUsed = 0;
 			}
 
 
 			CTriggeredImplicationBinaryAbsorberPreProcess::~CTriggeredImplicationBinaryAbsorberPreProcess() {
-				qDeleteAll(mTriggerContainer);
-				mTriggerContainer.clear();
+				for (CConceptTriggerLinker* chunk : mTriggerLinkerChunkContainer) {
+					delete[] chunk;
+				}
+				mTriggerLinkerChunkContainer.clear();
 			}
 
 
@@ -127,6 +130,16 @@ namespace Konclude {
 				mTriggerImplHash = tBox->getTriggerImplicationHash(true);
 				mEquivConCandidateHash = tBox->getEquivalentConceptCandidateHash(true);
 				mCandidateEquivConHash = tBox->getCandidateEquivalentConceptHash(true);
+				// the hashes grow to between half and three times the concept count (SNOMED AU, the SDD); sizing them
+				// up front avoids rehashing millions of entries while they grow (~5 % of the SDD's preprocessing); none
+				// of them is iterated, so the bucket count does not affect any order
+				mConceptTriggerLinkerHash.reserve(conceptCount);
+				mConceptTotalAbsorbableHash.reserve(conceptCount);
+				mConceptPartialAbsorbableHash.reserve(conceptCount);
+				mConjunctFrequency.reserve(conceptCount / 2);
+				mConceptImplicationImpliedHash.reserve(2 * conceptCount);
+				mTriggCountHash.reserve(2 * conceptCount);
+				mTriggerImplHash->reserve(2 * conceptCount);
 				mEquivConNonCandidateSet = tBox->getEquivalentConceptNonCandidateSet(true);
 				mRoleDomainTriggerConceptHash = tBox->getRoleDomainTriggerConceptHash(false);
 				mIndividualTriggerConceptHash = tBox->getIndividualTriggerConceptHash(false);
@@ -3537,8 +3550,11 @@ namespace Konclude {
 				if (newTrigger) {
 					mTmpTriggerLinker = mTmpTriggerLinker->getNext();
 				} else {
-					newTrigger = new CConceptTriggerLinker();
-					mTriggerContainer.append(newTrigger);
+					if (mTriggerLinkerChunkContainer.isEmpty() || mTriggerLinkerChunkUsed >= TRIGGERLINKERCHUNKSIZE) {
+						mTriggerLinkerChunkContainer.append(new CConceptTriggerLinker[TRIGGERLINKERCHUNKSIZE]);
+						mTriggerLinkerChunkUsed = 0;
+					}
+					newTrigger = mTriggerLinkerChunkContainer.last() + mTriggerLinkerChunkUsed++;
 				}
 				newTrigger->clearNext();
 				newTrigger->setTriggerFrequency(mCurrentConjunctFrequency);

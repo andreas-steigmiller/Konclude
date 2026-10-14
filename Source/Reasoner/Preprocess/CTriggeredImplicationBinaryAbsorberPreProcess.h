@@ -338,7 +338,11 @@ namespace Konclude {
 					QSet<CConcept*> mCreatedImpliedDisjunctions;
 
 
-					QList<CConceptTriggerLinker*> mTriggerContainer;
+					// trigger linkers are allocated in chunks and released chunk-wise: the SDD creates 8 million of them,
+					// and allocating and freeing each one separately was ~5 % of the preprocessing
+					QList<CConceptTriggerLinker*> mTriggerLinkerChunkContainer;
+					cint64 mTriggerLinkerChunkUsed;
+					const static cint64 TRIGGERLINKERCHUNKSIZE = 4096;
 					QList<CSortedNegLinker<CConcept*>*> mLaterTopConceptTriggerAddList;
 
 
