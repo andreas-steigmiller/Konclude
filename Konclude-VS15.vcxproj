@@ -2155,6 +2155,7 @@
     <ClCompile Include="Source\Reasoner\Kernel\Process\CIndividualProcessNodeVector.cpp" />
     <ClCompile Include="Source\Reasoner\Kernel\Process\CIndividualReactivationProcessingQueue.cpp" />
     <ClCompile Include="Source\Reasoner\Kernel\Process\CIndividualSaturationProcessNode.cpp" />
+    <ClCompile Include="Source\Reasoner\Kernel\Process\CParallelSaturationProcessContext.cpp" />
     <ClCompile Include="Source\Reasoner\Kernel\Process\CIndividualSaturationProcessNodeCacheData.cpp" />
     <ClCompile Include="Source\Reasoner\Kernel\Process\CIndividualSaturationProcessNodeExtensionData.cpp" />
     <ClCompile Include="Source\Reasoner\Kernel\Process\CIndividualSaturationProcessNodeLinker.cpp" />
@@ -5149,6 +5150,7 @@
     <ClInclude Include="Source\Reasoner\Kernel\Process\CIndividualProcessNodeVector.h" />
     <ClInclude Include="Source\Reasoner\Kernel\Process\CIndividualReactivationProcessingQueue.h" />
     <ClInclude Include="Source\Reasoner\Kernel\Process\CIndividualSaturationProcessNode.h" />
+    <ClInclude Include="Source\Reasoner\Kernel\Process\CParallelSaturationProcessContext.h" />
     <ClInclude Include="Source\Reasoner\Kernel\Process\CIndividualSaturationProcessNodeCacheData.h" />
     <ClInclude Include="Source\Reasoner\Kernel\Process\CIndividualSaturationProcessNodeExtensionData.h" />
     <ClInclude Include="Source\Reasoner\Kernel\Process\CIndividualSaturationProcessNodeLinker.h" />
