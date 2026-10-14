@@ -322,6 +322,14 @@ namespace Konclude {
 				}
 
 
+				CReapplyConceptSaturationLabelSet* CReapplyConceptSaturationLabelSet::setProcessContext(CProcessContext* processContext) {
+					mProcessContext = processContext;
+					if (mConceptDesDepHash) {
+						mConceptDesDepHash->setProcessContext(processContext);
+					}
+					return this;
+				}
+
 				bool CReapplyConceptSaturationLabelSet::areAllConceptsInAdditionalHash() {
 					return mConceptDesDepHash->isEmpty();
 				}

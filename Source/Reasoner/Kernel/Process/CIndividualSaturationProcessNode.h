@@ -25,6 +25,9 @@
 
 
 // Namespace includes
+// Libraries includes
+#include <QAtomicInt>
+
 #include "ProcessSettings.h"
 #include "CProcessContext.h"
 #include "CIndividualProcessNodeReference.h"
@@ -155,6 +158,16 @@ namespace Konclude {
 						CIndividualSaturationProcessNode* setIndividualID(cint64 indiID);
 
 						bool isInitialized();
+
+						// parallel saturation (#92): a one-byte lock for what other threads write into this node (the
+						// link and linker lists, the initialised transition), the dependency level of the first processing
+						// round, and the process context of the thread that processes the node first, so that the node's
+						// lazily created data comes from that thread's pools
+						inline void lockParallel() { while (!mParallelLock.testAndSetAcquire(0,1)) { } }
+						inline void unlockParallel() { mParallelLock.storeRelease(0); }
+						cint64 getParallelLevel();
+						CIndividualSaturationProcessNode* setParallelLevel(cint64 level);
+						CIndividualSaturationProcessNode* setProcessContext(CProcessContext* processContext);
 						CIndividualSaturationProcessNode* setInitialized(bool initialized);
 
 						bool isCompleted();
@@ -299,6 +312,8 @@ namespace Konclude {
 
 						cint64 mMaxAtleastCardinality;
 						cint64 mMaxAtmostCardinality;
+						QAtomicInt mParallelLock;
+						cint64 mParallelLevel;
 
 					// private methods
 					private:

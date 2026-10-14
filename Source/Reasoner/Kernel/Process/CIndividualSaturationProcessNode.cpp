@@ -75,6 +75,8 @@ namespace Konclude {
 					mLoadedNominalIndiTriplesAssertions = false;
 					mOccurrenceStatisticsCollectingRequired = false;
 					mOccurrenceStatisticsCollected = false;
+					mParallelLock.store(0);
+					mParallelLevel = 0;
 					return this;
 				}
 
@@ -93,6 +95,9 @@ namespace Konclude {
 
 
 				CIndividualSaturationProcessNode* CIndividualSaturationProcessNode::initCopingIndividualSaturationProcessNode(CIndividualSaturationProcessNode* indiNode, bool tryFlatLabelCopy) {
+					// copying is not a pure read of the source: a large label is turned into a shared one and the copy
+					// registers at the source, so copies from one source on several threads are serialised by its lock
+					indiNode->lockParallel();
 					if (indiNode->getRoleBackwardPropagationHash(false)) {
 						getRoleBackwardPropagationHash(true)->copyRoleBackwardSaturationPropagationHash(indiNode->getRoleBackwardPropagationHash(false),this);
 					}
@@ -121,6 +126,7 @@ namespace Konclude {
 					CXNegLinker<CIndividualSaturationProcessNode*>* depCopyLinker = CObjectAllocator< CXNegLinker<CIndividualSaturationProcessNode*> >::allocateAndConstruct(mMemAllocMan);
 					depCopyLinker->initNegLinker(this,true);
 					indiNode->addCopyDependingIndividualNodeLinker(depCopyLinker);
+					indiNode->unlockParallel();
 					return this;
 				}
 
@@ -444,6 +450,21 @@ namespace Konclude {
 					return this;
 				}
 
+
+				cint64 CIndividualSaturationProcessNode::getParallelLevel() {
+					return mParallelLevel;
+				}
+
+				CIndividualSaturationProcessNode* CIndividualSaturationProcessNode::setParallelLevel(cint64 level) {
+					mParallelLevel = level;
+					return this;
+				}
+
+				CIndividualSaturationProcessNode* CIndividualSaturationProcessNode::setProcessContext(CProcessContext* processContext) {
+					mProcessContext = processContext;
+					mMemAllocMan = mProcessContext->getMemoryAllocationManager();
+					return this;
+				}
 
 				CBackwardSaturationPropagationLink* CIndividualSaturationProcessNode::getInitializingBackwardPropagationLinks() {
 					return mInitBackwardPropLinks;

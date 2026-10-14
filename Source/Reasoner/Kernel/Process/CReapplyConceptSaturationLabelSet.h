@@ -114,6 +114,9 @@ namespace Konclude {
 						CConceptSetFlags* getConceptFlags();
 
 						bool areAllConceptsInAdditionalHash();
+						//! Parallel saturation: a label set created for a node before its first processing (by the owner between
+						//! the levels) is handed to the thread that processes the node, so that only that thread allocates its growth.
+						CReapplyConceptSaturationLabelSet* setProcessContext(CProcessContext* processContext);
 
 						CConceptSaturationDescriptor* getLastNominalIndependentConceptSaturationDescriptorLinker();
 						CReapplyConceptSaturationLabelSet* setLastNominalIndependentConceptSaturationDescriptorLinker(CConceptSaturationDescriptor* conSatDes);

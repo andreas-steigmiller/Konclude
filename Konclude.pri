@@ -1417,6 +1417,7 @@ HEADERS += \
    ./Source/Reasoner/Kernel/Process/CProcessingRestrictionSpecification.h \
    ./Source/Reasoner/Kernel/Process/CProcessingDataBox.h \
    ./Source/Reasoner/Kernel/Process/CProcessContextBase.h \
+   ./Source/Reasoner/Kernel/Process/CParallelSaturationProcessContext.h \
    ./Source/Reasoner/Kernel/Process/CProcessContext.h \
    ./Source/Reasoner/Kernel/Process/CProcessAssertedDataLiteralLinker.h \
    ./Source/Reasoner/Kernel/Process/CPreviousIndividualIDSet.h \
@@ -4047,6 +4048,7 @@ SOURCES += \
    ./Source/Reasoner/Kernel/Process/CProcessingRestrictionSpecification.cpp \
    ./Source/Reasoner/Kernel/Process/CProcessingDataBox.cpp \
    ./Source/Reasoner/Kernel/Process/CProcessContextBase.cpp \
+   ./Source/Reasoner/Kernel/Process/CParallelSaturationProcessContext.cpp \
    ./Source/Reasoner/Kernel/Process/CProcessContext.cpp \
    ./Source/Reasoner/Kernel/Process/CProcessAssertedDataLiteralLinker.cpp \
    ./Source/Reasoner/Kernel/Process/CPreviousIndividualIDSet.cpp \
