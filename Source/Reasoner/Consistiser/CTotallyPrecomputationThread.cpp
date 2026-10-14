@@ -1029,6 +1029,8 @@ namespace Konclude {
 			void CTotallyPrecomputationThread::analyseConceptSaturationSubsumerExistItems(CTotallyOntologyPrecomputationItem* totallyPreCompItem, QList<CConceptNegationSaturationItem>& processList) {
 
 				QSet<CConceptNegationSaturationItem> processSet;
+				// the set grows to about twice the items; sized now instead of by rehashing
+				processSet.reserve(processList.size()*2);
 				for (QList<CConceptNegationSaturationItem>::const_iterator it = processList.constBegin(), itEnd = processList.constEnd(); it != itEnd; ++it) {
 					CConceptNegationSaturationItem conNegSatItem(*it);
 					processSet.insert(conNegSatItem);
@@ -2034,6 +2036,8 @@ namespace Konclude {
 				QList<CSaturationConceptDataItem*> disjunctionCandidateAlternativeList;
 
 				cint64 conCount = conVec->getItemCount();
+				// the items are mostly one per concept; sizing the hash now saves the rehashing while they are created
+				totallyPreCompItem->reserveSaturationConceptDataItems(conCount+conCount/4);
 				if (saturateConcepts) {
 					for (cint64 conIdx = 1; conIdx < conCount; ++conIdx) {
 						CConcept* concept = conVec->getData(conIdx);

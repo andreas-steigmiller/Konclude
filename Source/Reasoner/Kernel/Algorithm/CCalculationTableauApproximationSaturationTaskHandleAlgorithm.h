@@ -50,6 +50,8 @@
 #include "Reasoner/Kernel/Process/CIndividualSaturationProcessNodeStatusUpdateLinker.h"
 #include "Reasoner/Kernel/Process/CLinkedDataValueAssertionSaturationData.h"
 #include "Reasoner/Kernel/Process/CParallelSaturationProcessContext.h"
+#include "Scheduler/CTaskMemoryPoolAllocationManager.h"
+#include "Utilities/Memory/CMemoryPoolContainer.h"
 
 #include "Scheduler/CTask.h"
 #include "Scheduler/CTaskHandleAlgorithm.h"
@@ -661,6 +663,7 @@ namespace Konclude {
 						bool mConfParallelSaturationParallelApply;
 						bool mConfParallelSaturationTailRounds;
 						bool mConfParallelSaturationExtensionRounds;
+						cint64 mConfParallelSaturationMaxGenerations;
 						cint64 mConfProcessorCount;
 						bool mParallelMode;
 						CIndividualSaturationProcessNode* mParallelCurrentNode;
@@ -673,6 +676,14 @@ namespace Konclude {
 						// node creation in the extension rounds: the owner's node vector and ID counter, guarded by this mutex
 						QMutex* mParallelNodeMutex;
 						CProcessingDataBox* mParallelOwnerDataBox;
+						// the records only the owner may apply, taken out of the generations by this thread, applied by the owner at the end of the round
+						CParallelSaturationDeferredRecord* mParallelOwnerOnlyLinker;
+						CParallelSaturationDeferredRecord* mParallelOwnerOnlyLast;
+						cint64 mParallelOwnerOnlyCount;
+						// the records of a round live in pools of their own per thread, given back to the provider after the round
+						CMemoryPoolContainer* mParallelRecordContainer;
+						CTaskMemoryPoolAllocationManager* mParallelRecordMemMan;
+						void releaseParallelRecordMemory();
 
 						CSatisfiableCalculationTask* mDebugTestingSaturationTask;
 						QString mDebugTestSaturationDebugIndiModelString;

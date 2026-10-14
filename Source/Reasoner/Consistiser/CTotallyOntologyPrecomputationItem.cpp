@@ -719,6 +719,14 @@ namespace Konclude {
 
 
 
+			CTotallyOntologyPrecomputationItem* CTotallyOntologyPrecomputationItem::reserveSaturationConceptDataItems(cint64 itemCount) {
+				if (itemCount > mConceptNegationSatItemHash.capacity()) {
+					mConceptNegationSatItemHash.reserve(itemCount);
+				}
+				return this;
+			}
+
+
 			CSaturationConceptDataItem* CTotallyOntologyPrecomputationItem::getSaturationConceptDataItem(CConcept* satConcept, bool negated, bool create) {
 				CSaturationConceptDataItem* item = nullptr;
 				CConceptProcessData* conProcData = (CConceptProcessData*)satConcept->getConceptData();
