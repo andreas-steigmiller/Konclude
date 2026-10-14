@@ -25,6 +25,13 @@
 
 
 // Namespace includes
+// Libraries includes
+#include <QMutex>
+#include <QWaitCondition>
+#include <QVector>
+#include <QAtomicInt>
+#include <thread>
+
 #include "AlgorithmSettings.h"
 #include "CCalculationAlgorithmContextBase.h"
 #include "CCalculationStopProcessingException.h"
@@ -42,6 +49,7 @@
 #include "Reasoner/Kernel/Process/CConceptSaturationProcessLinker.h"
 #include "Reasoner/Kernel/Process/CIndividualSaturationProcessNodeStatusUpdateLinker.h"
 #include "Reasoner/Kernel/Process/CLinkedDataValueAssertionSaturationData.h"
+#include "Reasoner/Kernel/Process/CParallelSaturationProcessContext.h"
 
 #include "Scheduler/CTask.h"
 #include "Scheduler/CTaskHandleAlgorithm.h"
@@ -120,7 +128,43 @@ namespace Konclude {
 
 						virtual bool handleTask(CTaskProcessorContext *processorContext, CTask* task);
 
+						// parallel saturation (#92): the first processing of the saturation nodes runs on several threads,
+						// one dependency level at a time; a thread writes only into the node it processes, everything it
+						// would write into another node is recorded and applied by the owner between the levels
+						class CParallelSaturationDeferredRecord {
+							public:
+								enum KIND { CONCEPTADD, CONCEPTADDFILTERED, LINKINSTALL, QUEUENODE, QUEUEUNINITIALIZEDNODE, DIRECTFLAGS, DIRECTNOTDEPENDENTFLAGS, INDIRECTFLAGS, SUCCESSORNOMINAL, CARDINALITYCANDIDATES, DATALITERALSUCCESSOR, EXTENSIONQUEUE, DISJUNCTEXTRACTQUEUE, CRITICALQUEUE, DISJUNCTION };
+								KIND mKind;
+								CIndividualSaturationProcessNode* mNode;
+								CIndividualSaturationProcessNode* mNode2;
+								CConcept* mConcept;
+								CRole* mRole;
+								void* mPointer;
+								cint64 mValue1;
+								cint64 mValue2;
+								bool mFlag;
+								CParallelSaturationDeferredRecord* mNext;
+						};
+						class CParallelSaturationSlice {
+							public:
+								CIndividualSaturationProcessNode** mNodes;
+								cint64 mCount;
+								CParallelSaturationDeferredRecord* mDeferredLinker;
+								CParallelSaturationDeferredRecord* mDeferredLast;
+								CIndividualSaturationProcessNodeLinker* mCompletionLinker;
+								CIndividualSaturationProcessNodeLinker* mCompletionLast;
+						};
+						class CParallelSaturationShared;
+						void parallelHelperMain(CParallelSaturationShared* shared, cint64 helperIndex);
+
 						void readCalculationConfig(CSatisfiableCalculationTask* satCalcTask);
+
+						bool runParallelSaturation(CSatisfiableCalculationTask* satCalcTask, CCalculationAlgorithmContextBase* calcAlgContext);
+						void processParallelSlice(CParallelSaturationSlice* slice, CCalculationAlgorithmContextBase* calcAlgContext);
+						void processParallelNode(CIndividualSaturationProcessNode* indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext);
+						void processDisjunctionConcept(CIndividualSaturationProcessNode*& processIndi, CConceptSaturationDescriptor* conDes, CCalculationAlgorithmContextBase* calcAlgContext);
+						void applyParallelDeferredRecords(CParallelSaturationSlice* slice, CCalculationAlgorithmContextBase* calcAlgContext);
+						void deferParallelRecord(CParallelSaturationDeferredRecord::KIND kind, CIndividualSaturationProcessNode* node, CIndividualSaturationProcessNode* node2, CConcept* concept, CRole* role, void* pointer, cint64 value1, cint64 value2, bool flag);
 
 
 						cint64 getAppliedANDRuleCount();
@@ -593,6 +637,14 @@ namespace Konclude {
 						QString mRuleEndDebugIndiModelString;
 						QString mEndSaturationDebugIndiModelString;
 
+
+						bool mConfParallelSaturation;
+						cint64 mConfParallelSaturationThreadCount;
+						cint64 mConfProcessorCount;
+						bool mParallelMode;
+						CIndividualSaturationProcessNode* mParallelCurrentNode;
+						bool mParallelContinueCurrent;
+						CParallelSaturationSlice* mParallelCurrentSlice;
 
 						CSatisfiableCalculationTask* mDebugTestingSaturationTask;
 						QString mDebugTestSaturationDebugIndiModelString;

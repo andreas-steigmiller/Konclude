@@ -1239,6 +1239,15 @@ namespace Konclude {
 						new CBooleanConfigType(false)),
 						new CBooleanConfigType(false));
 
+				addConfigProperty(new CConfigDescription("Konclude.Calculation.Precomputation.ParallelSaturation",
+						"Determines whether the first processing of the saturation nodes is distributed over several threads (dependency levels in parallel, everything else by the saturation task itself).",
+						new CBooleanConfigType(true)),
+						new CBooleanConfigType(true));
+				addConfigProperty(new CConfigDescription("Konclude.Calculation.Precomputation.ParallelSaturationThreadCount",
+						"Number of threads for the parallel saturation, 0 for the processor count.",
+						new CIntegerConfigType(0)),
+						new CIntegerConfigType(0));
+
 				addConfigProperty(new CConfigDescription("Konclude.Calculation.Classification.OptimizedSubClassSubsumptionClassifier.MaximumParallelSatisfiableCalculationCount",
 						"Determines how many satisfiable calculation jobs are created per classifier at one time.",
 						new CIntegerConfigType(1)),

@@ -151,6 +151,11 @@ namespace Konclude {
 						}
 
 						//! Makes room for at least count entries without growing again, so a label copied with additions does not rehash.
+						//! Parallel saturation: the thread that processes the node first allocates the growth of the hash.
+						inline void setProcessContext(CProcessContext* processContext) {
+							mMemMan = processContext->getUsedMemoryAllocationManager();
+							mFreeArrays = processContext->getSaturationLabelHashFreeArrays();
+						}
 						inline void reserve(cint64 count) {
 							cint64 capacity = mCapacity > 0 ? mCapacity : INITIALCAPACITY;
 							while (count * 4 > capacity * 3) {
