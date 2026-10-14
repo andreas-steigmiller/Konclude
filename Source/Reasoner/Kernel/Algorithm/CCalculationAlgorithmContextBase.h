@@ -83,6 +83,8 @@ namespace Konclude {
 						virtual CMemoryAllocationManager* getProcessTaskMemoryAllocationManager();
 						virtual CMemoryAllocationManager* getMemoryAllocationManager();
 						virtual CTaskHandleMemoryAllocationManager* getTemporaryMemoryAllocationManager();
+						//! Parallel saturation (#92): a helper thread's own temporary memory, the processor context's is not thread-safe.
+						inline CCalculationAlgorithmContextBase* setTemporaryMemoryAllocationManager(CTaskHandleMemoryAllocationManager* tempMemMan) { mTempMemMan = tempMemMan; mUsedTempMemMan = tempMemMan; return this; }
 						virtual CConceptProcessingPriorityStrategy* getConceptPriorityStrategy();
 						virtual CIndividualProcessingPriorityStrategy* getIndividualPriorityStrategy();
 						virtual CProcessingDataBox* getProcessingDataBox();

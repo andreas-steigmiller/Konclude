@@ -92,6 +92,11 @@ namespace Konclude {
 							copyConceptSaturationLabelSet->mAdditionalConceptDesDepHash = copyConceptSaturationLabelSet->mConceptDesDepHash;
 						}
 						CReapplyConceptSaturationLabelHash* tmpNewConDesDepHash = CObjectParameterizingAllocator< CReapplyConceptSaturationLabelHash,CProcessContext* >::allocateAndConstructAndParameterize(mProcessContext->getUsedMemoryAllocationManager(),mProcessContext);
+						// the source's new own hash grows from the source's own context: in the parallel saturation (#92) the
+						// source's thread fills it later while this thread allocates from its own context
+						if (copyConceptSaturationLabelSet->mProcessContext) {
+							tmpNewConDesDepHash->setProcessContext(copyConceptSaturationLabelSet->mProcessContext);
+						}
 						copyConceptSaturationLabelSet->mConceptDesDepHash = tmpNewConDesDepHash;
 					}
 

@@ -77,6 +77,8 @@ namespace Konclude {
 					mOccurrenceStatisticsCollected = false;
 					mParallelLock.store(0);
 					mParallelLevel = 0;
+					mParallelOwner = 0;
+					mParallelLockDepth = 0;
 					return this;
 				}
 
@@ -459,6 +461,16 @@ namespace Konclude {
 					mParallelLevel = level;
 					return this;
 				}
+
+				int CIndividualSaturationProcessNode::getParallelLockTag() {
+					static QAtomicInt tagCounter(0);
+					static thread_local int tag = 0;
+					if (tag == 0) {
+						tag = tagCounter.fetchAndAddRelaxed(1)+1;
+					}
+					return tag;
+				}
+
 
 				CIndividualSaturationProcessNode* CIndividualSaturationProcessNode::setProcessContext(CProcessContext* processContext) {
 					mProcessContext = processContext;
