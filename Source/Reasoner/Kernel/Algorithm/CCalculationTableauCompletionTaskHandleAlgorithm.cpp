@@ -382,6 +382,8 @@ namespace Konclude {
 					mStatBackPropActivationCount = 0;
 
 					mCurrentRecProcDepth = 0;
+					mBranchingTaskCompleted = false;
+					mDirectRuleProcessing = false;
 					mCurrentRecProcDepthLimit = 300;
 
 					mMaxBlockingCachingSavedCandidateCount = 50;
@@ -1078,6 +1080,8 @@ namespace Konclude {
 							CConceptProcessDescriptor* conProcDes = nullptr;
 
 							mCurrentRecProcDepth = 0;
+							mBranchingTaskCompleted = false;
+							mDirectRuleProcessing = false;
 							mProcessRuleToTaskProcessingVerificationCount = 80;
 							mRemainProcessRuleToTaskProcessingVerification = mProcessRuleToTaskProcessingVerificationCount;
 
@@ -1181,7 +1185,16 @@ namespace Konclude {
 											KONCLUCE_TASK_ALGORITHM_MODEL_STRING_INSTRUCTION(mBeforeRuleDebugIndiModelString = generateDebugIndiModelStringList(calcAlgContext));
 
 
+											mDirectRuleProcessing = true;
 											continueProcessingIndividual = tableauRuleProcessing(indiProcNode,conProcDes,mCalcAlgContext);
+											mDirectRuleProcessing = false;
+											if (mBranchingTaskCompleted) {
+												// the OR branching created the branch tasks and completed this task (formerly a thrown
+												// CCalculationStopProcessingException(true)): leave the processing as the exception did
+												mBranchingTaskCompleted = false;
+												completed = true;
+												break;
+											}
 
 
 											KONCLUCE_TASK_ALGORITHM_MODEL_STRING_INSTRUCTION(mAfterRuleDebugIndiModelString = generateDebugIndiModelStringList(calcAlgContext));
@@ -1218,25 +1231,27 @@ namespace Konclude {
 
 										}
 
-										individualNodeConclusion(indiProcNode,calcAlgContext);
+										if (!completed) {
+											individualNodeConclusion(indiProcNode,calcAlgContext);
+										}
 
 									}
 
-									if (mCalcAlgContext->isMinModificationUpdated()) {
+									if (!completed && mCalcAlgContext->isMinModificationUpdated()) {
 										// update history
 										nodeSwitchHistory->updateLastIndividualProcessNodeSwitch(mCalcAlgContext->getMinModificationAncestorDepth(),mCalcAlgContext->getMinModificationIndividualID());
 									}
 								}
 
 								indiProcNode = nullptr;
-								if (!canceled) {
+								if (!canceled && !completed) {
 									indiProcNode = takeNextProcessIndividual(calcAlgContext);
 								}
 
 							}
 
 
-							if (mOptIncrementalExpansion && !mProcessingDataBox->isIncrementalExpansionCachingMerged()) {
+							if (!completed && mOptIncrementalExpansion && !mProcessingDataBox->isIncrementalExpansionCachingMerged()) {
 								incrementalMergeWithPreviousNondeterministicCompletionGraph(calcAlgContext);
 								mProcessingDataBox->setIncrementalExpansionCachingMerged(true);
 							}
@@ -1260,7 +1275,7 @@ namespace Konclude {
 
 
 
-							if (mConfPossibleInstanceIndividualsMerging && !canceled) {
+							if (!completed && mConfPossibleInstanceIndividualsMerging && !canceled) {
 
 
 
@@ -1318,10 +1333,10 @@ namespace Konclude {
 							}
 
 
-							satisfiable = true;
+							satisfiable = !completed;
 
 
-							if (mConfGenerateQueries) {
+							if (!completed && mConfGenerateQueries) {
 								CCompletionGraphRandomWalkQueryGenerator queryGen;
 								queryGen.generateQueries(calcAlgContext->getSatisfiableCalculationTask());
 							}
@@ -17007,6 +17022,12 @@ namespace Konclude {
 
 							processorContext->getTaskProcessorCommunicator()->communicateTaskCreation(newTaskList);
 
+							if (mDirectRuleProcessing && mCurrentRecProcDepth <= 1) {
+								// the branching completes this task; a rule applied directly from the task loop returns there
+								// with the flag (see handleTask) instead of unwinding with an exception, which is costly
+								mBranchingTaskCompleted = true;
+								return;
+							}
 							throw CCalculationStopProcessingException(true);
 						} else {
 							// throw clash
