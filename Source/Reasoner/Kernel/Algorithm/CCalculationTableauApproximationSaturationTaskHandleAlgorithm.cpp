@@ -22,6 +22,9 @@
 #include <cstdlib>
 #include <QThread>
 #include <QElapsedTimer>
+#include "Scheduler/CTaskHandleLimitedReserveMemoryPoolAllocationManager.h"
+#include "Scheduler/CTaskProcessorContextBase.h"
+#include <QDateTime>
 
 
 namespace Konclude {
@@ -48,6 +51,13 @@ namespace Konclude {
 					mParallelCurrentNode = nullptr;
 					mParallelContinueCurrent = false;
 					mParallelCurrentSlice = nullptr;
+					mParallelApplying = false;
+					mParallelThreadIndex = 0;
+					mConfParallelSaturationParallelApply = true;
+					mConfParallelSaturationTailRounds = true;
+					mConfParallelSaturationExtensionRounds = true;
+					mParallelNodeMutex = nullptr;
+					mParallelOwnerDataBox = nullptr;
 
 					mPosJumpFuncVec = &mPosTableauRuleJumpFuncVec[mRuleFuncCount/2];
 					mNegJumpFuncVec = &mNegTableauRuleJumpFuncVec[mRuleFuncCount/2];
@@ -195,6 +205,9 @@ namespace Konclude {
 							if (getenv("KONCLUDE_PARALLEL_SATURATION_THREADS")) {
 								mConfParallelSaturationThreadCount = QString(getenv("KONCLUDE_PARALLEL_SATURATION_THREADS")).toInt();
 							}
+							mConfParallelSaturationParallelApply = getenv("KONCLUDE_PARALLEL_SATURATION_SERIALAPPLY") == nullptr;
+							mConfParallelSaturationTailRounds = getenv("KONCLUDE_PARALLEL_SATURATION_NOTAIL") == nullptr;
+							mConfParallelSaturationExtensionRounds = getenv("KONCLUDE_PARALLEL_SATURATION_NOEXTENSION") == nullptr;
 							mConfForceAllConceptInsertion = false;
 							mConfForceAllCopyInsteadOfSubstituition = false;
 							mConfImplicationAddingSkipping = true;
@@ -261,6 +274,7 @@ namespace Konclude {
 					calcAlgContext->initCalculationAlgorithmContext(processorContext);
 					return calcAlgContext;
 				}
+
 
 
 
@@ -1055,6 +1069,7 @@ namespace Konclude {
 							}
 						}
 					}
+					if (mParallelMode) indiProcSatNode->lockParallel();
 					CRoleBackwardSaturationPropagationHash* backwardPropHash = indiProcSatNode->getRoleBackwardPropagationHash(true);
 					if (backwardPropHash) {
 						CPROCESSHASH<CRole*,CRoleBackwardSaturationPropagationHashData>* backwardPropDataHash = backwardPropHash->getRoleBackwardPropagationDataHash();
@@ -1066,7 +1081,7 @@ namespace Konclude {
 							}
 						}
 					}
-
+					if (mParallelMode) indiProcSatNode->unlockParallel();
 					return installed;
 				}
 
@@ -1105,6 +1120,7 @@ namespace Konclude {
 
 				bool CCalculationTableauApproximationSaturationTaskHandleAlgorithm::updatePredecessorRoleFUNCTIONALConceptsExtensions(CIndividualSaturationProcessNode*& indiProcSatNode, CRole* role, CCalculationAlgorithmContextBase* calcAlgContext) {
 					bool updated = false;
+					if (mParallelMode) indiProcSatNode->lockParallel();
 					CRoleBackwardSaturationPropagationHash* backwardPropHash = indiProcSatNode->getRoleBackwardPropagationHash(true);
 					if (backwardPropHash) {
 						CPROCESSHASH<CRole*,CRoleBackwardSaturationPropagationHashData>* backwardPropDataHash = backwardPropHash->getRoleBackwardPropagationDataHash();
@@ -1126,6 +1142,7 @@ namespace Konclude {
 							}
 						}
 					}
+					if (mParallelMode) indiProcSatNode->unlockParallel();
 					return updated;
 				}
 
@@ -1227,8 +1244,11 @@ namespace Konclude {
 
 
 				bool CCalculationTableauApproximationSaturationTaskHandleAlgorithm::createAncestorSuccessorMergingExtension(CIndividualSaturationProcessNode*& indiProcSatNode, CRole* role, CIndividualSaturationProcessNode* succSatNode, CIndividualSaturationProcessNode* ancSatNode, CXNegLinker<CRole*>* creationRoleLinker, CCalculationAlgorithmContextBase* calcAlgContext) {
-
-
+					if (mParallelMode) {
+						// writes into the successor and the ancestor as well: done by the owner between the rounds
+						deferParallelRecord(CParallelSaturationDeferredRecord::PREDMERGE,indiProcSatNode,succSatNode,nullptr,role,ancSatNode,(cint64)creationRoleLinker,0,false);
+						return true;
+					}
 					CSaturationSuccessorData* ancSuccLinkData = nullptr;
 					collectLinkedSuccessorNodes(ancSatNode,calcAlgContext);
 
@@ -1611,12 +1631,14 @@ namespace Konclude {
 								}
 								releaseIndividualSaturationSuccessorLinkDataLinker(mergingSuccDataLinker,calcAlgContext);
 
-								resolveData = copyIndiProcSatNode->getSuccessorExtensionData(true)->getBaseExtensionResolveData(true);
-								resolveData = getResolvedIndividualNodeExtension(resolveData,conExtMap,copyIndiProcSatNode,calcAlgContext);
-
-
-
-								CIndividualSaturationProcessNode* resolvedIndiNode = resolveData->getProcessingIndividualNode();
+								CIndividualSaturationProcessNode* resolvedIndiNode = nullptr;
+								if (mParallelMode) {
+									resolvedIndiNode = resolveParallelExtensionNode(copyIndiProcSatNode,nullptr,conExtMap,calcAlgContext);
+								} else {
+									resolveData = copyIndiProcSatNode->getSuccessorExtensionData(true)->getBaseExtensionResolveData(true);
+									resolveData = getResolvedIndividualNodeExtension(resolveData,conExtMap,copyIndiProcSatNode,calcAlgContext);
+									resolvedIndiNode = resolveData->getProcessingIndividualNode();
+								}
 								roleFuncConExtData->setLastResolvedIndividualNode(resolvedIndiNode);
 
 								bool backwardLinkConnected = false;
@@ -1699,7 +1721,9 @@ namespace Konclude {
 								if (!connectionAlreadyExist && !backwardLinkConnected) {
 									CXLinker<CIndividualSaturationProcessNode*>* nonInvConnectedIndiNodeLinker = CObjectAllocator< CXLinker<CIndividualSaturationProcessNode*> >::allocateAndConstruct(calcAlgContext->getUsedProcessTaskMemoryAllocationManager());
 									nonInvConnectedIndiNodeLinker->initLinker(indiProcSatNode);
-									resolvedIndiNode->addNonInverseConnectedIndividualNodeLinker(nonInvConnectedIndiNodeLinker);
+									if (mParallelMode) resolvedIndiNode->lockParallel();
+							resolvedIndiNode->addNonInverseConnectedIndividualNodeLinker(nonInvConnectedIndiNodeLinker);
+							if (mParallelMode) resolvedIndiNode->unlockParallel();
 								}
 
 								updated = true;
@@ -1980,7 +2004,9 @@ namespace Konclude {
 										if (!onlySuccessorCardinalityUpdated && !backwardLinkConnected) {
 											CXLinker<CIndividualSaturationProcessNode*>* nonInvConnectedIndiNodeLinker = CObjectAllocator< CXLinker<CIndividualSaturationProcessNode*> >::allocateAndConstruct(calcAlgContext->getUsedProcessTaskMemoryAllocationManager());
 											nonInvConnectedIndiNodeLinker->initLinker(indiProcSatNode);
-											resolvedIndiNode->addNonInverseConnectedIndividualNodeLinker(nonInvConnectedIndiNodeLinker);
+											if (mParallelMode) resolvedIndiNode->lockParallel();
+							resolvedIndiNode->addNonInverseConnectedIndividualNodeLinker(nonInvConnectedIndiNodeLinker);
+							if (mParallelMode) resolvedIndiNode->unlockParallel();
 										}
 										satSucALLConExtData->setLastResolvedIndividualNode(resolvedIndiNode);
 										satSucALLConExtData->setLastConnectedSuccessorCardinality(requiredSuccCard);
@@ -2334,6 +2360,9 @@ namespace Konclude {
 
 
 				CIndividualSaturationProcessNode* CCalculationTableauApproximationSaturationTaskHandleAlgorithm::getResolvedIndividualNodeExtensionSuccessor(CIndividualSaturationProcessNode* indiProcSatNode, CSaturationSuccessorConceptExtensionMap* succConExtMap, CCalculationAlgorithmContextBase* calcAlgContext) {
+					if (mParallelMode) {
+						return resolveParallelExtensionNode(indiProcSatNode,succConExtMap,nullptr,calcAlgContext);
+					}
 					CIndividualSaturationProcessNode* resolvedNode = nullptr;
 					CSaturationIndividualNodeExtensionResolveData* resolveData = indiProcSatNode->getSuccessorExtensionData(true)->getBaseExtensionResolveData(true);
 					CPROCESSHASH<cint64,CSaturationSuccessorConceptExtensionMapData>* succConExtDataMap = succConExtMap->getSuccessorConceptExtensionMap();
@@ -2382,9 +2411,16 @@ namespace Konclude {
 					CIndividualSaturationProcessNode* resolvedNode = nullptr;
 					resolvedNode = CObjectParameterizingAllocator< CIndividualSaturationProcessNode,CProcessContext* >::allocateAndConstructAndParameterize(calcAlgContext->getUsedProcessTaskMemoryAllocationManager(),calcAlgContext->getUsedProcessContext());
 					resolvedNode->initIndividualSaturationProcessNode(resolveData->getProcessingIndividualNodeID(),nullptr,nullptr);
+					if (mParallelMode) {
+						// the new node is this thread's (its memory), and it is the current node while it is built; the
+						// resolve data publishes it only when it is complete (see resolveParallelExtensionNode)
+						mParallelCurrentNode = resolvedNode;
+						resolvedNode->setParallelOwner(mParallelThreadIndex);
+					}
 					initializeIndividualNodeByCoping(resolvedNode,copyIndiProcSatNode,false,calcAlgContext);
-
-					resolveData->setProcessingIndividualNode(resolvedNode);
+					if (!mParallelMode) {
+						resolveData->setProcessingIndividualNode(resolvedNode);
+					}
 					resolvedNode->getSuccessorExtensionData(true)->setExtensionResolveData(resolveData);
 					resolvedNode->setReducedConceptLabel(!mConfForceAllConceptInsertion);
 					resolvedNode->setInitialized(true);
@@ -2395,10 +2431,20 @@ namespace Konclude {
 					resolveNodeProcessLiner->initProcessNodeLinker(resolvedNode,queueProcessing);
 					resolvedNode->setIndividualSaturationProcessNodeLinker(resolveNodeProcessLiner);
 					if (queueProcessing) {
-						calcAlgContext->getUsedProcessingDataBox()->addIndividualSaturationProcessNodeLinker(resolveNodeProcessLiner);
+						if (mParallelMode) {
+							deferParallelRecord(CParallelSaturationDeferredRecord::QUEUENODEFLAGGED,resolvedNode,nullptr,nullptr,nullptr,nullptr,0,0,false);
+						} else {
+							calcAlgContext->getUsedProcessingDataBox()->addIndividualSaturationProcessNodeLinker(resolveNodeProcessLiner);
+						}
 					}
-					CIndividualSaturationProcessNodeVector* indiVec = calcAlgContext->getUsedProcessingDataBox()->getIndividualSaturationProcessNodeVector(true);
-					indiVec->setData(resolvedNode->getIndividualID(),resolvedNode);
+					if (mParallelMode) {
+						mParallelNodeMutex->lock();
+						mParallelOwnerDataBox->getIndividualSaturationProcessNodeVector(true)->setData(resolvedNode->getIndividualID(),resolvedNode);
+						mParallelNodeMutex->unlock();
+					} else {
+						CIndividualSaturationProcessNodeVector* indiVec = calcAlgContext->getUsedProcessingDataBox()->getIndividualSaturationProcessNodeVector(true);
+						indiVec->setData(resolvedNode->getIndividualID(),resolvedNode);
+					}
 					return resolvedNode;
 				}
 
@@ -2538,7 +2584,14 @@ namespace Konclude {
 					CSaturationIndividualNodeExtensionResolveHashData& resolveHashData = resolveData->getIndividualNodeExtensionResolveHash(true)->getResolvedNeighbourIndividualNodeExtensionData();
 					if (!resolveHashData.mResolveData) {
 						resolveHashData.mResolveData = CObjectParameterizingAllocator< CSaturationIndividualNodeExtensionResolveData, CProcessContext* >::allocateAndConstructAndParameterize(calcAlgContext->getUsedProcessTaskMemoryAllocationManager(), calcAlgContext->getUsedProcessContext());
-						cint64 nextResolveIndiID = calcAlgContext->getUsedProcessingDataBox()->getNextSaturationResolvedSuccessorExtensionIndividualNodeID();
+						cint64 nextResolveIndiID = 0;
+						if (mParallelMode) {
+							mParallelNodeMutex->lock();
+							nextResolveIndiID = mParallelOwnerDataBox->getNextSaturationResolvedSuccessorExtensionIndividualNodeID();
+							mParallelNodeMutex->unlock();
+						} else {
+							nextResolveIndiID = calcAlgContext->getUsedProcessingDataBox()->getNextSaturationResolvedSuccessorExtensionIndividualNodeID();
+						}
 						resolveHashData.mResolveData->initExtensionResolveData(nextResolveIndiID);
 					}
 					if (resolveHashData.mResolveData->hasProcessingIndividualNode()) {
@@ -2558,7 +2611,14 @@ namespace Konclude {
 					CSaturationIndividualNodeExtensionResolveHashData& resolveHashData = resolveData->getIndividualNodeExtensionResolveHash(true)->getResolvedIndividualNodeExtensionData(concept,negation);
 					if (!resolveHashData.mResolveData) {
 						resolveHashData.mResolveData = CObjectParameterizingAllocator< CSaturationIndividualNodeExtensionResolveData, CProcessContext* >::allocateAndConstructAndParameterize(calcAlgContext->getUsedProcessTaskMemoryAllocationManager(), calcAlgContext->getUsedProcessContext());
-						cint64 nextResolveIndiID = calcAlgContext->getUsedProcessingDataBox()->getNextSaturationResolvedSuccessorExtensionIndividualNodeID();
+						cint64 nextResolveIndiID = 0;
+						if (mParallelMode) {
+							mParallelNodeMutex->lock();
+							nextResolveIndiID = mParallelOwnerDataBox->getNextSaturationResolvedSuccessorExtensionIndividualNodeID();
+							mParallelNodeMutex->unlock();
+						} else {
+							nextResolveIndiID = calcAlgContext->getUsedProcessingDataBox()->getNextSaturationResolvedSuccessorExtensionIndividualNodeID();
+						}
 						resolveHashData.mResolveData->initExtensionResolveData(nextResolveIndiID);
 					}
 					if (resolveHashData.mResolveData->hasProcessingIndividualNode()) {
@@ -2755,6 +2815,11 @@ namespace Konclude {
 
 
 				bool CCalculationTableauApproximationSaturationTaskHandleAlgorithm::addSuccessorExtensionToProcessingQueue(CIndividualSaturationProcessNode*& indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext) {
+					if (mParallelMode && indiProcSatNode != mParallelCurrentNode) {
+						// the node's extension data is created and flagged by the owner (allocation for another node)
+						deferParallelRecord(CParallelSaturationDeferredRecord::EXTENSIONQUEUEFULL,indiProcSatNode,nullptr,nullptr,nullptr,nullptr,0,0,false);
+						return true;
+					}
 					CSaturationIndividualNodeSuccessorExtensionData* succExtData = indiProcSatNode->getSuccessorExtensionData(true);
 					CSaturationIndividualNodeALLConceptsExtensionData* succIndiALLConExtData = succExtData->getALLConceptsExtensionData(true);
 					if (!succExtData->isExtensionProcessingQueued()) {
@@ -2823,7 +2888,11 @@ namespace Konclude {
 					for (CXNegLinker<CIndividualSaturationProcessNode*>* depIndiLinkerIt = indiProcSatNode->getCopyDependingIndividualNodeLinker(); depIndiLinkerIt; depIndiLinkerIt = depIndiLinkerIt->getNext()) {
 						CIndividualSaturationProcessNode* depIndi = depIndiLinkerIt->getData();
 						if (depIndi) {
-							addQualifiedFUNCTIONALAtmostConceptExtensionProcessing(conDes,depIndi,calcAlgContext);
+							if (mParallelMode && depIndi != mParallelCurrentNode) {
+								deferParallelRecord(CParallelSaturationDeferredRecord::FUNCQUALDEP,depIndi,nullptr,nullptr,nullptr,conDes,0,0,false);
+							} else {
+								addQualifiedFUNCTIONALAtmostConceptExtensionProcessing(conDes,depIndi,calcAlgContext);
+							}
 						}
 					}
 				}
@@ -2853,15 +2922,24 @@ namespace Konclude {
 					for (CXNegLinker<CIndividualSaturationProcessNode*>* depIndiLinkerIt = indiProcSatNode->getCopyDependingIndividualNodeLinker(); depIndiLinkerIt; depIndiLinkerIt = depIndiLinkerIt->getNext()) {
 						CIndividualSaturationProcessNode* depIndi = depIndiLinkerIt->getData();
 						if (depIndi) {
-							CSaturationIndividualNodeSuccessorExtensionData* succExtData = depIndi->getSuccessorExtensionData(true);
-							CSaturationIndividualNodeFUNCTIONALConceptsExtensionData* succIndiFunctionalConExtData = succExtData->getFUNCTIONALConceptsExtensionData(true);
-							addSuccessorExtensionToProcessingQueue(depIndi,calcAlgContext);
-							if (!succIndiFunctionalConExtData->hasFunctionalityAddedProcessLinkerForRole(role)) {
-								CRoleSaturationProcessLinker* roleProcLinker = createRoleSaturationProcessLinker(calcAlgContext);
-								roleProcLinker->initRoleProcessLinker(role);
-								succIndiFunctionalConExtData->addFunctionalityAddedRoleProcessLinker(roleProcLinker);
-							}
+							addFUNCTIONALRoleExtensionFunctionalityAddedToDependentIndividual(depIndi,role,calcAlgContext);
 						}
+					}
+				}
+
+
+				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::addFUNCTIONALRoleExtensionFunctionalityAddedToDependentIndividual(CIndividualSaturationProcessNode*& depIndi, CRole* role, CCalculationAlgorithmContextBase* calcAlgContext) {
+					if (mParallelMode && depIndi != mParallelCurrentNode) {
+						deferParallelRecord(CParallelSaturationDeferredRecord::FUNCROLEDEP,depIndi,nullptr,nullptr,role,nullptr,0,0,false);
+						return;
+					}
+					CSaturationIndividualNodeSuccessorExtensionData* succExtData = depIndi->getSuccessorExtensionData(true);
+					CSaturationIndividualNodeFUNCTIONALConceptsExtensionData* succIndiFunctionalConExtData = succExtData->getFUNCTIONALConceptsExtensionData(true);
+					addSuccessorExtensionToProcessingQueue(depIndi,calcAlgContext);
+					if (!succIndiFunctionalConExtData->hasFunctionalityAddedProcessLinkerForRole(role)) {
+						CRoleSaturationProcessLinker* roleProcLinker = createRoleSaturationProcessLinker(calcAlgContext);
+						roleProcLinker->initRoleProcessLinker(role);
+						succIndiFunctionalConExtData->addFunctionalityAddedRoleProcessLinker(roleProcLinker);
 					}
 				}
 
@@ -2894,6 +2972,11 @@ namespace Konclude {
 
 
 				bool CCalculationTableauApproximationSaturationTaskHandleAlgorithm::markATMOSTRestrictedAncestorsAsInsufficient(CConceptSaturationDescriptor* conDes, CIndividualSaturationProcessNode* functionallyRestrictedSuccessorNode, CXNegLinker<CRole*>* functionallyRestrictedSuccessorCreationRoleLinker, CIndividualSaturationProcessNode*& indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext) {
+					if (mParallelMode) {
+						// examines and marks the ancestors: done by the owner between the rounds
+						deferParallelRecord(CParallelSaturationDeferredRecord::MARKATMOST,indiProcSatNode,functionallyRestrictedSuccessorNode,nullptr,nullptr,conDes,(cint64)functionallyRestrictedSuccessorCreationRoleLinker,0,false);
+						return false;
+					}
 					bool ancestorsRestricted = false;
 					CRoleBackwardSaturationPropagationHash* backwardPropHash = indiProcSatNode->getRoleBackwardPropagationHash(false);
 					CConcept* concept = conDes->getConcept();
@@ -3036,7 +3119,11 @@ namespace Konclude {
 							statusFlag = dependingIndiNode->getIndirectStatusFlags();
 						}
 						if (checkFlags == 0 || !statusFlag->hasFlags(checkFlags,false)) {
-							addCriticalConceptDescriptor(conDes,conceptType,dependingIndiNode,calcAlgContext);
+							if (mParallelMode && dependingIndiNode != mParallelCurrentNode) {
+								deferParallelRecord(CParallelSaturationDeferredRecord::CRITICALADD,dependingIndiNode,nullptr,nullptr,nullptr,conDes,(cint64)conceptType,0,false);
+							} else {
+								addCriticalConceptDescriptor(conDes,conceptType,dependingIndiNode,calcAlgContext);
+							}
 						}
 					}
 				}
@@ -3098,7 +3185,12 @@ namespace Konclude {
 											if (!indirectFlags->hasInsufficientFlag() && !indirectFlags->hasClashedFlag()) {
 												CSaturationATMOSTSuccessorMergingData* atmostSuccMergData = indiProcSatNode->getATMOSTSuccessorMergingData(true);
 												if (!atmostSuccMergData->isMergingProcessingQueued()) {
-													processingDataBox->addSaturationATMOSTMergingProcessLinker(atmostSuccMergData->getMergingIndividualProcessLinker()->setProcessingQueued(true));
+													if (mParallelMode) {
+														atmostSuccMergData->getMergingIndividualProcessLinker()->setProcessingQueued(true);
+														deferParallelRecord(CParallelSaturationDeferredRecord::ATMOSTMERGEQUEUE,indiProcSatNode,nullptr,nullptr,nullptr,nullptr,0,0,false);
+													} else {
+														processingDataBox->addSaturationATMOSTMergingProcessLinker(atmostSuccMergData->getMergingIndividualProcessLinker()->setProcessingQueued(true));
+													}
 												}
 												CSaturationATMOSTSuccessorMergingHashData& atmostSuccConHashData = atmostSuccMergData->getATMOSTConceptMergingDataHash()->getATMOSTConceptMergingData(criticalConDes);
 												if (!atmostSuccConHashData.mQueued) {
@@ -3428,6 +3520,10 @@ namespace Konclude {
 
 
 				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::addCriticalConceptDescriptor(CConceptSaturationDescriptor* conDes, CCriticalSaturationConceptTypeQueues::CRITICALSATURATIONCONCEPTQUEUETYPE conceptType, CIndividualSaturationProcessNode*& indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext) {
+					if (mParallelMode && indiProcSatNode != mParallelCurrentNode) {
+						deferParallelRecord(CParallelSaturationDeferredRecord::CRITICALADD,indiProcSatNode,nullptr,nullptr,nullptr,conDes,(cint64)conceptType,0,false);
+						return;
+					}
 					if (mConfAddCriticalConceptsToQueues) {
 						STATINC(SATURATIONCRITICALADDCOUNT,calcAlgContext);
 						CConceptSaturationProcessLinker* conDesProLinker = createConceptSaturationProcessLinker(calcAlgContext);
@@ -5330,7 +5426,14 @@ namespace Konclude {
 					CIndividualSaturationProcessNode* resolveNode = procDataBox->getSeparatedSaturationConceptAssertionResolveNode();
 					if (!resolveNode) {
 						resolveNode = CObjectParameterizingAllocator<CIndividualSaturationProcessNode,CProcessContext*>::allocateAndConstructAndParameterize(calcAlgContext->getUsedProcessTaskMemoryAllocationManager(),calcAlgContext->getUsedProcessContext());
-						cint64 nextResolveIndiID = calcAlgContext->getUsedProcessingDataBox()->getNextSaturationResolvedSuccessorExtensionIndividualNodeID();
+						cint64 nextResolveIndiID = 0;
+						if (mParallelMode) {
+							mParallelNodeMutex->lock();
+							nextResolveIndiID = mParallelOwnerDataBox->getNextSaturationResolvedSuccessorExtensionIndividualNodeID();
+							mParallelNodeMutex->unlock();
+						} else {
+							nextResolveIndiID = calcAlgContext->getUsedProcessingDataBox()->getNextSaturationResolvedSuccessorExtensionIndividualNodeID();
+						}
 
 						resolveNode->initIndividualSaturationProcessNode(nextResolveIndiID,nullptr,nullptr);
 						resolveNode->setReducedConceptLabel(!mConfForceAllConceptInsertion);
@@ -7387,10 +7490,18 @@ namespace Konclude {
 
 				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::addIndividualToProcessingQueue(CIndividualSaturationProcessNode*& processIndi, CCalculationAlgorithmContextBase* calcAlgContext) {
 					if (mParallelMode) {
-						if (processIndi == mParallelCurrentNode) {
+						if (processIndi != mParallelCurrentNode) {
+							deferParallelRecord(CParallelSaturationDeferredRecord::QUEUENODE,processIndi,nullptr,nullptr,nullptr,nullptr,0,0,false);
+						} else if (!mParallelApplying) {
 							mParallelContinueCurrent = true;
 						} else {
-							deferParallelRecord(CParallelSaturationDeferredRecord::QUEUENODE,processIndi,nullptr,nullptr,nullptr,nullptr,0,0,false);
+							// applying records to the node: it is this thread's, so the queued flag can be set here, the
+							// owner only has to put it into the queue (once)
+							CIndividualSaturationProcessNodeLinker* processNodeLinker = processIndi->getIndividualSaturationProcessNodeLinker();
+							if (!processNodeLinker->isProcessingQueued()) {
+								processNodeLinker->setProcessingQueued();
+								deferParallelRecord(CParallelSaturationDeferredRecord::QUEUENODEFLAGGED,processIndi,nullptr,nullptr,nullptr,nullptr,0,0,false);
+							}
 						}
 						return;
 					}
@@ -7950,7 +8061,9 @@ namespace Konclude {
 
 				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::updateDirectAddingIndividualStatusFlags(CIndividualSaturationProcessNode* indiNode, CIndividualSaturationProcessNodeStatusFlags* addingFlags, CCalculationAlgorithmContextBase* calcAlgContext) {
 					if (mParallelMode && indiNode != mParallelCurrentNode) {
-						deferParallelRecord(CParallelSaturationDeferredRecord::DIRECTFLAGS,indiNode,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+						if (requiresDirectAddingIndividualStatusFlagsUpdate(indiNode,addingFlags,calcAlgContext)) {
+							deferParallelRecord(CParallelSaturationDeferredRecord::DIRECTFLAGS,indiNode,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+						}
 						return;
 					}
 					if (requiresDirectAddingIndividualStatusFlagsUpdate(indiNode,addingFlags,calcAlgContext)) {
@@ -7970,7 +8083,9 @@ namespace Konclude {
 							for (CXNegLinker<CIndividualSaturationProcessNode*>* depdendingIndiLinkerIt = updateIndiNode->getCopyDependingIndividualNodeLinker(); depdendingIndiLinkerIt; depdendingIndiLinkerIt = depdendingIndiLinkerIt->getNext()) {
 								CIndividualSaturationProcessNode* dependingIndi = depdendingIndiLinkerIt->getData();
 								if (mParallelMode && dependingIndi != mParallelCurrentNode) {
-									deferParallelRecord(CParallelSaturationDeferredRecord::DIRECTFLAGS,dependingIndi,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+									if (requiresDirectAddingIndividualStatusFlagsUpdate(dependingIndi,addingFlags,calcAlgContext)) {
+										deferParallelRecord(CParallelSaturationDeferredRecord::DIRECTFLAGS,dependingIndi,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+									}
 								} else if (requiresDirectAddingIndividualStatusFlagsUpdate(dependingIndi,addingFlags,calcAlgContext)) {
 									CIndividualSaturationProcessNodeStatusFlags* directIndiFlags = dependingIndi->getDirectStatusFlags();
 									directIndiFlags->addFlags(addingFlags);
@@ -7988,7 +8103,9 @@ namespace Konclude {
 
 				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::updateDirectNotDependentAddingIndividualStatusFlags(CIndividualSaturationProcessNode* indiNode, CIndividualSaturationProcessNodeStatusFlags* addingFlags, CCalculationAlgorithmContextBase* calcAlgContext) {
 					if (mParallelMode && indiNode != mParallelCurrentNode) {
-						deferParallelRecord(CParallelSaturationDeferredRecord::DIRECTNOTDEPENDENTFLAGS,indiNode,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+						if (requiresDirectAddingIndividualStatusFlagsUpdate(indiNode,addingFlags,calcAlgContext)) {
+							deferParallelRecord(CParallelSaturationDeferredRecord::DIRECTNOTDEPENDENTFLAGS,indiNode,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+						}
 						return;
 					}
 					if (requiresDirectAddingIndividualStatusFlagsUpdate(indiNode,addingFlags,calcAlgContext)) {
@@ -8028,7 +8145,9 @@ namespace Konclude {
 
 				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::updateIndirectAddingIndividualStatusFlags(CIndividualSaturationProcessNode* indiNode, CIndividualSaturationProcessNodeStatusFlags* addingFlags, CCalculationAlgorithmContextBase* calcAlgContext) {
 					if (mParallelMode && indiNode != mParallelCurrentNode) {
-						deferParallelRecord(CParallelSaturationDeferredRecord::INDIRECTFLAGS,indiNode,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+						if (requiresIndirectAddingIndividualStatusFlagsUpdate(indiNode,addingFlags,calcAlgContext)) {
+							deferParallelRecord(CParallelSaturationDeferredRecord::INDIRECTFLAGS,indiNode,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+						}
 						return;
 					}
 					if (requiresIndirectAddingIndividualStatusFlagsUpdate(indiNode,addingFlags,calcAlgContext)) {
@@ -8047,7 +8166,9 @@ namespace Konclude {
 							for (CXNegLinker<CIndividualSaturationProcessNode*>* depdendingIndiLinkerIt = updateIndiNode->getCopyDependingIndividualNodeLinker(); depdendingIndiLinkerIt; depdendingIndiLinkerIt = depdendingIndiLinkerIt->getNext()) {
 								CIndividualSaturationProcessNode* dependingIndi = depdendingIndiLinkerIt->getData();
 								if (mParallelMode && dependingIndi != mParallelCurrentNode) {
-									deferParallelRecord(CParallelSaturationDeferredRecord::INDIRECTFLAGS,dependingIndi,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+									if (requiresIndirectAddingIndividualStatusFlagsUpdate(dependingIndi,addingFlags,calcAlgContext)) {
+										deferParallelRecord(CParallelSaturationDeferredRecord::INDIRECTFLAGS,dependingIndi,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+									}
 								} else if (requiresIndirectAddingIndividualStatusFlagsUpdate(dependingIndi,addingFlags,calcAlgContext)) {
 									CIndividualSaturationProcessNodeStatusFlags* indirectIndiFlags = dependingIndi->getIndirectStatusFlags();
 									indirectIndiFlags->addFlags(addingFlags);
@@ -8066,7 +8187,9 @@ namespace Konclude {
 									for (CBackwardSaturationPropagationLink* linkIt = backwardPropData.mLinkLinker; linkIt; linkIt = linkIt->getNext()) {
 										CIndividualSaturationProcessNode* sourceIndividual = linkIt->getSourceIndividual();
 										if (mParallelMode && sourceIndividual != mParallelCurrentNode) {
-									deferParallelRecord(CParallelSaturationDeferredRecord::INDIRECTFLAGS,sourceIndividual,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+									if (requiresIndirectAddingIndividualStatusFlagsUpdate(sourceIndividual,addingFlags,calcAlgContext)) {
+										deferParallelRecord(CParallelSaturationDeferredRecord::INDIRECTFLAGS,sourceIndividual,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+									}
 								} else if (requiresIndirectAddingIndividualStatusFlagsUpdate(sourceIndividual,addingFlags,calcAlgContext)) {
 											CIndividualSaturationProcessNodeStatusFlags* indirectIndiFlags = sourceIndividual->getIndirectStatusFlags();
 											indirectIndiFlags->addFlags(addingFlags);
@@ -8082,7 +8205,9 @@ namespace Konclude {
 								for (CXLinker<CIndividualSaturationProcessNode*>* nonInvConnIndiLinkerIt = updateIndiNode->getNonInverseConnectedIndividualNodeLinker(); nonInvConnIndiLinkerIt; nonInvConnIndiLinkerIt = nonInvConnIndiLinkerIt->getNext()) {
 									CIndividualSaturationProcessNode* sourceIndividual = nonInvConnIndiLinkerIt->getData();
 									if (mParallelMode && sourceIndividual != mParallelCurrentNode) {
-									deferParallelRecord(CParallelSaturationDeferredRecord::INDIRECTFLAGS,sourceIndividual,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+									if (requiresIndirectAddingIndividualStatusFlagsUpdate(sourceIndividual,addingFlags,calcAlgContext)) {
+										deferParallelRecord(CParallelSaturationDeferredRecord::INDIRECTFLAGS,sourceIndividual,nullptr,nullptr,nullptr,nullptr,addingFlags->getFlags(),0,false);
+									}
 								} else if (requiresIndirectAddingIndividualStatusFlagsUpdate(sourceIndividual,addingFlags,calcAlgContext)) {
 										CIndividualSaturationProcessNodeStatusFlags* indirectIndiFlags = sourceIndividual->getIndirectStatusFlags();
 										indirectIndiFlags->addFlags(addingFlags);
@@ -8234,7 +8359,9 @@ namespace Konclude {
 
 				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::updateMaxCardinalityCandidates(CIndividualSaturationProcessNode* indiNode, cint64 atleastCandidate, cint64 atmostCandidate, CCalculationAlgorithmContextBase* calcAlgContext) {
 					if (mParallelMode && indiNode != mParallelCurrentNode) {
-						deferParallelRecord(CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES,indiNode,nullptr,nullptr,nullptr,nullptr,atleastCandidate,atmostCandidate,false);
+						if (requiresMaxCardinalityCandidatePropagation(indiNode,atleastCandidate,atmostCandidate,calcAlgContext)) {
+							deferParallelRecord(CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES,indiNode,nullptr,nullptr,nullptr,nullptr,atleastCandidate,atmostCandidate,false);
+						}
 						return;
 					}
 					if (requiresMaxCardinalityCandidatePropagation(indiNode,atleastCandidate,atmostCandidate,calcAlgContext)) {
@@ -8256,7 +8383,9 @@ namespace Konclude {
 							for (CXNegLinker<CIndividualSaturationProcessNode*>* depdendingIndiLinkerIt = updateIndiNode->getCopyDependingIndividualNodeLinker(); depdendingIndiLinkerIt; depdendingIndiLinkerIt = depdendingIndiLinkerIt->getNext()) {
 								CIndividualSaturationProcessNode* dependingIndi = depdendingIndiLinkerIt->getData();
 								if (mParallelMode && dependingIndi != mParallelCurrentNode) {
-									deferParallelRecord(CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES,dependingIndi,nullptr,nullptr,nullptr,nullptr,atleastCandidate,atmostCandidate,false);
+									if (requiresMaxCardinalityCandidatePropagation(dependingIndi,atleastCandidate,atmostCandidate,calcAlgContext)) {
+										deferParallelRecord(CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES,dependingIndi,nullptr,nullptr,nullptr,nullptr,atleastCandidate,atmostCandidate,false);
+									}
 								} else if (requiresMaxCardinalityCandidatePropagation(dependingIndi,atleastCandidate,atmostCandidate,calcAlgContext)) {
 									dependingIndi->addMaxAtleastCardinalityCandidate(atleastCandidate);
 									dependingIndi->addMaxAtmostCardinalityCandidate(atmostCandidate);
@@ -8276,7 +8405,9 @@ namespace Konclude {
 										for (CBackwardSaturationPropagationLink* linkIt = backwardPropData.mLinkLinker; linkIt; linkIt = linkIt->getNext()) {
 											CIndividualSaturationProcessNode* sourceIndividual = linkIt->getSourceIndividual();
 											if (mParallelMode && sourceIndividual != mParallelCurrentNode) {
-									deferParallelRecord(CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES,sourceIndividual,nullptr,nullptr,nullptr,nullptr,atleastCandidate,atmostCandidate,false);
+									if (requiresMaxCardinalityCandidatePropagation(sourceIndividual,atleastCandidate,atmostCandidate,calcAlgContext)) {
+										deferParallelRecord(CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES,sourceIndividual,nullptr,nullptr,nullptr,nullptr,atleastCandidate,atmostCandidate,false);
+									}
 								} else if (requiresMaxCardinalityCandidatePropagation(sourceIndividual,atleastCandidate,atmostCandidate,calcAlgContext)) {
 												sourceIndividual->addMaxAtleastCardinalityCandidate(atleastCandidate);
 												sourceIndividual->addMaxAtmostCardinalityCandidate(atmostCandidate);
@@ -8291,7 +8422,9 @@ namespace Konclude {
 								for (CXLinker<CIndividualSaturationProcessNode*>* nonInvConnIndiLinkerIt = updateIndiNode->getNonInverseConnectedIndividualNodeLinker(); nonInvConnIndiLinkerIt; nonInvConnIndiLinkerIt = nonInvConnIndiLinkerIt->getNext()) {
 									CIndividualSaturationProcessNode* sourceIndividual = nonInvConnIndiLinkerIt->getData();
 									if (mParallelMode && sourceIndividual != mParallelCurrentNode) {
-									deferParallelRecord(CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES,sourceIndividual,nullptr,nullptr,nullptr,nullptr,atleastCandidate,atmostCandidate,false);
+									if (requiresMaxCardinalityCandidatePropagation(sourceIndividual,atleastCandidate,atmostCandidate,calcAlgContext)) {
+										deferParallelRecord(CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES,sourceIndividual,nullptr,nullptr,nullptr,nullptr,atleastCandidate,atmostCandidate,false);
+									}
 								} else if (requiresMaxCardinalityCandidatePropagation(sourceIndividual,atleastCandidate,atmostCandidate,calcAlgContext)) {
 										sourceIndividual->addMaxAtleastCardinalityCandidate(atleastCandidate);
 										sourceIndividual->addMaxAtmostCardinalityCandidate(atmostCandidate);
@@ -8821,6 +8954,7 @@ namespace Konclude {
 
 				class CCalculationTableauApproximationSaturationTaskHandleAlgorithm::CParallelSaturationShared {
 					public:
+						enum PHASE { PROCESS, BUCKET, APPLY };
 						QMutex mMutex;
 						QWaitCondition mHelperWait;
 						QWaitCondition mOwnerWait;
@@ -8828,9 +8962,16 @@ namespace Konclude {
 						bool mStop;
 						cint64 mHelperCount;
 						cint64 mHelpersDone;
+						PHASE mPhase;
+						// static: slice i belongs to thread i (the owner is thread 0); otherwise the slices are taken dynamically
+						bool mStaticSlices;
+						cint64 mRoundKind;
+						QMutex mNodeMutex;
 						CParallelSaturationSlice** mSliceArray;
 						cint64 mSliceCount;
 						QAtomicInt mNextSlice;
+						// one per thread, index 0 for the owner: the records a thread produces while applying records
+						CParallelSaturationSlice* mApplySlices;
 						CSatisfiableCalculationTask* mTask;
 						CTaskProcessorContext* mProcessorContext;
 						CProcessingDataBox* mOwnerDataBox;
@@ -8840,6 +8981,8 @@ namespace Konclude {
 								CProcessingDataBox* mDataBox;
 								CCalculationTableauApproximationSaturationTaskHandleAlgorithm* mAlgorithm;
 								std::thread* mThread;
+								CTaskHandleLimitedReserveMemoryPoolAllocationManager* mTempMemMan;
+								CTaskProcessorContextBase* mProcessorContext;
 						};
 						CHelper* mHelperArray;
 				};
@@ -8856,10 +8999,17 @@ namespace Konclude {
 					CCalculationAlgorithmContextBase* calcAlgContext = CObjectAllocator< CCalculationAlgorithmContextBase >::allocateAndConstruct(context->getMemoryAllocationManager());
 					calcAlgContext->initTaskProcessContext(context,shared->mTask);
 					calcAlgContext->setUsedProcessingDataBox(dataBox);
-					calcAlgContext->initCalculationAlgorithmContext(shared->mProcessorContext);
+					// temporary memory of its own, through a processor context of its own (temporary hashes take their
+					// allocator from the processor context): the owner's is not safe for several threads
+					helper.mTempMemMan = new CTaskHandleLimitedReserveMemoryPoolAllocationManager(CParallelSaturationProcessContext::getParallelSaturationMemoryPoolProvider(),2,30);
+					helper.mProcessorContext = new CTaskProcessorContextBase(shared->mProcessorContext->getTaskProcessorCommunicator(),helper.mTempMemMan);
+					calcAlgContext->initCalculationAlgorithmContext(helper.mProcessorContext);
 					mCalcAlgContext = calcAlgContext;
 					mProcessingDataBox = dataBox;
 					readCalculationConfig(shared->mTask);
+					mParallelThreadIndex = helperIndex+1;
+					mParallelNodeMutex = &shared->mNodeMutex;
+					mParallelOwnerDataBox = shared->mOwnerDataBox;
 					cint64 seenGeneration = 0;
 					for (;;) {
 						shared->mMutex.lock();
@@ -8872,12 +9022,31 @@ namespace Konclude {
 						if (stop) {
 							break;
 						}
-						for (;;) {
-							int sliceIndex = shared->mNextSlice.fetchAndAddOrdered(1);
-							if (sliceIndex >= shared->mSliceCount) {
-								break;
+						if (shared->mPhase == CParallelSaturationShared::PROCESS) {
+							if (shared->mStaticSlices) {
+								if (mParallelThreadIndex < shared->mSliceCount) {
+									CParallelSaturationSlice* slice = shared->mSliceArray[mParallelThreadIndex];
+									if (shared->mRoundKind == PARALLELROUND_EXTENSION) {
+										processParallelExtensionSlice(slice,calcAlgContext);
+									} else if (shared->mRoundKind == PARALLELROUND_CRITICAL) {
+										processParallelCriticalSlice(slice,calcAlgContext);
+									} else {
+										processParallelSlice(slice,calcAlgContext);
+									}
+								}
+							} else {
+								for (;;) {
+									int sliceIndex = shared->mNextSlice.fetchAndAddOrdered(1);
+									if (sliceIndex >= shared->mSliceCount) {
+										break;
+									}
+									processParallelSlice(shared->mSliceArray[sliceIndex],calcAlgContext);
+								}
 							}
-							processParallelSlice(shared->mSliceArray[sliceIndex],calcAlgContext);
+						} else if (shared->mPhase == CParallelSaturationShared::BUCKET) {
+							bucketParallelRecords(shared,mParallelThreadIndex);
+						} else {
+							applyParallelRecordsForThread(shared,&shared->mApplySlices[mParallelThreadIndex],calcAlgContext);
 						}
 						shared->mMutex.lock();
 						++shared->mHelpersDone;
@@ -8902,8 +9071,10 @@ namespace Konclude {
 					mParallelCurrentNode = indiProcSatNode;
 					if (!indiProcSatNode->isInitialized()) {
 						// the node's lazily created data comes from the pools of the thread that processes it first; a
-						// label set the owner created before (a disjunct's update linker) is handed over as well
+						// label set the owner created before (a disjunct's update linker) is handed over as well; from
+						// now on only this thread (or the owner, serially) allocates for the node
 						indiProcSatNode->setProcessContext(calcAlgContext->getProcessContext());
+						indiProcSatNode->setParallelOwner(mParallelThreadIndex);
 						CReapplyConceptSaturationLabelSet* labelSet = indiProcSatNode->getReapplyConceptSaturationLabelSet(false);
 						if (labelSet) {
 							labelSet->setProcessContext(calcAlgContext->getProcessContext());
@@ -8950,102 +9121,511 @@ namespace Konclude {
 
 				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::applyParallelDeferredRecords(CParallelSaturationSlice* slice, CCalculationAlgorithmContextBase* calcAlgContext) {
 					for (CParallelSaturationDeferredRecord* record = slice->mDeferredLinker; record; record = record->mNext) {
-						CIndividualSaturationProcessNode* node = record->mNode;
-						switch (record->mKind) {
-							case CParallelSaturationDeferredRecord::CONCEPTADD: {
-								addConceptToIndividual(record->mConcept,record->mFlag,node,node->getReapplyConceptSaturationLabelSet(true),record->mValue1 != 0,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::CONCEPTADDFILTERED: {
-								addConceptFilteredToIndividual(record->mConcept,record->mFlag,node,record->mValue1 != 0,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::LINKINSTALL: {
-								CBackwardSaturationPropagationLink* link = (CBackwardSaturationPropagationLink*)record->mPointer;
-								CBackwardSaturationPropagationReapplyDescriptor* seenReapplyDes = (CBackwardSaturationPropagationReapplyDescriptor*)record->mValue1;
-								CIndividualSaturationProcessNode* sourceNode = record->mNode2;
-								installBackwardPropagationLink(sourceNode,node,record->mRole,link,false,true,calcAlgContext);
-								if (record->mFlag) {
-									// the descriptors the successor added after the predecessor took the ones it had
-									CRoleBackwardSaturationPropagationHash* backPropHash = node->getRoleBackwardPropagationHash(false);
-									if (backPropHash) {
-										CBackwardSaturationPropagationReapplyDescriptor* reapplyDesIt = backPropHash->getBackwardPropagationBackwardPropagationConceptDescriptor(record->mRole);
-										while (reapplyDesIt && reapplyDesIt != seenReapplyDes) {
-											CConceptSaturationDescriptor* reapplyConSatDes = reapplyDesIt->getReapplyConceptSaturationDescriptor();
-											CConcept* reapplyConcept = reapplyConSatDes->getConcept();
-											bool reapplyConNegation = reapplyConSatDes->getNegation();
-											for (CSortedNegLinker<CConcept*>* reapplyOpLinker = reapplyConcept->getOperandList(); reapplyOpLinker; reapplyOpLinker = reapplyOpLinker->getNext()) {
-												addConceptFilteredToIndividual(reapplyOpLinker->getData(),reapplyOpLinker->isNegated()^reapplyConNegation,sourceNode,true,calcAlgContext);
-											}
-											reapplyDesIt = reapplyDesIt->getNext();
+						applyParallelDeferredRecord(record,calcAlgContext);
+					}
+				}
+
+
+				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::applyParallelDeferredRecord(CParallelSaturationDeferredRecord* record, CCalculationAlgorithmContextBase* calcAlgContext) {
+					CIndividualSaturationProcessNode* node = record->mNode;
+					switch (record->mKind) {
+						case CParallelSaturationDeferredRecord::CONCEPTADD: {
+							addConceptToIndividual(record->mConcept,record->mFlag,node,node->getReapplyConceptSaturationLabelSet(true),record->mValue1 != 0,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::CONCEPTADDFILTERED: {
+							addConceptFilteredToIndividual(record->mConcept,record->mFlag,node,record->mValue1 != 0,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::LINKINSTALL: {
+							CBackwardSaturationPropagationLink* link = (CBackwardSaturationPropagationLink*)record->mPointer;
+							CBackwardSaturationPropagationReapplyDescriptor* seenReapplyDes = (CBackwardSaturationPropagationReapplyDescriptor*)record->mValue1;
+							CIndividualSaturationProcessNode* sourceNode = record->mNode2;
+							installBackwardPropagationLink(sourceNode,node,record->mRole,link,false,true,calcAlgContext);
+							if (record->mFlag) {
+								// the descriptors the successor added after the predecessor took the ones it had
+								CRoleBackwardSaturationPropagationHash* backPropHash = node->getRoleBackwardPropagationHash(false);
+								if (backPropHash) {
+									CBackwardSaturationPropagationReapplyDescriptor* reapplyDesIt = backPropHash->getBackwardPropagationBackwardPropagationConceptDescriptor(record->mRole);
+									while (reapplyDesIt && reapplyDesIt != seenReapplyDes) {
+										CConceptSaturationDescriptor* reapplyConSatDes = reapplyDesIt->getReapplyConceptSaturationDescriptor();
+										CConcept* reapplyConcept = reapplyConSatDes->getConcept();
+										bool reapplyConNegation = reapplyConSatDes->getNegation();
+										for (CSortedNegLinker<CConcept*>* reapplyOpLinker = reapplyConcept->getOperandList(); reapplyOpLinker; reapplyOpLinker = reapplyOpLinker->getNext()) {
+											addConceptFilteredToIndividual(reapplyOpLinker->getData(),reapplyOpLinker->isNegated()^reapplyConNegation,sourceNode,true,calcAlgContext);
 										}
+										reapplyDesIt = reapplyDesIt->getNext();
 									}
 								}
-								// and the successor's status the predecessor may have read before the successor set it
-								updateIndirectAddingIndividualStatusFlags(sourceNode,node->getIndirectStatusFlags(),calcAlgContext);
-								updateAddingSuccessorConnectedNominal(sourceNode,node->getSuccessorConnectedNominalSet(false),calcAlgContext);
-								updateMaxCardinalityCandidates(sourceNode,node->getMaxAtleastCardinalityCandidate(),node->getMaxAtmostCardinalityCandidate(),calcAlgContext);
-								break;
 							}
-							case CParallelSaturationDeferredRecord::DISJUNCTION: {
-								processDisjunctionConcept(node,(CConceptSaturationDescriptor*)record->mPointer,calcAlgContext);
-								break;
+							// and the successor's status the predecessor may have read before the successor set it
+							updateIndirectAddingIndividualStatusFlags(sourceNode,node->getIndirectStatusFlags(),calcAlgContext);
+							updateAddingSuccessorConnectedNominal(sourceNode,node->getSuccessorConnectedNominalSet(false),calcAlgContext);
+							updateMaxCardinalityCandidates(sourceNode,node->getMaxAtleastCardinalityCandidate(),node->getMaxAtmostCardinalityCandidate(),calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::DISJUNCTION: {
+							processDisjunctionConcept(node,(CConceptSaturationDescriptor*)record->mPointer,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::QUEUENODE: {
+							addIndividualToProcessingQueue(node,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::QUEUENODEFLAGGED: {
+							// the applying thread set the queued flag already, the node only has to enter the owner's queue
+							calcAlgContext->getUsedProcessingDataBox()->addIndividualSaturationProcessNodeLinker(node->getIndividualSaturationProcessNodeLinker());
+							break;
+						}
+						case CParallelSaturationDeferredRecord::QUEUEUNINITIALIZEDNODE: {
+							addUninitializedIndividualToProcessingQueue(node,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::DIRECTFLAGS: {
+							CIndividualSaturationProcessNodeStatusFlags addingFlags;
+							addingFlags.initStatusFlags();
+							addingFlags.addFlags(record->mValue1);
+							updateDirectAddingIndividualStatusFlags(node,&addingFlags,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::DIRECTNOTDEPENDENTFLAGS: {
+							CIndividualSaturationProcessNodeStatusFlags addingFlags;
+							addingFlags.initStatusFlags();
+							addingFlags.addFlags(record->mValue1);
+							updateDirectNotDependentAddingIndividualStatusFlags(node,&addingFlags,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::INDIRECTFLAGS: {
+							CIndividualSaturationProcessNodeStatusFlags addingFlags;
+							addingFlags.initStatusFlags();
+							addingFlags.addFlags(record->mValue1);
+							updateIndirectAddingIndividualStatusFlags(node,&addingFlags,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::SUCCESSORNOMINAL: {
+							updateAddingSuccessorConnectedNominal(node,record->mValue1,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES: {
+							updateMaxCardinalityCandidates(node,record->mValue1,record->mValue2,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::DATALITERALSUCCESSOR: {
+							createSuccessorForDataLiteral(node,record->mRole,(CDataLiteral*)record->mPointer,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::EXTENSIONQUEUE: {
+							calcAlgContext->getUsedProcessingDataBox()->getSaturationSucessorExtensionIndividualNodeProcessingQueue(true)->insertProcessIndiviudal(node);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::DISJUNCTEXTRACTQUEUE: {
+							calcAlgContext->getUsedProcessingDataBox()->addIndividualDisjunctCommonConceptExtractProcessLinker((CIndividualSaturationProcessNodeLinker*)record->mPointer);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::CRITICALQUEUE: {
+							calcAlgContext->getUsedProcessingDataBox()->getSaturationCriticalIndividualNodeProcessingQueue(true)->insertProcessIndiviudal(node);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::EXTENSIONQUEUEFULL: {
+							addSuccessorExtensionToProcessingQueue(node,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::CRITICALADD: {
+							addCriticalConceptDescriptor((CConceptSaturationDescriptor*)record->mPointer,(CCriticalSaturationConceptTypeQueues::CRITICALSATURATIONCONCEPTQUEUETYPE)record->mValue1,node,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::MARKATMOST: {
+							markATMOSTRestrictedAncestorsAsInsufficient((CConceptSaturationDescriptor*)record->mPointer,record->mNode2,(CXNegLinker<CRole*>*)record->mValue1,node,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::PREDMERGE: {
+							createAncestorSuccessorMergingExtension(node,record->mRole,record->mNode2,(CIndividualSaturationProcessNode*)record->mPointer,(CXNegLinker<CRole*>*)record->mValue1,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::FUNCROLEDEP: {
+							addFUNCTIONALRoleExtensionFunctionalityAddedToDependentIndividual(node,record->mRole,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::FUNCQUALDEP: {
+							addQualifiedFUNCTIONALAtmostConceptExtensionProcessing((CConceptSaturationDescriptor*)record->mPointer,node,calcAlgContext);
+							break;
+						}
+						case CParallelSaturationDeferredRecord::ATMOSTMERGEQUEUE: {
+							calcAlgContext->getUsedProcessingDataBox()->addSaturationATMOSTMergingProcessLinker(node->getATMOSTSuccessorMergingData(true)->getMergingIndividualProcessLinker());
+							break;
+						}
+					}
+				}
+
+
+				CCalculationTableauApproximationSaturationTaskHandleAlgorithm::CParallelSaturationSlice* CCalculationTableauApproximationSaturationTaskHandleAlgorithm::createParallelSlice(CIndividualSaturationProcessNode** nodes, cint64 count, cint64 threadCount) {
+					CParallelSaturationSlice* slice = new CParallelSaturationSlice();
+					slice->mNodes = nodes;
+					slice->mCount = count;
+					slice->mDeferredLinker = nullptr;
+					slice->mDeferredLast = nullptr;
+					slice->mCompletionLinker = nullptr;
+					slice->mCompletionLast = nullptr;
+					slice->mRecordCount = 0;
+					slice->mOwnerHeads = new CParallelSaturationDeferredRecord*[threadCount]();
+					slice->mOwnerLasts = new CParallelSaturationDeferredRecord*[threadCount]();
+					return slice;
+				}
+
+
+				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::bucketParallelRecords(CParallelSaturationShared* shared, cint64 threadIndex) {
+					// the records of every slice (one slice per thread at a time) are relinked into one list per target
+					// node's thread, keeping their order; each record is touched once here instead of once per thread
+					cint64 threadCount = shared->mHelperCount+1;
+					for (cint64 si = threadIndex; si < shared->mSliceCount; si += threadCount) {
+						CParallelSaturationSlice* slice = shared->mSliceArray[si];
+						cint64 count = 0;
+						CParallelSaturationDeferredRecord* record = slice->mDeferredLinker;
+						while (record) {
+							CParallelSaturationDeferredRecord* nextRecord = record->mNext;
+							record->mNext = nullptr;
+							cint64 owner = record->mNode->getParallelOwner();
+							if (slice->mOwnerLasts[owner]) {
+								slice->mOwnerLasts[owner]->mNext = record;
+							} else {
+								slice->mOwnerHeads[owner] = record;
 							}
-							case CParallelSaturationDeferredRecord::QUEUENODE: {
-								addIndividualToProcessingQueue(node,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::QUEUEUNINITIALIZEDNODE: {
-								addUninitializedIndividualToProcessingQueue(node,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::DIRECTFLAGS: {
-								CIndividualSaturationProcessNodeStatusFlags addingFlags;
-								addingFlags.initStatusFlags();
-								addingFlags.addFlags(record->mValue1);
-								updateDirectAddingIndividualStatusFlags(node,&addingFlags,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::DIRECTNOTDEPENDENTFLAGS: {
-								CIndividualSaturationProcessNodeStatusFlags addingFlags;
-								addingFlags.initStatusFlags();
-								addingFlags.addFlags(record->mValue1);
-								updateDirectNotDependentAddingIndividualStatusFlags(node,&addingFlags,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::INDIRECTFLAGS: {
-								CIndividualSaturationProcessNodeStatusFlags addingFlags;
-								addingFlags.initStatusFlags();
-								addingFlags.addFlags(record->mValue1);
-								updateIndirectAddingIndividualStatusFlags(node,&addingFlags,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::SUCCESSORNOMINAL: {
-								updateAddingSuccessorConnectedNominal(node,record->mValue1,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES: {
-								updateMaxCardinalityCandidates(node,record->mValue1,record->mValue2,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::DATALITERALSUCCESSOR: {
-								createSuccessorForDataLiteral(node,record->mRole,(CDataLiteral*)record->mPointer,calcAlgContext);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::EXTENSIONQUEUE: {
-								calcAlgContext->getUsedProcessingDataBox()->getSaturationSucessorExtensionIndividualNodeProcessingQueue(true)->insertProcessIndiviudal(node);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::DISJUNCTEXTRACTQUEUE: {
-								calcAlgContext->getUsedProcessingDataBox()->addIndividualDisjunctCommonConceptExtractProcessLinker((CIndividualSaturationProcessNodeLinker*)record->mPointer);
-								break;
-							}
-							case CParallelSaturationDeferredRecord::CRITICALQUEUE: {
-								calcAlgContext->getUsedProcessingDataBox()->getSaturationCriticalIndividualNodeProcessingQueue(true)->insertProcessIndiviudal(node);
-								break;
+							slice->mOwnerLasts[owner] = record;
+							++count;
+							record = nextRecord;
+						}
+						slice->mDeferredLinker = nullptr;
+						slice->mDeferredLast = nullptr;
+						slice->mRecordCount = count;
+					}
+				}
+
+
+				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::applyParallelRecordsForThread(CParallelSaturationShared* shared, CParallelSaturationSlice* applySlice, CCalculationAlgorithmContextBase* calcAlgContext) {
+					// every thread applies, in slice order, the records whose target node it processed first (its memory,
+					// nobody else allocates for the node), as if it were processing the node: writes into other nodes
+					// become records again, collected in the thread's apply slice together with the records only the
+					// owner can apply (queues, node creations, disjunction handling); the owner applies the apply slices
+					// serially afterwards
+					mParallelMode = true;
+					mParallelApplying = true;
+					mParallelCurrentSlice = applySlice;
+					cint64 ownerIndex = mParallelThreadIndex;
+					for (cint64 si = 0; si < shared->mSliceCount; ++si) {
+						for (CParallelSaturationDeferredRecord* record = shared->mSliceArray[si]->mOwnerHeads[ownerIndex]; record; record = record->mNext) {
+							switch (record->mKind) {
+								case CParallelSaturationDeferredRecord::CONCEPTADD:
+								case CParallelSaturationDeferredRecord::CONCEPTADDFILTERED:
+								case CParallelSaturationDeferredRecord::LINKINSTALL:
+								case CParallelSaturationDeferredRecord::DIRECTFLAGS:
+								case CParallelSaturationDeferredRecord::DIRECTNOTDEPENDENTFLAGS:
+								case CParallelSaturationDeferredRecord::INDIRECTFLAGS:
+								case CParallelSaturationDeferredRecord::SUCCESSORNOMINAL:
+								case CParallelSaturationDeferredRecord::CARDINALITYCANDIDATES: {
+									mParallelCurrentNode = record->mNode;
+									applyParallelDeferredRecord(record,calcAlgContext);
+									mParallelCurrentNode = nullptr;
+									break;
+								}
+								default: {
+									deferParallelRecord(record->mKind,record->mNode,record->mNode2,record->mConcept,record->mRole,record->mPointer,record->mValue1,record->mValue2,record->mFlag);
+									break;
+								}
 							}
 						}
 					}
+					mParallelCurrentSlice = nullptr;
+					mParallelApplying = false;
+					mParallelMode = false;
+				}
+
+
+				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::processParallelExtensionSlice(CParallelSaturationSlice* slice, CCalculationAlgorithmContextBase* calcAlgContext) {
+					// the successor extensions of the thread's own nodes, as processNextSuccessorExtensions does them one at
+					// a time; a node that changed something is queued again for the next extension round
+					mParallelMode = true;
+					mParallelCurrentSlice = slice;
+					for (cint64 i = 0; i < slice->mCount; ++i) {
+						CIndividualSaturationProcessNode* indiProcSatNode = slice->mNodes[i];
+						mParallelCurrentNode = indiProcSatNode;
+						bool extensionProcessed = false;
+						if (!indiProcSatNode->isSeparated()) {
+							if (mConfALLConceptsExtensionProcessing) {
+								extensionProcessed |= processSuccessorALLConceptsExtensions(indiProcSatNode,calcAlgContext);
+							}
+							if (!extensionProcessed && mConfFUNCTIONALConceptsExtensionProcessing) {
+								extensionProcessed |= processSuccessorFUNCTIONALConceptsExtensions(indiProcSatNode,calcAlgContext);
+							}
+						}
+						mParallelCurrentNode = indiProcSatNode;
+						if (extensionProcessed) {
+							deferParallelRecord(CParallelSaturationDeferredRecord::EXTENSIONQUEUE,indiProcSatNode,nullptr,nullptr,nullptr,nullptr,0,0,false);
+						}
+						mParallelCurrentNode = nullptr;
+					}
+					mParallelCurrentSlice = nullptr;
+					mParallelMode = false;
+				}
+
+
+				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::processParallelCriticalSlice(CParallelSaturationSlice* slice, CCalculationAlgorithmContextBase* calcAlgContext) {
+					// the critical concept checks of the thread's own nodes; they read other nodes' labels (stable in this
+					// round) and write their own flags, everything else becomes a record for the owner
+					mParallelMode = true;
+					mParallelCurrentSlice = slice;
+					for (cint64 i = 0; i < slice->mCount; ++i) {
+						CIndividualSaturationProcessNode* indiProcSatNode = slice->mNodes[i];
+						mParallelCurrentNode = indiProcSatNode;
+						checkCriticalConceptsForNode(indiProcSatNode,calcAlgContext);
+						mParallelCurrentNode = nullptr;
+					}
+					mParallelCurrentSlice = nullptr;
+					mParallelMode = false;
+				}
+
+
+				CIndividualSaturationProcessNode* CCalculationTableauApproximationSaturationTaskHandleAlgorithm::resolveParallelExtensionNode(CIndividualSaturationProcessNode* baseNode, CSaturationSuccessorConceptExtensionMap* succConExtMap, CPROCESSINGHASH<cint64,CConceptNegationPair>* conExtensionMap, CCalculationAlgorithmContextBase* calcAlgContext) {
+					// the extension nodes of a node are found in a trie at that node, walked and extended under the node's
+					// lock; a missing node is built by the first thread that needs it, outside the lock (its rules may lock
+					// other nodes), and published in the trie when complete, other threads needing it meanwhile wait
+					baseNode->lockParallel();
+					CSaturationIndividualNodeExtensionResolveData* resolveData = baseNode->getSuccessorExtensionData(true)->getBaseExtensionResolveData(true);
+					CIndividualSaturationProcessNode* copyIndiProcSatNode = baseNode;
+					if (succConExtMap) {
+						CPROCESSHASH<cint64,CSaturationSuccessorConceptExtensionMapData>* succConExtDataMap = succConExtMap->getSuccessorConceptExtensionMap();
+						for (CPROCESSHASH<cint64,CSaturationSuccessorConceptExtensionMapData>::const_iterator it = succConExtDataMap->constBegin(), itEnd = succConExtDataMap->constEnd(); it != itEnd; ++it) {
+							const CSaturationSuccessorConceptExtensionMapData& conExtDat(it.value());
+							if (conExtDat.mPositive) {
+								resolveData = getResolvedIndividualNodeExtension(resolveData,conExtDat.mConcept,false,copyIndiProcSatNode,calcAlgContext);
+							}
+							if (conExtDat.mNegative) {
+								resolveData = getResolvedIndividualNodeExtension(resolveData,conExtDat.mConcept,true,copyIndiProcSatNode,calcAlgContext);
+							}
+						}
+					}
+					if (conExtensionMap) {
+						for (CPROCESSHASH<cint64,CConceptNegationPair>::const_iterator it = conExtensionMap->constBegin(), itEnd = conExtensionMap->constEnd(); it != itEnd; ++it) {
+							const CConceptNegationPair& conExtDat(it.value());
+							resolveData = getResolvedIndividualNodeExtension(resolveData,conExtDat.first,conExtDat.second,copyIndiProcSatNode,calcAlgContext);
+						}
+					}
+					if (resolveData->hasProcessingIndividualNode()) {
+						CIndividualSaturationProcessNode* resolvedNode = resolveData->getProcessingIndividualNode();
+						baseNode->unlockParallel();
+						return resolvedNode;
+					}
+					if (resolveData->getParallelState() == 1) {
+						baseNode->unlockParallel();
+						while (resolveData->getParallelState() != 2) { }
+						return resolveData->getProcessingIndividualNode();
+					}
+					resolveData->setParallelState(1);
+					CIndividualSaturationProcessNode* savedCurrentNode = mParallelCurrentNode;
+					// copies the label of the copy node (under its lock) and makes the new node the current one
+					CIndividualSaturationProcessNode* resolvedNode = createResolvedIndividualNode(resolveData,copyIndiProcSatNode,true,calcAlgContext);
+					baseNode->unlockParallel();
+					if (succConExtMap) {
+						CPROCESSHASH<cint64,CSaturationSuccessorConceptExtensionMapData>* succConExtDataMap = succConExtMap->getSuccessorConceptExtensionMap();
+						for (CPROCESSHASH<cint64,CSaturationSuccessorConceptExtensionMapData>::const_iterator it = succConExtDataMap->constBegin(), itEnd = succConExtDataMap->constEnd(); it != itEnd; ++it) {
+							const CSaturationSuccessorConceptExtensionMapData& conExtDat(it.value());
+							if (conExtDat.mPositive) {
+								addConceptFilteredToIndividual(conExtDat.mConcept,false,resolvedNode,calcAlgContext);
+							}
+							if (conExtDat.mNegative) {
+								addConceptFilteredToIndividual(conExtDat.mConcept,true,resolvedNode,calcAlgContext);
+							}
+						}
+					}
+					if (conExtensionMap) {
+						for (CPROCESSHASH<cint64,CConceptNegationPair>::const_iterator it = conExtensionMap->constBegin(), itEnd = conExtensionMap->constEnd(); it != itEnd; ++it) {
+							const CConceptNegationPair& conExtDat(it.value());
+							addConceptFilteredToIndividual(conExtDat.first,conExtDat.second,resolvedNode,calcAlgContext);
+						}
+					}
+					preprocessResolvedIndividualNode(resolvedNode,calcAlgContext);
+					resolveData->setProcessingIndividualNode(resolvedNode);
+					resolveData->setParallelState(2);
+					mParallelCurrentNode = savedCurrentNode;
+					return resolvedNode;
+				}
+
+
+				bool CCalculationTableauApproximationSaturationTaskHandleAlgorithm::drainSerialQueuedNodes(cint64 threshold, CCalculationAlgorithmContextBase* calcAlgContext) {
+					// the serial loop's work for a few queued nodes (and the disjunct extraction linkers) by the owner;
+					// stops with true as soon as the queue is large enough for a parallel round again
+					CProcessingDataBox* processingDataBox = calcAlgContext->getUsedProcessingDataBox();
+					for (;;) {
+						cint64 queuedCount = 0;
+						for (CIndividualSaturationProcessNodeLinker* linkerIt = processingDataBox->getIndividualSaturationProcessNodeLinker(); linkerIt && queuedCount < threshold; linkerIt = linkerIt->getNext()) {
+							++queuedCount;
+						}
+						if (queuedCount >= threshold) {
+							return true;
+						}
+						if (processingDataBox->hasIndividualSaturationProcessNodeLinker()) {
+							CIndividualSaturationProcessNodeLinker* indiProcessSaturationNodeLinker = processingDataBox->takeIndividualSaturationProcessNodeLinker();
+							CIndividualSaturationProcessNode* indiProcSatNode = indiProcessSaturationNodeLinker->getData();
+							STATINC(INDIVIDUALNODESWITCHCOUNT,calcAlgContext);
+							if (individualNodeInitializing(indiProcSatNode,calcAlgContext)) {
+								CConceptSaturationProcessLinker* conceptSaturationProcessLinker = indiProcSatNode->takeConceptSaturationProcessLinker();
+								while (conceptSaturationProcessLinker) {
+									STATINC(RULEAPPLICATIONCOUNT,calcAlgContext);
+									applyTableauSaturationRule(indiProcSatNode,conceptSaturationProcessLinker);
+									releaseConceptSaturationProcessLinker(conceptSaturationProcessLinker,calcAlgContext);
+									conceptSaturationProcessLinker = indiProcSatNode->takeConceptSaturationProcessLinker();
+								}
+							}
+							indiProcessSaturationNodeLinker->clearProcessingQueued();
+							individualNodeConclusion(indiProcSatNode,calcAlgContext);
+						} else if (processingDataBox->hasIndividualDisjunctCommonConceptExtractProcessLinker()) {
+							CIndividualSaturationProcessNodeLinker* indiDisjCommonConExtProcessLinker = processingDataBox->takeIndividualDisjunctCommonConceptExtractProcessLinker();
+							indiDisjCommonConExtProcessLinker->setProcessingQueued(false);
+							CIndividualSaturationProcessNode* indiProcSatNode = indiDisjCommonConExtProcessLinker->getData();
+							STATINC(INDIVIDUALNODESWITCHCOUNT,calcAlgContext);
+							if (individualNodeInitializing(indiProcSatNode,calcAlgContext)) {
+								updateExtractDisjunctCommonConcept(indiProcSatNode,calcAlgContext);
+							}
+							individualNodeConclusion(indiProcSatNode,calcAlgContext);
+						} else {
+							return false;
+						}
+					}
+				}
+
+
+				void CCalculationTableauApproximationSaturationTaskHandleAlgorithm::runParallelRound(CParallelSaturationShared* shared, QVector<CParallelSaturationSlice*>& slices, cint64 roundKind, CCalculationAlgorithmContextBase* calcAlgContext, cint64* roundStats) {
+					bool staticSlices = roundKind != PARALLELROUND_PROCESSDYNAMIC;
+					shared->mRoundKind = roundKind;
+					CProcessingDataBox* processingDataBox = calcAlgContext->getUsedProcessingDataBox();
+					QElapsedTimer timer;
+					timer.start();
+					cint64 threadCount = shared->mHelperCount+1;
+					// processing: a plain array, read by every thread while this one must not reallocate it
+					shared->mSliceArray = slices.data();
+					shared->mSliceCount = slices.count();
+					shared->mNextSlice.store(0);
+					shared->mStaticSlices = staticSlices;
+					shared->mPhase = CParallelSaturationShared::PROCESS;
+					shared->mMutex.lock();
+					shared->mHelpersDone = 0;
+					++shared->mGeneration;
+					shared->mHelperWait.wakeAll();
+					shared->mMutex.unlock();
+					if (staticSlices) {
+						if (shared->mSliceCount > 0) {
+							if (roundKind == PARALLELROUND_EXTENSION) {
+								processParallelExtensionSlice(shared->mSliceArray[0],calcAlgContext);
+							} else if (roundKind == PARALLELROUND_CRITICAL) {
+								processParallelCriticalSlice(shared->mSliceArray[0],calcAlgContext);
+							} else {
+								processParallelSlice(shared->mSliceArray[0],calcAlgContext);
+							}
+						}
+					} else {
+						for (;;) {
+							int sliceIndex = shared->mNextSlice.fetchAndAddOrdered(1);
+							if (sliceIndex >= shared->mSliceCount) {
+								break;
+							}
+							processParallelSlice(shared->mSliceArray[sliceIndex],calcAlgContext);
+						}
+					}
+					shared->mMutex.lock();
+					while (shared->mHelpersDone < shared->mHelperCount) {
+						shared->mOwnerWait.wait(&shared->mMutex);
+					}
+					shared->mMutex.unlock();
+					cint64 processedMs = timer.elapsed();
+					cint64 recordCount = 0;
+					cint64 secondCount = 0;
+					cint64 bucketedMs = processedMs;
+					cint64 parallelAppliedMs = processedMs;
+					if (mConfParallelSaturationParallelApply) {
+						for (cint64 t = 0; t < threadCount; ++t) {
+							CParallelSaturationSlice& applySlice = shared->mApplySlices[t];
+							applySlice.mNodes = nullptr;
+							applySlice.mCount = 0;
+							applySlice.mDeferredLinker = nullptr;
+							applySlice.mDeferredLast = nullptr;
+							applySlice.mCompletionLinker = nullptr;
+							applySlice.mCompletionLast = nullptr;
+						}
+						shared->mPhase = CParallelSaturationShared::BUCKET;
+						shared->mMutex.lock();
+						shared->mHelpersDone = 0;
+						++shared->mGeneration;
+						shared->mHelperWait.wakeAll();
+						shared->mMutex.unlock();
+						bucketParallelRecords(shared,0);
+						shared->mMutex.lock();
+						while (shared->mHelpersDone < shared->mHelperCount) {
+							shared->mOwnerWait.wait(&shared->mMutex);
+						}
+						shared->mMutex.unlock();
+						bucketedMs = timer.elapsed();
+						for (cint64 si = 0; si < slices.count(); ++si) {
+							recordCount += slices[si]->mRecordCount;
+						}
+						shared->mPhase = CParallelSaturationShared::APPLY;
+						shared->mMutex.lock();
+						shared->mHelpersDone = 0;
+						++shared->mGeneration;
+						shared->mHelperWait.wakeAll();
+						shared->mMutex.unlock();
+						applyParallelRecordsForThread(shared,&shared->mApplySlices[0],calcAlgContext);
+						shared->mMutex.lock();
+						while (shared->mHelpersDone < shared->mHelperCount) {
+							shared->mOwnerWait.wait(&shared->mMutex);
+						}
+						shared->mMutex.unlock();
+						parallelAppliedMs = timer.elapsed();
+						for (cint64 t = 0; t < threadCount; ++t) {
+							CParallelSaturationSlice& applySlice = shared->mApplySlices[t];
+							for (CParallelSaturationDeferredRecord* record = applySlice.mDeferredLinker; record; record = record->mNext) {
+								++secondCount;
+								if (roundStats[6]) {
+									++roundStats[7+record->mKind];
+								}
+							}
+							applyParallelDeferredRecords(&applySlice,calcAlgContext);
+							CIndividualSaturationProcessNodeLinker* completionLinkerIt = applySlice.mCompletionLinker;
+							while (completionLinkerIt) {
+								CIndividualSaturationProcessNodeLinker* nextLinker = completionLinkerIt->getNext();
+								completionLinkerIt->clearNext();
+								processingDataBox->addIndividualSaturationCompletionNodeLinker(completionLinkerIt);
+								completionLinkerIt = nextLinker;
+							}
+						}
+					} else {
+						// what the threads could not write into other nodes, applied in slice order
+						for (cint64 si = 0; si < slices.count(); ++si) {
+							for (CParallelSaturationDeferredRecord* record = slices[si]->mDeferredLinker; record; record = record->mNext) {
+								++recordCount;
+								applyParallelDeferredRecord(record,calcAlgContext);
+							}
+						}
+					}
+					for (cint64 si = 0; si < slices.count(); ++si) {
+						CParallelSaturationSlice* slice = slices[si];
+						CIndividualSaturationProcessNodeLinker* completionLinkerIt = slice->mCompletionLinker;
+						while (completionLinkerIt) {
+							CIndividualSaturationProcessNodeLinker* nextLinker = completionLinkerIt->getNext();
+							completionLinkerIt->clearNext();
+							processingDataBox->addIndividualSaturationCompletionNodeLinker(completionLinkerIt);
+							completionLinkerIt = nextLinker;
+						}
+						delete[] slice->mOwnerHeads;
+						delete[] slice->mOwnerLasts;
+						delete slice;
+					}
+					slices.clear();
+					cint64 doneMs = timer.elapsed();
+					roundStats[0] += processedMs;
+					roundStats[1] += parallelAppliedMs-processedMs;
+					roundStats[2] += doneMs-parallelAppliedMs;
+					roundStats[3] += recordCount;
+					roundStats[4] += secondCount;
+					roundStats[5] += bucketedMs-processedMs;
 				}
 
 
@@ -9184,12 +9764,15 @@ namespace Konclude {
 					shared.mStop = false;
 					shared.mHelperCount = threadCount-1;
 					shared.mHelpersDone = 0;
+					shared.mPhase = CParallelSaturationShared::PROCESS;
+					shared.mStaticSlices = false;
 					shared.mNextSlice.store(0);
 					shared.mTask = satCalcTask;
 					shared.mProcessorContext = calcAlgContext->getTaskProcessorContext();
 					shared.mOwnerDataBox = processingDataBox;
 					shared.mSliceArray = nullptr;
 					shared.mSliceCount = 0;
+					shared.mApplySlices = new CParallelSaturationSlice[threadCount];
 					shared.mHelperArray = new CParallelSaturationShared::CHelper[qMax<cint64>(1,shared.mHelperCount)];
 					for (cint64 i = 0; i < shared.mHelperCount; ++i) {
 						CParallelSaturationShared::CHelper& helper = shared.mHelperArray[i];
@@ -9197,16 +9780,27 @@ namespace Konclude {
 						helper.mDataBox = nullptr;
 						helper.mAlgorithm = new CCalculationTableauApproximationSaturationTaskHandleAlgorithm(mBackendAssCaceHandler,mSatTaskOccStatCollector);
 						helper.mThread = nullptr;
+						helper.mTempMemMan = nullptr;
+						helper.mProcessorContext = nullptr;
 					}
 					for (cint64 i = 0; i < shared.mHelperCount; ++i) {
 						CParallelSaturationShared::CHelper& helper = shared.mHelperArray[i];
 						helper.mThread = new std::thread(&CCalculationTableauApproximationSaturationTaskHandleAlgorithm::parallelHelperMain,helper.mAlgorithm,&shared,i);
 					}
+					mParallelThreadIndex = 0;
+					mParallelNodeMutex = &shared.mNodeMutex;
+					mParallelOwnerDataBox = processingDataBox;
+					// the extension rounds let a thread create structures at other nodes (allocated from the memory of the
+					// node's thread), so the pool allocators take a lock while the helpers run
+					calcAlgContext->getUsedProcessTaskMemoryAllocationManager()->setConcurrentAllocation(true);
+					for (cint64 i = 0; i < shared.mHelperCount; ++i) {
+						shared.mHelperArray[i].mContext->getMemoryAllocationManager()->setConcurrentAllocation(true);
+					}
 
 					Consistence::CPrecomputation* precomputation = ontology->getPrecomputation();
-					cint64 deferredCount = 0;
-					cint64 processMs = 0;
-					cint64 applyMs = 0;
+					// processing ms, parallel application ms, serial application ms, records, second generation records
+					cint64 levelStats[32] = {0};
+					QVector<CParallelSaturationSlice*> slices;
 					for (cint64 level = 1; level <= maxLevel; ++level) {
 						cint64 begin = levelStart[level];
 						cint64 count = levelStart[level+1]-begin;
@@ -9214,62 +9808,149 @@ namespace Konclude {
 							continue;
 						}
 						cint64 sliceSize = qMax<cint64>(32,count / (threadCount*4));
-						QVector<CParallelSaturationSlice*> slices;
 						for (cint64 offset = 0; offset < count; offset += sliceSize) {
-							CParallelSaturationSlice* slice = new CParallelSaturationSlice();
-							slice->mNodes = ordered.data()+begin+offset;
-							slice->mCount = qMin(sliceSize,count-offset);
-							slice->mDeferredLinker = nullptr;
-							slice->mDeferredLast = nullptr;
-							slice->mCompletionLinker = nullptr;
-							slice->mCompletionLast = nullptr;
-							slices.append(slice);
+							slices.append(createParallelSlice(ordered.data()+begin+offset,qMin(sliceSize,count-offset),threadCount));
 						}
-						cint64 levelStartMs = timer.elapsed();
-						// a plain array: the slice list is read by every thread while this one must not reallocate it
-						shared.mSliceArray = slices.data();
-						shared.mSliceCount = slices.count();
-						shared.mNextSlice.store(0);
-						shared.mMutex.lock();
-						shared.mHelpersDone = 0;
-						++shared.mGeneration;
-						shared.mHelperWait.wakeAll();
-						shared.mMutex.unlock();
-						for (;;) {
-							int sliceIndex = shared.mNextSlice.fetchAndAddOrdered(1);
-							if (sliceIndex >= shared.mSliceCount) {
-								break;
-							}
-							processParallelSlice(shared.mSliceArray[sliceIndex],calcAlgContext);
-						}
-						shared.mMutex.lock();
-						while (shared.mHelpersDone < shared.mHelperCount) {
-							shared.mOwnerWait.wait(&shared.mMutex);
-						}
-						shared.mMutex.unlock();
-						cint64 levelProcessedMs = timer.elapsed();
-						// what the threads could not write into other nodes, applied in slice order
-						for (cint64 si = 0; si < slices.count(); ++si) {
-							CParallelSaturationSlice* slice = slices[si];
-							for (CParallelSaturationDeferredRecord* record = slice->mDeferredLinker; record; record = record->mNext) {
-								++deferredCount;
-							}
-							applyParallelDeferredRecords(slice,calcAlgContext);
-							CIndividualSaturationProcessNodeLinker* completionLinkerIt = slice->mCompletionLinker;
-							while (completionLinkerIt) {
-								CIndividualSaturationProcessNodeLinker* nextLinker = completionLinkerIt->getNext();
-								completionLinkerIt->clearNext();
-								processingDataBox->addIndividualSaturationCompletionNodeLinker(completionLinkerIt);
-								completionLinkerIt = nextLinker;
-							}
-							delete slice;
-						}
+						runParallelRound(&shared,slices,PARALLELROUND_PROCESSDYNAMIC,calcAlgContext,levelStats);
 						if (precomputation) {
 							precomputation->incInitializedSaturationNodeCount(count);
 						}
-						processMs += levelProcessedMs-levelStartMs;
-						applyMs += timer.elapsed()-levelProcessedMs;
 					}
+					cint64 levelsMs = timer.elapsed();
+
+					// after the levels: rounds of the queue (each thread re-processing the nodes it processed first) until
+					// the queue is too small to share, the small rest serially; then a round over the successor extension
+					// queue, or, when that is empty, over the critical concept queue; again and again until all are empty
+					cint64 tailStats[32] = {0};
+					cint64 extensionStats[32] = {0};
+					cint64 criticalStats[32] = {0};
+					cint64 tailRounds = 0;
+					cint64 tailNodes = 0;
+					cint64 extensionRounds = 0;
+					cint64 extensionNodes = 0;
+					cint64 criticalRounds = 0;
+					cint64 criticalNodes = 0;
+					cint64 serialDrainMs = 0;
+					cint64 nodesBeforeRounds = processingDataBox->getIndividualSaturationProcessNodeVector(false) ? processingDataBox->getIndividualSaturationProcessNodeVector(false)->getItemCount() : 0;
+					if (mConfParallelSaturationTailRounds) {
+						cint64 threshold = qMax<cint64>(64,threadCount*4);
+						bool extensionEnabled = mConfParallelSaturationExtensionRounds && mConfConceptsExtensionProcessing && (mConfALLConceptsExtensionProcessing || mConfFUNCTIONALConceptsExtensionProcessing);
+						bool criticalEnabled = mConfParallelSaturationExtensionRounds && mConfCheckCriticalConcepts;
+						QVector<CIndividualSaturationProcessNode*> queued;
+						QVector<CIndividualSaturationProcessNode*> roundOrdered;
+						QVector<CIndividualSaturationProcessNode*> serialCritical;
+						QVector<cint64> ownerStart(threadCount+1,0);
+						for (;;) {
+							cint64 queuedCount = 0;
+							for (CIndividualSaturationProcessNodeLinker* linkerIt = processingDataBox->getIndividualSaturationProcessNodeLinker(); linkerIt && queuedCount < threshold; linkerIt = linkerIt->getNext()) {
+								++queuedCount;
+							}
+							cint64 roundKind = PARALLELROUND_PROCESSSTATIC;
+							queued.clear();
+							if (queuedCount >= threshold) {
+								while (processingDataBox->hasIndividualSaturationProcessNodeLinker()) {
+									CIndividualSaturationProcessNodeLinker* linker = processingDataBox->takeIndividualSaturationProcessNodeLinker();
+									queued.append(linker->getData());
+								}
+								// a node not initialised yet (queued by a disjunction) is initialised here, serially, since
+								// initialising copies the label of another node that may be processed in the round
+								for (cint64 i = 0; i < queued.count(); ++i) {
+									if (!queued[i]->isInitialized()) {
+										individualNodeInitializing(queued[i],calcAlgContext);
+									}
+								}
+							} else {
+								cint64 drainStartMs = timer.elapsed();
+								bool reachedThreshold = drainSerialQueuedNodes(threshold,calcAlgContext);
+								serialDrainMs += timer.elapsed()-drainStartMs;
+								if (reachedThreshold) {
+									continue;
+								}
+								CSaturationSuccessorExtensionIndividualNodeProcessingQueue* extensionQueue = processingDataBox->getSaturationSucessorExtensionIndividualNodeProcessingQueue(false);
+								if (extensionEnabled && extensionQueue && !extensionQueue->isEmpty()) {
+									roundKind = PARALLELROUND_EXTENSION;
+									for (;;) {
+										CIndividualSaturationProcessNode* node = extensionQueue->takeNextToCurrentProcessIndividual();
+										if (!node) {
+											break;
+										}
+										extensionQueue->clearCurrentProcessIndividual();
+										queued.append(node);
+									}
+								} else if (criticalEnabled && hasNextCriticalConcepts(calcAlgContext)) {
+									roundKind = PARALLELROUND_CRITICAL;
+									serialCritical.clear();
+									CCriticalIndividualNodeProcessingQueue* criticalQueue = processingDataBox->getSaturationCriticalIndividualNodeProcessingQueue(false);
+									for (;;) {
+										CIndividualSaturationProcessNode* node = criticalQueue->takeNextProcessIndividual();
+										if (!node) {
+											break;
+										}
+										if (node->getDirectStatusFlags()->hasMissedABoxConsistencyFlag() && !isConsistenceDataAvailable(calcAlgContext)) {
+											// dropped, as checkNextCriticalConcepts does
+											CCriticalSaturationConceptTypeQueues* criticalConceptQueues = node->getCriticalConceptTypeQueues(false);
+											if (criticalConceptQueues) {
+												criticalConceptQueues->setProcessNodeQueued(false);
+											}
+										} else if (node->hasNominalIntegrated()) {
+											serialCritical.append(node);
+										} else {
+											queued.append(node);
+										}
+									}
+								} else {
+									break;
+								}
+							}
+							// the thread that processed a node first owns its memory and does the node's work in the rounds
+							for (cint64 t = 0; t <= threadCount; ++t) {
+								ownerStart[t] = 0;
+							}
+							for (cint64 i = 0; i < queued.count(); ++i) {
+								++ownerStart[queued[i]->getParallelOwner()+1];
+							}
+							for (cint64 t = 1; t <= threadCount; ++t) {
+								ownerStart[t] += ownerStart[t-1];
+							}
+							roundOrdered.resize(queued.count());
+							{
+								QVector<cint64> fill(ownerStart);
+								for (cint64 i = 0; i < queued.count(); ++i) {
+									roundOrdered[fill[queued[i]->getParallelOwner()]++] = queued[i];
+								}
+							}
+							for (cint64 t = 0; t < threadCount; ++t) {
+								slices.append(createParallelSlice(roundOrdered.data()+ownerStart[t],ownerStart[t+1]-ownerStart[t],threadCount));
+							}
+							cint64 roundStats[32] = {0};
+							roundStats[6] = logging ? 1 : 0;
+							runParallelRound(&shared,slices,roundKind,calcAlgContext,roundStats);
+							if (roundKind == PARALLELROUND_CRITICAL) {
+								for (cint64 i = 0; i < serialCritical.count(); ++i) {
+									CIndividualSaturationProcessNode* node = serialCritical[i];
+									checkCriticalConceptsForNode(node,calcAlgContext);
+								}
+							}
+							cint64* stats = roundKind == PARALLELROUND_PROCESSSTATIC ? tailStats : roundKind == PARALLELROUND_EXTENSION ? extensionStats : criticalStats;
+							for (cint64 s = 0; s < 32; ++s) {
+								if (s != 6) stats[s] += roundStats[s];
+							}
+							if (roundKind == PARALLELROUND_PROCESSSTATIC) {
+								++tailRounds;
+								tailNodes += queued.count();
+							} else if (roundKind == PARALLELROUND_EXTENSION) {
+								++extensionRounds;
+								extensionNodes += queued.count();
+							} else {
+								++criticalRounds;
+								criticalNodes += queued.count();
+							}
+							if (logging && (tailRounds+extensionRounds+criticalRounds <= 12 || queued.count() >= 5000)) {
+								fprintf(stderr, "PARSAT %s round %lld: %lld nodes, %lld records, %lld second, processing %lld ms, applying %lld + %lld ms\n", roundKind == PARALLELROUND_PROCESSSTATIC ? "tail" : roundKind == PARALLELROUND_EXTENSION ? "extension" : "critical", (long long)(tailRounds+extensionRounds+criticalRounds), (long long)queued.count(), (long long)roundStats[3], (long long)roundStats[4], (long long)roundStats[0], (long long)roundStats[1], (long long)roundStats[2]);
+							}
+						}
+					}
+
 					shared.mMutex.lock();
 					shared.mStop = true;
 					shared.mHelperWait.wakeAll();
@@ -9293,8 +9974,18 @@ namespace Konclude {
 						// which the nodes and their label hashes keep allocating from when they grow later
 						helper.mContext->attachToContainer(satCalcTask);
 						delete helper.mAlgorithm;
+						if (helper.mTempMemMan) {
+							helper.mTempMemMan->releaseAllMemory();
+							delete helper.mTempMemMan;
+						}
+						delete helper.mProcessorContext;
 					}
+					for (cint64 i = 0; i < shared.mHelperCount; ++i) {
+						shared.mHelperArray[i].mContext->getMemoryAllocationManager()->setConcurrentAllocation(false);
+					}
+					calcAlgContext->getUsedProcessTaskMemoryAllocationManager()->setConcurrentAllocation(false);
 					delete[] shared.mHelperArray;
+					delete[] shared.mApplySlices;
 					if (precomputation) {
 						CIndividualSaturationProcessNodeVector* nodeVector = processingDataBox->getIndividualSaturationProcessNodeVector(false);
 						if (nodeVector) {
@@ -9306,7 +9997,22 @@ namespace Konclude {
 						for (CIndividualSaturationProcessNodeLinker* linkerIt = processingDataBox->getIndividualSaturationProcessNodeLinker(); linkerIt; linkerIt = linkerIt->getNext()) {
 							++requeued;
 						}
-						fprintf(stderr, "PARSAT done in %lld ms: processing %lld ms, applying %lld deferred records %lld ms, %lld nodes re-queued for the serial tail\n", (long long)timer.elapsed(), (long long)processMs, (long long)deferredCount, (long long)applyMs, (long long)requeued);
+						fprintf(stderr, "PARSAT levels done in %lld ms: processing %lld ms, applying %lld deferred records %lld + %lld ms (bucketing %lld ms, %lld second generation)\n", (long long)levelsMs, (long long)levelStats[0], (long long)levelStats[3], (long long)levelStats[1], (long long)levelStats[2], (long long)levelStats[5], (long long)levelStats[4]);
+						fprintf(stderr, "PARSAT tail %lld rounds, %lld node processings, %lld records (%lld second), processing %lld ms, applying %lld + %lld ms (bucketing %lld ms), serial drains %lld ms, %lld nodes left for the serial tail\n", (long long)tailRounds, (long long)tailNodes, (long long)tailStats[3], (long long)tailStats[4], (long long)tailStats[0], (long long)tailStats[1], (long long)tailStats[2], (long long)tailStats[5], (long long)serialDrainMs, (long long)requeued);
+						cint64 nodesAfterRounds = processingDataBox->getIndividualSaturationProcessNodeVector(false) ? processingDataBox->getIndividualSaturationProcessNodeVector(false)->getItemCount() : 0;
+						fprintf(stderr, "PARSAT extension %lld rounds, %lld node extensions, %lld nodes created, %lld records (%lld second), processing %lld ms, applying %lld + %lld ms\n", (long long)extensionRounds, (long long)extensionNodes, (long long)(nodesAfterRounds-nodesBeforeRounds), (long long)extensionStats[3], (long long)extensionStats[4], (long long)extensionStats[0], (long long)extensionStats[1], (long long)extensionStats[2]);
+						fprintf(stderr, "PARSAT critical %lld rounds, %lld node checks, %lld records (%lld second), processing %lld ms, applying %lld + %lld ms\n", (long long)criticalRounds, (long long)criticalNodes, (long long)criticalStats[3], (long long)criticalStats[4], (long long)criticalStats[0], (long long)criticalStats[1], (long long)criticalStats[2]);
+						const char* kindNames[22] = {"add","addfiltered","link","queue","queueuninit","directflags","directnotdep","indirectflags","nominal","cardinality","dataliteral","extqueue","disjextract","critqueue","disjunction","queueflagged","extqueuefull","criticaladd","markatmost","predmerge","funcroledep","funcqualdep"};
+						cint64* statsArrays[3] = {tailStats, extensionStats, criticalStats};
+						const char* statsNames[3] = {"tail", "extension", "critical"};
+						for (cint64 a = 0; a < 3; ++a) {
+							fprintf(stderr, "PARSAT %s second-generation kinds:", statsNames[a]);
+							for (cint64 k = 0; k < 22; ++k) {
+								if (statsArrays[a][7+k] > 0) fprintf(stderr, " %s %lld", kindNames[k], (long long)statsArrays[a][7+k]);
+							}
+							fprintf(stderr, "\n");
+						}
+						fprintf(stderr, "PARSAT done in %lld ms\n", (long long)timer.elapsed());
 						fflush(stderr);
 					}
 					return true;

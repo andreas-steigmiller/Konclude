@@ -163,10 +163,28 @@ namespace Konclude {
 						// link and linker lists, the initialised transition), the dependency level of the first processing
 						// round, and the process context of the thread that processes the node first, so that the node's
 						// lazily created data comes from that thread's pools
-						inline void lockParallel() { while (!mParallelLock.testAndSetAcquire(0,1)) { } }
-						inline void unlockParallel() { mParallelLock.storeRelease(0); }
+						//! A spin lock per node for the parallel saturation (#92), reentrant for the holding thread (a thread
+						//! copying a node's label may lock the same node again while applying rules to the copy).
+						inline void lockParallel() {
+							int tag = getParallelLockTag();
+							if (mParallelLock.loadRelaxed() == tag) {
+								++mParallelLockDepth;
+								return;
+							}
+							while (!mParallelLock.testAndSetAcquire(0,tag)) { }
+							mParallelLockDepth = 1;
+						}
+						inline void unlockParallel() {
+							if (--mParallelLockDepth == 0) {
+								mParallelLock.storeRelease(0);
+							}
+						}
+						//! A tag unique to the calling thread (never 0).
+						static int getParallelLockTag();
 						cint64 getParallelLevel();
 						CIndividualSaturationProcessNode* setParallelLevel(cint64 level);
+						inline cint64 getParallelOwner() { return mParallelOwner; }
+						inline void setParallelOwner(cint64 owner) { mParallelOwner = owner; }
 						CIndividualSaturationProcessNode* setProcessContext(CProcessContext* processContext);
 						CIndividualSaturationProcessNode* setInitialized(bool initialized);
 
@@ -314,6 +332,8 @@ namespace Konclude {
 						cint64 mMaxAtmostCardinality;
 						QAtomicInt mParallelLock;
 						cint64 mParallelLevel;
+						cint64 mParallelOwner;
+						cint64 mParallelLockDepth;
 
 					// private methods
 					private:
