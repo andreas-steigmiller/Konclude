@@ -168,6 +168,81 @@ public class AxiomExpressionBuildingBridge {
 
 	// ------------------------------------------------------------ class axioms
 
+	/**
+	 * Builds a batch of expressions and axioms encoded in one array, which saves a native call
+	 * per expression and per list operand. Every op is an opcode (OP_...) followed by its
+	 * arguments: a fixed number of expression addresses, a cardinality, or an operand count and
+	 * that many addresses, see the translator. The ops are executed in order and every op yields
+	 * one result; an argument that is negative refers to an earlier result of the same batch,
+	 * -(k + 1) for the k-th op, a positive argument is an address built before (an entity, a
+	 * literal, a facet restriction or a result of an earlier batch). An axiom op also tells its
+	 * axiom. Returns the number of ops that were built, less than the number of ops in the
+	 * batch if one failed, or -1 without a bridge.
+	 */
+	public native int buildBatch(KoncludeReasonerBridge bridge, long[] ops, int length);
+
+	/**
+	 * A hint of how many axioms are about to be built, so that the native side sizes its axiom
+	 * sets and its expression hash once instead of growing them step by step. Optional.
+	 */
+	public native void expectAxioms(KoncludeReasonerBridge bridge, long axiomCount);
+
+	public static final int OP_OBJECT_INTERSECTION_OF = 1;
+	public static final int OP_OBJECT_UNION_OF = 2;
+	public static final int OP_OBJECT_COMPLEMENT_OF = 3;
+	public static final int OP_OBJECT_ONE_OF = 4;
+	public static final int OP_OBJECT_SOME_VALUES_FROM = 5;
+	public static final int OP_OBJECT_ALL_VALUES_FROM = 6;
+	public static final int OP_OBJECT_HAS_VALUE = 7;
+	public static final int OP_OBJECT_HAS_SELF = 8;
+	public static final int OP_OBJECT_MIN_CARDINALITY = 9;
+	public static final int OP_OBJECT_MAX_CARDINALITY = 10;
+	public static final int OP_OBJECT_EXACT_CARDINALITY = 11;
+	public static final int OP_OBJECT_INVERSE_OF = 12;
+	public static final int OP_DATA_ONE_OF = 13;
+	public static final int OP_DATA_COMPLEMENT_OF = 14;
+	public static final int OP_DATA_INTERSECTION_OF = 15;
+	public static final int OP_DATA_UNION_OF = 16;
+	public static final int OP_DATATYPE_RESTRICTION = 17;
+	public static final int OP_DATA_SOME_VALUES_FROM = 18;
+	public static final int OP_DATA_ALL_VALUES_FROM = 19;
+	public static final int OP_DATA_HAS_VALUE = 20;
+	public static final int OP_DATA_MIN_CARDINALITY = 21;
+	public static final int OP_DATA_MAX_CARDINALITY = 22;
+	public static final int OP_DATA_EXACT_CARDINALITY = 23;
+	public static final int OP_SUB_CLASS_OF = 30;
+	public static final int OP_EQUIVALENT_CLASSES = 31;
+	public static final int OP_DISJOINT_CLASSES = 32;
+	public static final int OP_DISJOINT_UNION = 33;
+	public static final int OP_SUB_OBJECT_PROPERTY_OF = 34;
+	public static final int OP_SUB_PROPERTY_CHAIN_OF = 35;
+	public static final int OP_EQUIVALENT_OBJECT_PROPERTIES = 36;
+	public static final int OP_DISJOINT_OBJECT_PROPERTIES = 37;
+	public static final int OP_INVERSE_OBJECT_PROPERTIES = 38;
+	public static final int OP_OBJECT_PROPERTY_DOMAIN = 39;
+	public static final int OP_OBJECT_PROPERTY_RANGE = 40;
+	public static final int OP_FUNCTIONAL_OBJECT_PROPERTY = 41;
+	public static final int OP_INVERSE_FUNCTIONAL_OBJECT_PROPERTY = 42;
+	public static final int OP_REFLEXIVE_OBJECT_PROPERTY = 43;
+	public static final int OP_IRREFLEXIVE_OBJECT_PROPERTY = 44;
+	public static final int OP_SYMMETRIC_OBJECT_PROPERTY = 45;
+	public static final int OP_ASYMMETRIC_OBJECT_PROPERTY = 46;
+	public static final int OP_TRANSITIVE_OBJECT_PROPERTY = 47;
+	public static final int OP_SUB_DATA_PROPERTY_OF = 48;
+	public static final int OP_EQUIVALENT_DATA_PROPERTIES = 49;
+	public static final int OP_DISJOINT_DATA_PROPERTIES = 50;
+	public static final int OP_DATA_PROPERTY_DOMAIN = 51;
+	public static final int OP_DATA_PROPERTY_RANGE = 52;
+	public static final int OP_FUNCTIONAL_DATA_PROPERTY = 53;
+	public static final int OP_DECLARATION = 54;
+	public static final int OP_CLASS_ASSERTION = 55;
+	public static final int OP_OBJECT_PROPERTY_ASSERTION = 56;
+	public static final int OP_NEGATIVE_OBJECT_PROPERTY_ASSERTION = 57;
+	public static final int OP_DATA_PROPERTY_ASSERTION = 58;
+	public static final int OP_NEGATIVE_DATA_PROPERTY_ASSERTION = 59;
+	public static final int OP_SAME_INDIVIDUAL = 60;
+	public static final int OP_DIFFERENT_INDIVIDUALS = 61;
+
 	public native long buildOWLSubClassOfAxiom(KoncludeReasonerBridge bridge, long subClass, long superClass);
 
 	public native long buildOWLEquivalentClassesFromArgumentList(KoncludeReasonerBridge bridge);

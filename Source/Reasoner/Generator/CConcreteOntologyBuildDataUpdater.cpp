@@ -1404,6 +1404,12 @@ namespace Konclude {
 			}
 
 
+			void CConcreteOntologyBuildDataUpdater::reserveExpressionBuildHash(cint64 expressionCount) {
+				if (mExpressionBuildHash && mExpressionBuildHash->capacity() < expressionCount) {
+					mExpressionBuildHash->reserve((int)expressionCount);
+				}
+			}
+
 			CBuildExpression* CConcreteOntologyBuildDataUpdater::getHashedExpression(CBuildExpression* expression) {
 				CBuildExpression* hashExpression = nullptr;
 				hashExpression = mExpressionBuildHash->value(CExpressionHasher(expression),nullptr);
