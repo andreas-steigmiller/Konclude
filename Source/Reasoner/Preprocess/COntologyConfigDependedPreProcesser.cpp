@@ -20,6 +20,8 @@
 
 #include "COntologyConfigDependedPreProcesser.h"
 
+#include <QtConcurrent>
+
 
 namespace Konclude {
 
@@ -134,7 +136,8 @@ namespace Konclude {
 						reportLog("Starting triggered implication binary GCI absorption preprocessing.");
 						triggImplNorm->preprocess(ontology,&preprocessingContext);
 						reportLog("Stopped triggered implication binary GCI absorption preprocessing.");
-						delete triggImplNorm;
+						// the absorber holds hashes with millions of nodes, freed on a helper thread (nothing references it any more)
+						QtConcurrent::run([triggImplNorm]() { delete triggImplNorm; });
 					}
 
 					if (writeDebugginData && CConfigDebugDataReader::readConfigDebugWritingPreprocessingEnabled(config, "Konclude.Debugging.WritePreprocessingDebuggingData.AbsorbedTBox", false)) {
@@ -156,7 +159,8 @@ namespace Konclude {
 						reportLog("Starting lexical normalization preprocessing.");
 						legNorm->preprocess(ontology,&preprocessingContext);		
 						reportLog("Stopped lexical normalization preprocessing.");
-						delete legNorm;
+						// its replacement hashes are freed by the destructor, on a helper thread
+						QtConcurrent::run([legNorm]() { delete legNorm; });
 					}
 
 					if (CConfigDataReader::readConfigBoolean(config,"Konclude.Calculation.Preprocessing.BranchTriggerExtraction",true)) {
