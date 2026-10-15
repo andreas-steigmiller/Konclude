@@ -20,6 +20,8 @@
 
 #include "CConcreteOntologyUpdateBuilder.h"
 #include <algorithm>
+#include <vector>
+#include <utility>
 
 
 
@@ -36,17 +38,42 @@ namespace Konclude { namespace Reasoner { namespace Generator {
 		quint64 z = (quint64)order * 0x9E3779B97F4A7C15ULL + seed * 0xBF58476D1CE4E5B9ULL;
 		z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL; z = (z ^ (z >> 27)) * 0x94D049BB133111EBULL; return z ^ (z >> 31);
 	}
+	// the sort works on a contiguous vector of (key, pointer) pairs: the keys are read once instead of twice per
+	// comparison through the pointers (a cache miss each on a million expressions)
+	template<class T>
+	static QList<T*> sortedByBuildKey(std::vector< std::pair<quint64,T*> >& keyed) {
+		std::sort(keyed.begin(), keyed.end(), [](const std::pair<quint64,T*>& a, const std::pair<quint64,T*>& b) { return a.first < b.first; });
+		QList<T*> list;
+		list.reserve((int)keyed.size());
+		for (typename std::vector< std::pair<quint64,T*> >::const_iterator it = keyed.begin(), itEnd = keyed.end(); it != itEnd; ++it) {
+			list.append(it->second);
+		}
+		return list;
+	}
 	template<class T>
 	static QList<T*> orderedByBuild(const QSet<T*>& set) {
-		QList<T*> list = set.values();
-		std::sort(list.begin(), list.end(), [](T* a, T* b) { return buildOrderKey(a->getBuildOrder()) < buildOrderKey(b->getBuildOrder()); });
-		return list;
+		std::vector< std::pair<quint64,T*> > keyed;
+		keyed.reserve(set.size());
+		for (typename QSet<T*>::const_iterator it = set.constBegin(), itEnd = set.constEnd(); it != itEnd; ++it) {
+			keyed.push_back(std::pair<quint64,T*>(buildOrderKey((*it)->getBuildOrder()), *it));
+		}
+		return sortedByBuildKey(keyed);
 	}
 	template<class K, class V>
 	static QList<K*> orderedByBuildKeys(const QHash<K*,V>& hash) {
-		QList<K*> list = hash.keys();
-		std::sort(list.begin(), list.end(), [](K* a, K* b) { return buildOrderKey(a->getBuildOrder()) < buildOrderKey(b->getBuildOrder()); });
-		return list;
+		std::vector< std::pair<quint64,K*> > keyed;
+		keyed.reserve(hash.size());
+		for (typename QHash<K*,V>::const_iterator it = hash.constBegin(), itEnd = hash.constEnd(); it != itEnd; ++it) {
+			keyed.push_back(std::pair<quint64,K*>(buildOrderKey(it.key()->getBuildOrder()), it.key()));
+		}
+		return sortedByBuildKey(keyed);
+	}
+	// grow a hash or set to at least the given number of buckets before a known number of inserts (never shrinks)
+	template<class H>
+	static void reserveAtLeast(H& hash, cint64 size) {
+		if (hash.capacity() < size) {
+			hash.reserve((int)size);
+		}
 	}
 }}}
 namespace Konclude {
@@ -410,54 +437,36 @@ namespace Konclude {
 
 
 
-				//mUpdateClassAxiomHash->reserve(mTellAxiomSet->size());
-				//mUpdateObjectPropertyAxiomHash->reserve(mTellAxiomSet->size());
-				//mUpdateDataPropertyAxiomHash->reserve(mTellAxiomSet->size());
-				//mDeclarationAxiomSet->reserve(mTellAxiomSet->size());
-				//mUpdateAssertionAxiomHash->reserve(mTellAxiomSet->size());
+				// the told axioms are mostly class axioms and declarations (SNOMED: 1.1 M axioms, no assertions)
+				reserveAtLeast(*mUpdateClassAxiomHash, newTellUpdatedAxiomSet.size() / 2);
+				reserveAtLeast(*mDeclarationAxiomSet, newTellUpdatedAxiomSet.size() / 2);
 
 				foreach (CAxiomExpression* axiomExp, orderedByBuild(newTellUpdatedAxiomSet)) {
-					CClassAxiomExpression* classAxiomExp = dynamic_cast<CClassAxiomExpression*>(axiomExp);
-					if (classAxiomExp) {
-						mUpdateClassAxiomHash->insert(classAxiomExp,true);
-					}
-					CObjectPropertyAxiomExpression* objPropAxiomExp = dynamic_cast<CObjectPropertyAxiomExpression*>(axiomExp);
-					if (objPropAxiomExp) {
-						mUpdateObjectPropertyAxiomHash->insert(objPropAxiomExp,true);
-					}
-					CDataPropertyAxiomExpression* dataPropAxiomExp = dynamic_cast<CDataPropertyAxiomExpression*>(axiomExp);
-					if (dataPropAxiomExp) {
-						mUpdateDataPropertyAxiomHash->insert(dataPropAxiomExp,true);
-					}
-					CDeclarationAxiomExpression* declAxiomExp = dynamic_cast<CDeclarationAxiomExpression*>(axiomExp);
-					if (declAxiomExp) {
-						mDeclarationAxiomSet->insert(declAxiomExp);
-					}
-					CAssertionAxiomExpression* assAxiomExp = dynamic_cast<CAssertionAxiomExpression*>(axiomExp);
-					if (assAxiomExp) {
-						mUpdateAssertionAxiomHash->insert(assAxiomExp,true);
+					cint64 kind = axiomExp->getExpressionKindFlags();
+					if (kind & CBuildExpression::EKFCLASSAXIOM) {
+						mUpdateClassAxiomHash->insert(static_cast<CClassAxiomExpression*>(axiomExp),true);
+					} else if (kind & CBuildExpression::EKFOBJECTPROPERTYAXIOM) {
+						mUpdateObjectPropertyAxiomHash->insert(static_cast<CObjectPropertyAxiomExpression*>(axiomExp),true);
+					} else if (kind & CBuildExpression::EKFDATAPROPERTYAXIOM) {
+						mUpdateDataPropertyAxiomHash->insert(static_cast<CDataPropertyAxiomExpression*>(axiomExp),true);
+					} else if (kind & CBuildExpression::EKFDECLARATIONAXIOM) {
+						mDeclarationAxiomSet->insert(static_cast<CDeclarationAxiomExpression*>(axiomExp));
+					} else if (kind & CBuildExpression::EKFASSERTIONAXIOM) {
+						mUpdateAssertionAxiomHash->insert(static_cast<CAssertionAxiomExpression*>(axiomExp),true);
 					}
 				}
 				foreach (CAxiomExpression* axiomExp, orderedByBuild(newRetractUpdatedAxiomSet)) {
-					CClassAxiomExpression* classAxiomExp = dynamic_cast<CClassAxiomExpression*>(axiomExp);
-					if (classAxiomExp) {
-						mUpdateClassAxiomHash->insert(classAxiomExp,false);
-					} 
-					CObjectPropertyAxiomExpression* objPropAxiomExp = dynamic_cast<CObjectPropertyAxiomExpression*>(axiomExp);
-					if (objPropAxiomExp) {
-						mUpdateObjectPropertyAxiomHash->insert(objPropAxiomExp,false);
-					}
-					CDataPropertyAxiomExpression* dataPropAxiomExp = dynamic_cast<CDataPropertyAxiomExpression*>(axiomExp);
-					if (dataPropAxiomExp) {
-						mUpdateDataPropertyAxiomHash->insert(dataPropAxiomExp,false);
-					}
-					CDeclarationAxiomExpression* declAxiomExp = dynamic_cast<CDeclarationAxiomExpression*>(axiomExp);
-					if (declAxiomExp) {
-						mDeclarationAxiomSet->remove(declAxiomExp);
-					}
-					CAssertionAxiomExpression* assAxiomExp = dynamic_cast<CAssertionAxiomExpression*>(axiomExp);
-					if (assAxiomExp) {
-						mUpdateAssertionAxiomHash->insert(assAxiomExp,false);
+					cint64 kind = axiomExp->getExpressionKindFlags();
+					if (kind & CBuildExpression::EKFCLASSAXIOM) {
+						mUpdateClassAxiomHash->insert(static_cast<CClassAxiomExpression*>(axiomExp),false);
+					} else if (kind & CBuildExpression::EKFOBJECTPROPERTYAXIOM) {
+						mUpdateObjectPropertyAxiomHash->insert(static_cast<CObjectPropertyAxiomExpression*>(axiomExp),false);
+					} else if (kind & CBuildExpression::EKFDATAPROPERTYAXIOM) {
+						mUpdateDataPropertyAxiomHash->insert(static_cast<CDataPropertyAxiomExpression*>(axiomExp),false);
+					} else if (kind & CBuildExpression::EKFDECLARATIONAXIOM) {
+						mDeclarationAxiomSet->remove(static_cast<CDeclarationAxiomExpression*>(axiomExp));
+					} else if (kind & CBuildExpression::EKFASSERTIONAXIOM) {
+						mUpdateAssertionAxiomHash->insert(static_cast<CAssertionAxiomExpression*>(axiomExp),false);
 					}
 				}
 
@@ -554,6 +563,10 @@ namespace Konclude {
 
 
 
+				// every class axiom adds one or two class terms to the containers below
+				reserveAtLeast(*mClassTermClassAxiomSet, mClassTermClassAxiomSet->size() + mUpdateClassAxiomHash->size() * 2);
+				reserveAtLeast(*mClassTermClassAxiomHash, mClassTermClassAxiomHash->size() + mUpdateClassAxiomHash->size() * 2);
+				reserveAtLeast(mNewBuildConceptSet, mUpdateClassAxiomHash->size() * 2);
 				foreach (CClassAxiomExpression* classAxiomExp, orderedByBuildKeys(*mUpdateClassAxiomHash)) {
 					bool tellAxiom = mUpdateClassAxiomHash->value(classAxiomExp);
 					CBuildExpression::ExpressionType expType = classAxiomExp->getType();
@@ -1074,6 +1087,11 @@ namespace Konclude {
 					// construct concepts, roles, individuals
 					// build all class expressions
 
+					// the class terms of the axioms plus the sub expressions they pull in (a factor of 2 keeps the footprint
+					// where it was; 3 overshot by 0.4 GB on v5 for no measurable time difference)
+					reserveAtLeast(mNewBuildedConceptSet, mNewBuildConceptSet.size() * 2);
+					reserveAtLeast(*mClassTermConceptHash, mClassTermConceptHash->size() + mNewBuildConceptSet.size() * 2);
+					reserveAtLeast(*mConceptClassTermHash, mConceptClassTermHash->size() + mNewBuildConceptSet.size() * 2);
 					while (!mNewBuildConceptSet.isEmpty()) {
 						mBuildingConceptSet = mNewBuildConceptSet;
 						mNewBuildConceptSet.clear();

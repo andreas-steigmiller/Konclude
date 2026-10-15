@@ -30,10 +30,22 @@ namespace Konclude {
 
 			CLexicalNormalisationPreProcess::CLexicalNormalisationPreProcess() {
 				mOntology = nullptr;
+				replacementHash = nullptr;
+				processedSet = nullptr;
+				replacedConceptFlags = nullptr;
+				conceptReplaceHash = nullptr;
+				processingList = nullptr;
 			}
 
 
 			CLexicalNormalisationPreProcess::~CLexicalNormalisationPreProcess() {
+				// the containers of the last preprocess (a replacement hash with millions of entries on SNOMED), freed here
+				// so that the preprocesser can delete the object on a helper thread
+				delete replacementHash;
+				delete processedSet;
+				delete replacedConceptFlags;
+				delete conceptReplaceHash;
+				delete processingList;
 			}
 
 
@@ -170,6 +182,12 @@ namespace Konclude {
 					}
 
 
+					// a second preprocess on the same object (queries) frees the containers of the first one here
+					delete replacementHash;
+					delete processedSet;
+					delete replacedConceptFlags;
+					delete conceptReplaceHash;
+					delete processingList;
 					replacementHash = new QHash<CConceptUnambiguousHasher,CConcept*>();
 					// nearly every concept ends up in the hash; sizing it up front avoids rehashing it while it grows
 					replacementHash->reserve(conceptCount);
@@ -261,11 +279,6 @@ namespace Konclude {
 						}
 					}
 
-					delete replacementHash;
-					delete processedSet;
-					delete replacedConceptFlags;
-					delete conceptReplaceHash;
-					delete processingList;
 				}
 
 

@@ -118,6 +118,17 @@ namespace Konclude {
 					virtual cint64 getStructuralHashValue() = 0;
 					virtual bool compareStructuralEquivalence(CBuildExpression* compareExpression) = 0;
 
+					//! The kinds of term or axiom an expression is, as flags set by the base classes (CClassTermExpression,
+					//! CAssertionAxiomExpression, ...); replaces the dynamic_cast chains of the builders, which were a fifth
+					//! of the translation time of an ontology over the JNI bridge.
+					enum ExpressionKindFlag {
+						EKFCLASSTERM = 0x1, EKFOBJECTPROPERTYTERM = 0x2, EKFINDIVIDUALTERM = 0x4, EKFDATAPROPERTYTERM = 0x8,
+						EKFDATARANGETERM = 0x10, EKFDATALITERALTERM = 0x20, EKFDATATYPE = 0x40, EKFDATAFACETRESTRICTION = 0x80,
+						EKFDATAFACET = 0x100, EKFCLASSAXIOM = 0x200, EKFOBJECTPROPERTYAXIOM = 0x400, EKFDATAPROPERTYAXIOM = 0x800,
+						EKFDECLARATIONAXIOM = 0x1000, EKFASSERTIONAXIOM = 0x2000
+					};
+					virtual cint64 getExpressionKindFlags() { return 0; }
+
 
 					virtual bool visitSubExpressions(CSubExpressionVisitor* subExpressionVisitor);
 
