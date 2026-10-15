@@ -27,6 +27,7 @@ import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.vocab.OWLFacet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -91,8 +92,27 @@ public class KoncludeOWLAPITranslator implements
 
 	private boolean mIgnoreUnsupportedAxioms = false;
 	private boolean mDeclareEntities = true;
+
+	/**
+	 * Batched translation: translateAxioms encodes the expressions and axioms into an op array
+	 * and the native side builds a whole batch in one call (AxiomExpressionBuildingBridge.buildBatch),
+	 * instead of a native call per expression and per list operand. Entities, literals and facet
+	 * restrictions are still built one by one, as they carry strings and are mapped to their
+	 * OWL API objects. While a batch is open the visit methods return a reference to the pending
+	 * result, -(k + 1) for the k-th op of the batch, which only the batch may use; the single
+	 * translateAxiom, translateClassExpression and translateEntity calls stay direct. Off with
+	 * -Dkonclude.translation.batch=false or setBatchTranslation(false).
+	 */
+	private boolean mBatchTranslation = !"false".equalsIgnoreCase(System.getProperty("konclude.translation.batch"));
+	private boolean mBatching = false;
+	private long[] mOps = new long[1 << 16];
+	private int mOpsLength = 0;
+	private int mOpsCount = 0;
+	/** a batch is handed over between two axioms once it holds this many longs */
+	private static final int BATCH_FLUSH_LENGTH = 1 << 18;
 	private int mTranslatedAxiomCount = 0;
 	private int mIgnoredAnnotationAxiomCount = 0;
+	private int mDuplicateDeclarationCount = 0;
 
 	public KoncludeOWLAPITranslator(KoncludeReasonerBridge bridge, AxiomExpressionBuildingBridge builder) {
 		if (bridge == null || builder == null) {
@@ -123,6 +143,11 @@ public class KoncludeOWLAPITranslator implements
 		mDeclareEntities = declareEntities;
 	}
 
+	/** whether translateAxioms hands the expressions to the native side in batches, on by default */
+	public void setBatchTranslation(boolean batchTranslation) {
+		mBatchTranslation = batchTranslation;
+	}
+
 
 	// -------------------------------------------------------------- reporting
 
@@ -139,12 +164,23 @@ public class KoncludeOWLAPITranslator implements
 		return mIgnoredAnnotationAxiomCount;
 	}
 
+	/** the explicit declaration axioms that were not built again, their entity having been declared already */
+	public int getDuplicateDeclarationCount() {
+		return mDuplicateDeclarationCount;
+	}
+
 
 	// ------------------------------------------------------------ translation
 
 	/** translates the axioms of the ontology and of everything it imports */
 	public void translateOntology(OWLOntology ontology) {
 		translateBuiltInEntities(ontology.getOWLOntologyManager().getOWLDataFactory());
+		long axiomCount = 0;
+		for (OWLOntology imported : ontology.getImportsClosure()) {
+			axiomCount += imported.getAxiomCount();
+		}
+		// lets the native side size its sets and its expression hash once
+		mBuilder.expectAxioms(mBridge, axiomCount);
 		for (OWLOntology imported : ontology.getImportsClosure()) {
 			translateAxioms(imported.getAxioms());
 		}
@@ -174,15 +210,36 @@ public class KoncludeOWLAPITranslator implements
 	}
 
 	public void translateAxioms(Collection<? extends OWLAxiom> axioms) {
-		for (OWLAxiom axiom : axioms) {
-			translateAxiom(axiom);
+		if (!mBatchTranslation || mBatching) {
+			for (OWLAxiom axiom : axioms) {
+				translateAxiom(axiom);
+			}
+			return;
+		}
+		mBatching = true;
+		try {
+			for (OWLAxiom axiom : axioms) {
+				translateAxiom(axiom);
+				if (mOpsLength >= BATCH_FLUSH_LENGTH) {
+					flushBatch();
+				}
+			}
+		} finally {
+			try {
+				// also after an exception, so that what was built before it is told as in the direct mode
+				flushBatch();
+			} finally {
+				mBatching = false;
+			}
 		}
 	}
 
 	/**
 	 * Translates one axiom and tells it to the ontology of the native side. Returns the
 	 * address of the built axiom, or 0 if the axiom was an annotation axiom or was skipped
-	 * because it is not supported.
+	 * because it is not supported (inside a batch of translateAxioms it is the reference of
+	 * the pending result instead of an address, and for a declaration of an entity that was
+	 * declared when the entity was first built it is the entity's address).
 	 */
 	public long translateAxiom(OWLAxiom axiom) {
 		try {
@@ -235,7 +292,19 @@ public class KoncludeOWLAPITranslator implements
 		}
 		// translateEntity already declares the entity if declarations are switched on, the
 		// explicit declaration here keeps the axiom translated even if they are switched off
+		boolean known = mEntityPointers.containsKey(entity);
 		long entityPointer = translateEntity(entity);
+		if (mDeclareEntities && !entity.isBuiltIn()) {
+			// declared when the entity was built, either just now or earlier: the native side would
+			// only find the same axiom again (SNOMED declares every one of its 500 000 classes)
+			if (known) {
+				++mDuplicateDeclarationCount;
+			}
+			return Long.valueOf(entityPointer);
+		}
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_DECLARATION, entityPointer);
+		}
 		return Long.valueOf(mBuilder.buildOWLDeclarationAxiom(mBridge, entityPointer));
 	}
 
@@ -243,12 +312,18 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLSubClassOfAxiom axiom) {
 		long subClass = classExpression(axiom.getSubClass());
 		long superClass = classExpression(axiom.getSuperClass());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_SUB_CLASS_OF, subClass, superClass);
+		}
 		return Long.valueOf(mBuilder.buildOWLSubClassOfAxiom(mBridge, subClass, superClass));
 	}
 
 	@Override
 	public Long visit(OWLEquivalentClassesAxiom axiom) {
 		long[] arguments = classExpressions(axiom.getClassExpressions());
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_EQUIVALENT_CLASSES, arguments);
+		}
 		pushArguments(arguments);
 		return Long.valueOf(mBuilder.buildOWLEquivalentClassesFromArgumentList(mBridge));
 	}
@@ -256,6 +331,9 @@ public class KoncludeOWLAPITranslator implements
 	@Override
 	public Long visit(OWLDisjointClassesAxiom axiom) {
 		long[] arguments = classExpressions(axiom.getClassExpressions());
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_DISJOINT_CLASSES, arguments);
+		}
 		pushArguments(arguments);
 		return Long.valueOf(mBuilder.buildOWLDisjointClassesAxiomFromArgumentList(mBridge));
 	}
@@ -264,6 +342,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLDisjointUnionAxiom axiom) {
 		long namedClass = classExpression(axiom.getOWLClass());
 		long[] arguments = classExpressions(axiom.getClassExpressions());
+		if (mBatching) {
+			return opList1(AxiomExpressionBuildingBridge.OP_DISJOINT_UNION, namedClass, arguments);
+		}
 		pushArguments(arguments);
 		return Long.valueOf(mBuilder.buildOWLDisjointUnionAxiomFromArgumentList(mBridge, namedClass));
 	}
@@ -272,6 +353,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLSubObjectPropertyOfAxiom axiom) {
 		long subProperty = property(axiom.getSubProperty());
 		long superProperty = property(axiom.getSuperProperty());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_SUB_OBJECT_PROPERTY_OF, subProperty, superProperty);
+		}
 		return Long.valueOf(mBuilder.buildOWLSubObjectPropertyOfAxiom(mBridge, subProperty, superProperty));
 	}
 
@@ -279,6 +363,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLSubPropertyChainOfAxiom axiom) {
 		long superProperty = property(axiom.getSuperProperty());
 		long[] chain = properties(axiom.getPropertyChain());
+		if (mBatching) {
+			return opList1(AxiomExpressionBuildingBridge.OP_SUB_PROPERTY_CHAIN_OF, superProperty, chain);
+		}
 		pushArguments(chain);
 		return Long.valueOf(mBuilder.buildOWLSubPropertyChainOfAxiomFromArgumentList(mBridge, superProperty));
 	}
@@ -286,6 +373,9 @@ public class KoncludeOWLAPITranslator implements
 	@Override
 	public Long visit(OWLEquivalentObjectPropertiesAxiom axiom) {
 		long[] arguments = properties(axiom.getProperties());
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_EQUIVALENT_OBJECT_PROPERTIES, arguments);
+		}
 		pushArguments(arguments);
 		return Long.valueOf(mBuilder.buildOWLEquivalentObjectPropertiesFromArgumentList(mBridge));
 	}
@@ -293,6 +383,9 @@ public class KoncludeOWLAPITranslator implements
 	@Override
 	public Long visit(OWLDisjointObjectPropertiesAxiom axiom) {
 		long[] arguments = properties(axiom.getProperties());
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_DISJOINT_OBJECT_PROPERTIES, arguments);
+		}
 		pushArguments(arguments);
 		return Long.valueOf(mBuilder.buildOWLDisjointObjectPropertiesAxiomFromArgumentList(mBridge));
 	}
@@ -301,6 +394,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLInverseObjectPropertiesAxiom axiom) {
 		long first = property(axiom.getFirstProperty());
 		long second = property(axiom.getSecondProperty());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_INVERSE_OBJECT_PROPERTIES, first, second);
+		}
 		return Long.valueOf(mBuilder.buildOWLInverseObjectPropertiesAxiom(mBridge, first, second));
 	}
 
@@ -308,6 +404,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLObjectPropertyDomainAxiom axiom) {
 		long propertyPointer = property(axiom.getProperty());
 		long domain = classExpression(axiom.getDomain());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_OBJECT_PROPERTY_DOMAIN, propertyPointer, domain);
+		}
 		return Long.valueOf(mBuilder.buildOWLObjectPropertyDomainAxiom(mBridge, propertyPointer, domain));
 	}
 
@@ -315,41 +414,65 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLObjectPropertyRangeAxiom axiom) {
 		long propertyPointer = property(axiom.getProperty());
 		long range = classExpression(axiom.getRange());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_OBJECT_PROPERTY_RANGE, propertyPointer, range);
+		}
 		return Long.valueOf(mBuilder.buildOWLObjectPropertyRangeAxiom(mBridge, propertyPointer, range));
 	}
 
 	@Override
 	public Long visit(OWLFunctionalObjectPropertyAxiom axiom) {
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_FUNCTIONAL_OBJECT_PROPERTY, property(axiom.getProperty()));
+		}
 		return Long.valueOf(mBuilder.buildOWLFunctionalObjectPropertyAxiom(mBridge, property(axiom.getProperty())));
 	}
 
 	@Override
 	public Long visit(OWLInverseFunctionalObjectPropertyAxiom axiom) {
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_INVERSE_FUNCTIONAL_OBJECT_PROPERTY, property(axiom.getProperty()));
+		}
 		return Long.valueOf(mBuilder.buildOWLInverseFunctionalObjectPropertyAxiom(mBridge, property(axiom.getProperty())));
 	}
 
 	@Override
 	public Long visit(OWLReflexiveObjectPropertyAxiom axiom) {
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_REFLEXIVE_OBJECT_PROPERTY, property(axiom.getProperty()));
+		}
 		return Long.valueOf(mBuilder.buildOWLReflexiveObjectPropertyAxiom(mBridge, property(axiom.getProperty())));
 	}
 
 	@Override
 	public Long visit(OWLIrreflexiveObjectPropertyAxiom axiom) {
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_IRREFLEXIVE_OBJECT_PROPERTY, property(axiom.getProperty()));
+		}
 		return Long.valueOf(mBuilder.buildOWLIrreflexiveObjectPropertyAxiom(mBridge, property(axiom.getProperty())));
 	}
 
 	@Override
 	public Long visit(OWLSymmetricObjectPropertyAxiom axiom) {
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_SYMMETRIC_OBJECT_PROPERTY, property(axiom.getProperty()));
+		}
 		return Long.valueOf(mBuilder.buildOWLSymmetricObjectPropertyAxiom(mBridge, property(axiom.getProperty())));
 	}
 
 	@Override
 	public Long visit(OWLAsymmetricObjectPropertyAxiom axiom) {
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_ASYMMETRIC_OBJECT_PROPERTY, property(axiom.getProperty()));
+		}
 		return Long.valueOf(mBuilder.buildOWLAsymmetricObjectPropertyAxiom(mBridge, property(axiom.getProperty())));
 	}
 
 	@Override
 	public Long visit(OWLTransitiveObjectPropertyAxiom axiom) {
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_TRANSITIVE_OBJECT_PROPERTY, property(axiom.getProperty()));
+		}
 		return Long.valueOf(mBuilder.buildOWLTransitiveObjectPropertyAxiom(mBridge, property(axiom.getProperty())));
 	}
 
@@ -357,12 +480,18 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLSubDataPropertyOfAxiom axiom) {
 		long subProperty = property(axiom.getSubProperty());
 		long superProperty = property(axiom.getSuperProperty());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_SUB_DATA_PROPERTY_OF, subProperty, superProperty);
+		}
 		return Long.valueOf(mBuilder.buildOWLSubDataPropertyOfAxiom(mBridge, subProperty, superProperty));
 	}
 
 	@Override
 	public Long visit(OWLEquivalentDataPropertiesAxiom axiom) {
 		long[] arguments = properties(axiom.getProperties());
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_EQUIVALENT_DATA_PROPERTIES, arguments);
+		}
 		pushArguments(arguments);
 		return Long.valueOf(mBuilder.buildOWLEquivalentDataPropertiesAxiomFromArgumentList(mBridge));
 	}
@@ -370,6 +499,9 @@ public class KoncludeOWLAPITranslator implements
 	@Override
 	public Long visit(OWLDisjointDataPropertiesAxiom axiom) {
 		long[] arguments = properties(axiom.getProperties());
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_DISJOINT_DATA_PROPERTIES, arguments);
+		}
 		pushArguments(arguments);
 		return Long.valueOf(mBuilder.buildOWLDisjointDataPropertiesAxiomFromArgumentList(mBridge));
 	}
@@ -378,6 +510,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLDataPropertyDomainAxiom axiom) {
 		long propertyPointer = property(axiom.getProperty());
 		long domain = classExpression(axiom.getDomain());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_DATA_PROPERTY_DOMAIN, propertyPointer, domain);
+		}
 		return Long.valueOf(mBuilder.buildOWLDataPropertyDomainAxiom(mBridge, propertyPointer, domain));
 	}
 
@@ -385,11 +520,17 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLDataPropertyRangeAxiom axiom) {
 		long propertyPointer = property(axiom.getProperty());
 		long range = dataRange(axiom.getRange());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_DATA_PROPERTY_RANGE, propertyPointer, range);
+		}
 		return Long.valueOf(mBuilder.buildOWLDataPropertyRangeAxiom(mBridge, propertyPointer, range));
 	}
 
 	@Override
 	public Long visit(OWLFunctionalDataPropertyAxiom axiom) {
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_FUNCTIONAL_DATA_PROPERTY, property(axiom.getProperty()));
+		}
 		return Long.valueOf(mBuilder.buildOWLFunctionalDataPropertyAxiom(mBridge, property(axiom.getProperty())));
 	}
 
@@ -397,6 +538,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLClassAssertionAxiom axiom) {
 		long classPointer = classExpression(axiom.getClassExpression());
 		long individualPointer = individual(axiom.getIndividual());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_CLASS_ASSERTION, classPointer, individualPointer);
+		}
 		return Long.valueOf(mBuilder.buildOWLClassAssertionAxiom(mBridge, classPointer, individualPointer));
 	}
 
@@ -405,6 +549,9 @@ public class KoncludeOWLAPITranslator implements
 		long propertyPointer = property(axiom.getProperty());
 		long subject = individual(axiom.getSubject());
 		long object = individual(axiom.getObject());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_OBJECT_PROPERTY_ASSERTION, propertyPointer, subject, object);
+		}
 		return Long.valueOf(mBuilder.buildOWLObjectPropertyAssertionAxiom(mBridge, propertyPointer, subject, object));
 	}
 
@@ -413,6 +560,9 @@ public class KoncludeOWLAPITranslator implements
 		long propertyPointer = property(axiom.getProperty());
 		long subject = individual(axiom.getSubject());
 		long object = individual(axiom.getObject());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_NEGATIVE_OBJECT_PROPERTY_ASSERTION, propertyPointer, subject, object);
+		}
 		return Long.valueOf(mBuilder.buildOWLNegativeObjectPropertyAssertionAxiom(mBridge, propertyPointer, subject, object));
 	}
 
@@ -421,6 +571,9 @@ public class KoncludeOWLAPITranslator implements
 		long propertyPointer = property(axiom.getProperty());
 		long subject = individual(axiom.getSubject());
 		long value = literal(axiom.getObject());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_DATA_PROPERTY_ASSERTION, propertyPointer, subject, value);
+		}
 		return Long.valueOf(mBuilder.buildOWLDataPropertyAssertionAxiom(mBridge, propertyPointer, subject, value));
 	}
 
@@ -429,12 +582,18 @@ public class KoncludeOWLAPITranslator implements
 		long propertyPointer = property(axiom.getProperty());
 		long subject = individual(axiom.getSubject());
 		long value = literal(axiom.getObject());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_NEGATIVE_DATA_PROPERTY_ASSERTION, propertyPointer, subject, value);
+		}
 		return Long.valueOf(mBuilder.buildOWLNegativeDataPropertyAssertionAxiom(mBridge, propertyPointer, subject, value));
 	}
 
 	@Override
 	public Long visit(OWLSameIndividualAxiom axiom) {
 		long[] arguments = individuals(axiom.getIndividuals());
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_SAME_INDIVIDUAL, arguments);
+		}
 		pushArguments(arguments);
 		return Long.valueOf(mBuilder.buildOWLSameIndividualAxiomFromArgumentList(mBridge));
 	}
@@ -442,6 +601,9 @@ public class KoncludeOWLAPITranslator implements
 	@Override
 	public Long visit(OWLDifferentIndividualsAxiom axiom) {
 		long[] arguments = individuals(axiom.getIndividuals());
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_DIFFERENT_INDIVIDUALS, arguments);
+		}
 		pushArguments(arguments);
 		return Long.valueOf(mBuilder.buildOWLDifferentIndividualsAxiomFromArgumentList(mBridge));
 	}
@@ -505,12 +667,18 @@ public class KoncludeOWLAPITranslator implements
 
 	@Override
 	public Long visit(OWLObjectIntersectionOf classExpression) {
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_OBJECT_INTERSECTION_OF, classExpressions(classExpression.getOperands()));
+		}
 		pushArguments(classExpressions(classExpression.getOperands()));
 		return Long.valueOf(required(mBuilder.buildOWLObjectIntersectionFromArgumentList(mBridge), classExpression));
 	}
 
 	@Override
 	public Long visit(OWLObjectUnionOf classExpression) {
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_OBJECT_UNION_OF, classExpressions(classExpression.getOperands()));
+		}
 		pushArguments(classExpressions(classExpression.getOperands()));
 		return Long.valueOf(required(mBuilder.buildOWLObjectUnionFromArgumentList(mBridge), classExpression));
 	}
@@ -518,11 +686,17 @@ public class KoncludeOWLAPITranslator implements
 	@Override
 	public Long visit(OWLObjectComplementOf classExpression) {
 		long operand = classExpression(classExpression.getOperand());
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_OBJECT_COMPLEMENT_OF, operand);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLObjectComplement(mBridge, operand), classExpression));
 	}
 
 	@Override
 	public Long visit(OWLObjectOneOf classExpression) {
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_OBJECT_ONE_OF, individuals(classExpression.getIndividuals()));
+		}
 		pushArguments(individuals(classExpression.getIndividuals()));
 		return Long.valueOf(required(mBuilder.buildOWLObjectOneOfFromArgumentList(mBridge), classExpression));
 	}
@@ -531,6 +705,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLObjectSomeValuesFrom classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = classExpression(classExpression.getFiller());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_OBJECT_SOME_VALUES_FROM, propertyPointer, filler);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLObjectSomeValuesFrom(mBridge, propertyPointer, filler), classExpression));
 	}
 
@@ -538,6 +715,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLObjectAllValuesFrom classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = classExpression(classExpression.getFiller());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_OBJECT_ALL_VALUES_FROM, propertyPointer, filler);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLObjectAllValuesFrom(mBridge, propertyPointer, filler), classExpression));
 	}
 
@@ -545,12 +725,18 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLObjectHasValue classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = individual(classExpression.getFiller());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_OBJECT_HAS_VALUE, propertyPointer, filler);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLObjectHasValue(mBridge, propertyPointer, filler), classExpression));
 	}
 
 	@Override
 	public Long visit(OWLObjectHasSelf classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_OBJECT_HAS_SELF, propertyPointer);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLObjectHasSelf(mBridge, propertyPointer), classExpression));
 	}
 
@@ -558,6 +744,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLObjectMinCardinality classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = classExpression(classExpression.getFiller());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_OBJECT_MIN_CARDINALITY, propertyPointer, filler, classExpression.getCardinality());
+		}
 		return Long.valueOf(required(mBuilder.buildOWLMinCardinality(mBridge, propertyPointer, filler,
 				classExpression.getCardinality()), classExpression));
 	}
@@ -566,6 +755,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLObjectMaxCardinality classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = classExpression(classExpression.getFiller());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_OBJECT_MAX_CARDINALITY, propertyPointer, filler, classExpression.getCardinality());
+		}
 		return Long.valueOf(required(mBuilder.buildOWLMaxCardinality(mBridge, propertyPointer, filler,
 				classExpression.getCardinality()), classExpression));
 	}
@@ -574,6 +766,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLObjectExactCardinality classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = classExpression(classExpression.getFiller());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_OBJECT_EXACT_CARDINALITY, propertyPointer, filler, classExpression.getCardinality());
+		}
 		return Long.valueOf(required(mBuilder.buildOWLExactCardinality(mBridge, propertyPointer, filler,
 				classExpression.getCardinality()), classExpression));
 	}
@@ -582,6 +777,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLDataSomeValuesFrom classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = dataRange(classExpression.getFiller());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_DATA_SOME_VALUES_FROM, propertyPointer, filler);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLDataSomeValuesFrom(mBridge, propertyPointer, filler), classExpression));
 	}
 
@@ -589,6 +787,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLDataAllValuesFrom classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = dataRange(classExpression.getFiller());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_DATA_ALL_VALUES_FROM, propertyPointer, filler);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLDataAllValuesFrom(mBridge, propertyPointer, filler), classExpression));
 	}
 
@@ -596,6 +797,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLDataHasValue classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long value = literal(classExpression.getFiller());
+		if (mBatching) {
+			return op2(AxiomExpressionBuildingBridge.OP_DATA_HAS_VALUE, propertyPointer, value);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLDataHasValue(mBridge, propertyPointer, value), classExpression));
 	}
 
@@ -603,6 +807,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLDataMinCardinality classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = dataRange(classExpression.getFiller());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_DATA_MIN_CARDINALITY, propertyPointer, filler, classExpression.getCardinality());
+		}
 		return Long.valueOf(required(mBuilder.buildOWLDataMinCardinality(mBridge, propertyPointer, filler,
 				classExpression.getCardinality()), classExpression));
 	}
@@ -611,6 +818,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLDataMaxCardinality classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = dataRange(classExpression.getFiller());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_DATA_MAX_CARDINALITY, propertyPointer, filler, classExpression.getCardinality());
+		}
 		return Long.valueOf(required(mBuilder.buildOWLDataMaxCardinality(mBridge, propertyPointer, filler,
 				classExpression.getCardinality()), classExpression));
 	}
@@ -619,6 +829,9 @@ public class KoncludeOWLAPITranslator implements
 	public Long visit(OWLDataExactCardinality classExpression) {
 		long propertyPointer = property(classExpression.getProperty());
 		long filler = dataRange(classExpression.getFiller());
+		if (mBatching) {
+			return op3(AxiomExpressionBuildingBridge.OP_DATA_EXACT_CARDINALITY, propertyPointer, filler, classExpression.getCardinality());
+		}
 		return Long.valueOf(required(mBuilder.buildOWLDataExactCardinality(mBridge, propertyPointer, filler,
 				classExpression.getCardinality()), classExpression));
 	}
@@ -640,6 +853,9 @@ public class KoncludeOWLAPITranslator implements
 	@Override
 	public Long visit(OWLObjectInverseOf property) {
 		long inverted = property(property.getInverse());
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_OBJECT_INVERSE_OF, inverted);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLObjectInverseOf(mBridge, inverted), property));
 	}
 
@@ -712,6 +928,9 @@ public class KoncludeOWLAPITranslator implements
 
 	@Override
 	public Long visit(OWLDataOneOf dataRange) {
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_DATA_ONE_OF, literals(dataRange.getValues()));
+		}
 		pushArguments(literals(dataRange.getValues()));
 		return Long.valueOf(required(mBuilder.buildOWLDataOneOfFromArgumentList(mBridge), dataRange));
 	}
@@ -719,17 +938,26 @@ public class KoncludeOWLAPITranslator implements
 	@Override
 	public Long visit(OWLDataComplementOf dataRange) {
 		long operand = dataRange(dataRange.getDataRange());
+		if (mBatching) {
+			return op1(AxiomExpressionBuildingBridge.OP_DATA_COMPLEMENT_OF, operand);
+		}
 		return Long.valueOf(required(mBuilder.buildOWLDataComplementOf(mBridge, operand), dataRange));
 	}
 
 	@Override
 	public Long visit(OWLDataIntersectionOf dataRange) {
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_DATA_INTERSECTION_OF, dataRanges(dataRange.getOperands()));
+		}
 		pushArguments(dataRanges(dataRange.getOperands()));
 		return Long.valueOf(required(mBuilder.buildOWLDataIntersectionOfFromArgumentList(mBridge), dataRange));
 	}
 
 	@Override
 	public Long visit(OWLDataUnionOf dataRange) {
+		if (mBatching) {
+			return opList(AxiomExpressionBuildingBridge.OP_DATA_UNION_OF, dataRanges(dataRange.getOperands()));
+		}
 		pushArguments(dataRanges(dataRange.getOperands()));
 		return Long.valueOf(required(mBuilder.buildOWLDataUnionOfFromArgumentList(mBridge), dataRange));
 	}
@@ -737,6 +965,9 @@ public class KoncludeOWLAPITranslator implements
 	@Override
 	public Long visit(OWLDatatypeRestriction dataRange) {
 		long datatype = dataRange(dataRange.getDatatype());
+		if (mBatching) {
+			return opList1(AxiomExpressionBuildingBridge.OP_DATATYPE_RESTRICTION, datatype, facetRestrictions(dataRange.getFacetRestrictions()));
+		}
 		pushArguments(facetRestrictions(dataRange.getFacetRestrictions()));
 		return Long.valueOf(required(mBuilder.buildOWLDatatypeRestrictionFromArgumentList(mBridge, datatype), dataRange));
 	}
@@ -751,6 +982,80 @@ public class KoncludeOWLAPITranslator implements
 
 
 	// ------------------------------------------------------------- the helpers
+
+	// ------------------------------------------------------------ the batch encoder
+
+	private Long op1(int opcode, long a) {
+		ensureOps(2);
+		mOps[mOpsLength++] = opcode;
+		mOps[mOpsLength++] = a;
+		return pendingResult();
+	}
+
+	private Long op2(int opcode, long a, long b) {
+		ensureOps(3);
+		mOps[mOpsLength++] = opcode;
+		mOps[mOpsLength++] = a;
+		mOps[mOpsLength++] = b;
+		return pendingResult();
+	}
+
+	private Long op3(int opcode, long a, long b, long c) {
+		ensureOps(4);
+		mOps[mOpsLength++] = opcode;
+		mOps[mOpsLength++] = a;
+		mOps[mOpsLength++] = b;
+		mOps[mOpsLength++] = c;
+		return pendingResult();
+	}
+
+	/** an op with an operand list: the opcode, the operand count, the operands */
+	private Long opList(int opcode, long[] list) {
+		ensureOps(2 + list.length);
+		mOps[mOpsLength++] = opcode;
+		mOps[mOpsLength++] = list.length;
+		System.arraycopy(list, 0, mOps, mOpsLength, list.length);
+		mOpsLength += list.length;
+		return pendingResult();
+	}
+
+	/** an op with one fixed argument before its operand list */
+	private Long opList1(int opcode, long fixed, long[] list) {
+		ensureOps(3 + list.length);
+		mOps[mOpsLength++] = opcode;
+		mOps[mOpsLength++] = fixed;
+		mOps[mOpsLength++] = list.length;
+		System.arraycopy(list, 0, mOps, mOpsLength, list.length);
+		mOpsLength += list.length;
+		return pendingResult();
+	}
+
+	private void ensureOps(int longs) {
+		if (mOpsLength + longs > mOps.length) {
+			mOps = Arrays.copyOf(mOps, Math.max(mOps.length * 2, mOpsLength + longs));
+		}
+	}
+
+	/** the reference of the result of the op that has just been encoded, -(k + 1) for the k-th op */
+	private Long pendingResult() {
+		return Long.valueOf(-(++mOpsCount));
+	}
+
+	/** hands the encoded ops to the native side, which builds and tells them in order */
+	private void flushBatch() {
+		if (mOpsCount == 0) {
+			return;
+		}
+		int count = mOpsCount;
+		int built = mBuilder.buildBatch(mBridge, mOps, mOpsLength);
+		mOpsLength = 0;
+		mOpsCount = 0;
+		if (built != count) {
+			throw new IllegalStateException("the bridge built " + built + " of " + count
+					+ " batched expressions, is initAxiomExpressionVisitingBridge missing?");
+		}
+	}
+
 
 	/**
 	 * Builds the given expressions and pushes them as an argument list, which the following
@@ -843,7 +1148,11 @@ public class KoncludeOWLAPITranslator implements
 		Long boxed = Long.valueOf(pointer);
 		mEntityPointers.put(entity, boxed);
 		if (mDeclareEntities && !entity.isBuiltIn()) {
-			mBuilder.buildOWLDeclarationAxiom(mBridge, pointer);
+			if (mBatching) {
+				op1(AxiomExpressionBuildingBridge.OP_DECLARATION, pointer);
+			} else {
+				mBuilder.buildOWLDeclarationAxiom(mBridge, pointer);
+			}
 		}
 		return boxed;
 	}
