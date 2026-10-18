@@ -284,7 +284,14 @@ namespace Konclude {
 					mExistentialMemoHash.clear();
 					mExistentialMemoQueryConcept = queryConcept;
 				}
-				if (mSatCalcTask && subClassConcept && queryConcept) {
+				if (mSatCalcTask && subClassConcept && queryConcept && mOntology->getDataBoxes()->getTBox()->getBottomConcept() == subClassConcept) {
+					// the bottom node is a sub class candidate below every leaf of the search; it is subsumed by
+					// everything, and it has no saturation of its own, so without this it would be sent to the
+					// label completion, whose test conjoins the class with all its hierarchy ancestors: for the
+					// bottom node that is every class of the ontology, a single tableau test of 20 minutes and
+					// 7 GB on SNOMED CT International (248 186 ancestors) and a frozen Mac on the SDD (582 633)
+					verdict = SUBSUMED;
+				} else if (mSatCalcTask && subClassConcept && queryConcept) {
 					bool unsatisfiable = false;
 					bool reliable = false;
 					CIndividualSaturationProcessNode* node = getSaturationNode(subClassConcept, &unsatisfiable, &reliable);
