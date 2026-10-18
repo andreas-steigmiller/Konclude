@@ -1260,6 +1260,77 @@ public class KoncludeOWLAPITest {
 	}
 
 	/**
+	 * The successors of a completed label: when a universal restriction of the query reaches a successor
+	 * of a candidate whose label was completed, the decider settles it from the saturation of the
+	 * candidate's existential restrictions where it can (the filler is there, or the nested restriction's
+	 * role has no successor) and leaves it to the tableau otherwise. The candidates carry a disjunction so
+	 * that their saturation is not trusted and their labels are completed; the queries are the complements
+	 * of classes defined by universal restrictions, as Protege's Disjoint Classes display asks them. Each
+	 * corner is one where a careless vacuity decision would lose an answer: the filler missing at the
+	 * successor, the restriction coming back through the inverse of the link, a self loop at the successor,
+	 * and a successor that repeats the root, whose own successors a completion graph does not show.
+	 * Expected answers are the same on every path, so the scenario also runs with the decision switched
+	 * off ('completion-successors-plain').
+	 */
+	private static void runCompletionSuccessors() throws Exception {
+		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+		OWLOntology ontology = manager.createOntology(IRI.create(NS + "completion-successors"));
+		OWLObjectProperty r = objectProperty("r");
+		OWLObjectProperty q = objectProperty("q");
+		OWLClassExpression yOrZ = DF.getOWLObjectUnionOf(cls("Y"), cls("Z"));
+		OWLClassExpression notB = DF.getOWLObjectComplementOf(cls("B"));
+		OWLClassExpression notE = DF.getOWLObjectComplementOf(cls("E"));
+		OWLClassExpression notBase = DF.getOWLObjectComplementOf(cls("Base"));
+		manager.addAxioms(ontology, new HashSet<OWLAxiom>(Arrays.<OWLAxiom>asList(
+			// A: a Y or a Z (the choice leaves the saturation unreliable) with an r successor in B
+			DF.getOWLEquivalentClassesAxiom(cls("A"), DF.getOWLObjectIntersectionOf(cls("Base"), yOrZ,
+					DF.getOWLObjectSomeValuesFrom(r, cls("B")))),
+			DF.getOWLSubClassOfAxiom(cls("A"), cls("E")),
+			// A2: the successor has a self loop under r
+			DF.getOWLEquivalentClassesAxiom(cls("A2"), DF.getOWLObjectIntersectionOf(cls("Base"), yOrZ,
+					DF.getOWLObjectSomeValuesFrom(r, DF.getOWLObjectIntersectionOf(cls("B"), DF.getOWLObjectHasSelf(r))))),
+			// A3: the r successor is another A3, so it repeats the root
+			DF.getOWLEquivalentClassesAxiom(cls("A3"), DF.getOWLObjectIntersectionOf(cls("Base"), yOrZ,
+					DF.getOWLObjectSomeValuesFrom(r, cls("A3")))),
+			DF.getOWLDisjointClassesAxiom(cls("B"), cls("C")),
+			// D1: vacuous at the successor, which has no q successor
+			DF.getOWLEquivalentClassesAxiom(cls("D1"), DF.getOWLObjectAllValuesFrom(r, DF.getOWLObjectAllValuesFrom(q, cls("C")))),
+			// D2: the filler is missing at the successor (B is disjoint from C)
+			DF.getOWLEquivalentClassesAxiom(cls("D2"), DF.getOWLObjectAllValuesFrom(r, cls("C"))),
+			// D3: the nested restriction comes back to the root through the inverse of the link
+			DF.getOWLEquivalentClassesAxiom(cls("D3"), DF.getOWLObjectAllValuesFrom(r,
+					DF.getOWLObjectAllValuesFrom(DF.getOWLObjectInverseOf(r), notE))),
+			// D4: the nested restriction reaches the successor itself through its self loop
+			DF.getOWLEquivalentClassesAxiom(cls("D4"), DF.getOWLObjectAllValuesFrom(r, DF.getOWLObjectAllValuesFrom(r, notB))),
+			// D5: the nested restriction reaches the successor of a blocked successor
+			DF.getOWLEquivalentClassesAxiom(cls("D5"), DF.getOWLObjectAllValuesFrom(r, DF.getOWLObjectAllValuesFrom(r, notBase)))
+		)));
+		OWLReasoner reasoner = reasonerFor(ontology);
+		try {
+			check("satisfiable(A), (A2), (A3)      ", Boolean.valueOf(reasoner.isSatisfiable(cls("A"))
+					&& reasoner.isSatisfiable(cls("A2")) && reasoner.isSatisfiable(cls("A3"))), Boolean.TRUE);
+			check("subClasses(A, false) has A2     ", Boolean.valueOf(names(reasoner.getSubClasses(cls("A"), false)).contains("A2")), Boolean.TRUE);
+			// nothing is a sub class of 'not D1': the candidates' successors have no q successor
+			check("subClasses(not D1, true)       ", names(reasoner.getSubClasses(DF.getOWLObjectComplementOf(cls("D1")), true)),
+					expected("Nothing"));
+			// A (and A2 below it) is: its successor is a B, which is no C
+			check("subClasses(not D2, true)       ", names(reasoner.getSubClasses(DF.getOWLObjectComplementOf(cls("D2")), true)),
+					expected("A"));
+			// A is: the restriction comes back to it through the inverse link and it is an E
+			check("subClasses(not D3, true)       ", names(reasoner.getSubClasses(DF.getOWLObjectComplementOf(cls("D3")), true)),
+					expected("A"));
+			// A2 is: the successor's self loop brings 'not B' onto the B
+			check("subClasses(not D4, true)       ", names(reasoner.getSubClasses(DF.getOWLObjectComplementOf(cls("D4")), true)),
+					expected("A2"));
+			// A3 is: the successor stands for an A3 whose own successor is a Base
+			check("subClasses(not D5, true)       ", names(reasoner.getSubClasses(DF.getOWLObjectComplementOf(cls("D5")), true)),
+					expected("A3"));
+		} finally {
+			reasoner.dispose();
+		}
+	}
+
+	/**
 	 * The time out of the OWL API, which reports a call that does not come back instead of
 	 * blocking the caller for ever. A time out of one millisecond is used so that the
 	 * initialisation of the library instance already overruns it, since there is no longer a
@@ -1336,6 +1407,12 @@ public class KoncludeOWLAPITest {
 			runDeterminism();
 		} else if ("merges".equals(scenario)) {
 			runMerges();
+		} else if ("completion-successors".equals(scenario)) {
+			runCompletionSuccessors();
+		} else if ("completion-successors-plain".equals(scenario)) {
+			sLoadingConfiguration = KoncludeReasoner.DEFAULT_LOADING_CONFIGURATION
+					+ "+=Konclude.Answering.SaturationBasedSubClassLabelCompletionSuccessors=false ";
+			runCompletionSuccessors();
 		} else if ("timeout".equals(scenario)) {
 			runTimeout();
 		} else if ("entailment".equals(scenario)) {
