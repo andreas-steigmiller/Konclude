@@ -87,6 +87,7 @@ namespace Konclude {
 				mConfSaturationSubClassLabelCompletion = CConfigDataReader::readConfigBoolean(ontoAnsweringItem->getCalculationConfiguration(), "Konclude.Answering.SaturationBasedSubClassLabelCompletion", true);
 				mConfLabelCompletionSampleSize = CConfigDataReader::readConfigInteger(ontoAnsweringItem->getCalculationConfiguration(), "Konclude.Answering.SaturationBasedSubClassLabelCompletionSampleSize", 0);
 				mConfLabelCompletionMinimumDecisivePercent = CConfigDataReader::readConfigInteger(ontoAnsweringItem->getCalculationConfiguration(), "Konclude.Answering.SaturationBasedSubClassLabelCompletionMinimumDecisivePercent", 30);
+				mConfLabelCompletionSuccessors = CConfigDataReader::readConfigBoolean(ontoAnsweringItem->getCalculationConfiguration(), "Konclude.Answering.SaturationBasedSubClassLabelCompletionSuccessors", true);
 				mLabelCompletionStopped = false;
 				mLabelCompletionTestCount = 0;
 				mSaturationSubsumptionDecider = nullptr;
@@ -11558,6 +11559,7 @@ namespace Konclude {
 				}
 				if (!mSaturationSubsumptionDecider) {
 					mSaturationSubsumptionDecider = new CSaturationSubsumptionDecider(mOntoAnsweringItem->getOntology());
+					mSaturationSubsumptionDecider->setCompletedSuccessorDecision(mConfLabelCompletionSuccessors);
 				}
 				if (!mSaturationSubsumptionDecider->hasSaturation()) {
 					return nullptr;

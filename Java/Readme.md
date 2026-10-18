@@ -1746,6 +1746,21 @@ supplies, through the trigger hash the query's label already has, instead of wal
 implication list; the heavy classes are at 5 to 7 s with that. Switchable with
 `Konclude.Answering.SaturationBasedSubClassLabelCompletion`.
 
+A completed label knew only the roles of its successors, so a universal restriction of the
+query that reached one of them, the remodelled SNOMED CT closures `only group (only r C)` in
+particular, sent the candidate to the tableau: about 5 100 tests and 12 to 14 s per selection
+of a defined class on the remodelled AU edition. The decider now reads the successors off the
+saturation of the candidate's class, which lists them even where it is unreliable for the class
+itself, provided that every existential restriction of the completed label is in the saturated
+label too, and settles the restriction where every successor under its role satisfies the
+filler: it is there, or it is a nested universal restriction over a role the successor has no
+successor under. Successors whose saturation is insufficient, has a nominal or an unresolved
+disjunction, roles with chains or transitivity, fillers that could add successors, and nested
+restrictions that lead back over an inverse role stay with the tableau. The same selections
+take 0.8 to 2.8 s, with no memory added; the OWL API scenario `completion-successors` holds the
+corners (the filler missing, the inverse of the link, a self loop, a successor that repeats the
+root). Switchable with `Konclude.Answering.SaturationBasedSubClassLabelCompletionSuccessors`.
+
 ### THE EVENT CHANNEL THAT LOST EVENTS
 
 Stress runs of the comparisons, twelve at a time, hung once and crashed once on the way. The

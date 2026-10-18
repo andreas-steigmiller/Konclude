@@ -130,6 +130,8 @@ namespace Konclude {
 					//! no label could be obtained, the class stays undecided
 					void setCompletionFailed(CConcept* concept);
 					bool hasCompletedLabel(CConcept* concept);
+					//! whether a universal restriction of a query that reaches the successors of a completed label is decided from the saturation of the label's existential restrictions (Konclude.Answering.SaturationBasedSubClassLabelCompletionSuccessors)
+					void setCompletedSuccessorDecision(bool enabled);
 
 					cint64 getSubsumedCount();
 					cint64 getNotSubsumedCount();
@@ -332,7 +334,15 @@ namespace Konclude {
 					//! whether a self restriction makes a node its own successor under the role
 					bool isSelfLoopOnRole(CConcept* selfConcept, CRole* role);
 					//! whether the node has an active successor under the role whose label lacks the concept
-					bool hasSuccessorWithoutConcept(CIndividualSaturationProcessNode* repNode, CRole* role, CConcept* concept, bool negated);
+					bool hasSuccessorWithoutConcept(CIndividualSaturationProcessNode* repNode, CRole* role, CConcept* concept, bool negated, cint64 depth = 0);
+					//! whether a successor's saturated label holds the concept, or the concept would add nothing at it (a conjunction of held concepts, a disjunction with a held disjunct, a universal restriction its successors satisfy)
+					bool saturationNodeSatisfies(CIndividualSaturationProcessNode* succNode, CConcept* concept, bool negated, cint64 depth);
+					//! whether a universal restriction of the base that reaches the successors of a completed label is satisfied by the saturations of the label's existential restrictions
+					bool completedLabelSuccessorsSatisfyUniversal(CCompletedLabel* label, const CMergeState* base, CRole* role, CConcept* universalConcept, bool negated);
+					//! a saturation node whose successors stand for those of a completion model's node: processed, completed, not insufficient, no nominal (critical and cardinality flags allowed, see the definition)
+					bool isUsableSuccessorSaturation(CIndividualSaturationProcessNode* node);
+					//! whether a filler propagated into a successor cannot add successors to it: negated named classes, plain universal restrictions, conjunctions and disjunctions of such
+					bool isSuccessorNeutralFiller(CConcept* concept, bool negated);
 					bool isSuccessorCreatingRole(CRole* role);
 
 				// protected variables
@@ -352,6 +362,7 @@ namespace Konclude {
 					cint64 mFastDecisionCount;
 					cint64 mClosureDecisionCount;
 					QHash<CConcept*,CCompletedLabel*> mCompletedLabelHash;
+					bool mCompletedSuccessorDecision;
 					CConcept* mCompletionConcept;
 					//! the class and the saturation node the current decision is about, at the root of the entailment check
 					CConcept* mRootSubClassConcept;
