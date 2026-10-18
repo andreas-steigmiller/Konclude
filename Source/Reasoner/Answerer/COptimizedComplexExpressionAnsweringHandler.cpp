@@ -12851,7 +12851,9 @@ namespace Konclude {
 
 
 			bool COptimizedComplexExpressionAnsweringHandler::createLabelCompletionTest(COptimizedComplexConceptItem* conceptItem, CHierarchyNode* testingNode, CConcept* completionConcept, CAnswererContext* answererContext) {
-				if (!completionConcept) {
+				if (!completionConcept || completionConcept == mOntoAnsweringItem->getTestingOntology()->getDataBoxes()->getTBox()->getBottomConcept()) {
+					// the bottom concept's completion test would conjoin every class of the ontology (the decider
+					// answers the bottom node itself; this guards every other caller)
 					return false;
 				}
 				CSatisfiableCalculationJobGenerator satCalcJobGen(mOntoAnsweringItem->getTestingOntology());
