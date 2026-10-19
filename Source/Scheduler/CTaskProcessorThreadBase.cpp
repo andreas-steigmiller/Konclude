@@ -250,7 +250,9 @@ namespace Konclude {
 				}
 				mProcessingBlocked = false;
 				eventSafeguardProcessed = false;
-				while (mEventSignalized) {
+				// handleEvents does nothing once the processing is stopped and then never clears the
+				// signal, so a loop waiting for the signal to clear has to see the stop as well
+				while (mEventSignalized && !mProcessingStopped.load(std::memory_order_relaxed)) {
 					bool eventsProcessed = handleEvents();
 				}
 				if (mTaskProcessingQueue) {
@@ -288,7 +290,7 @@ namespace Konclude {
 				}
 				processDispenseNotification();
 				if (!mTaskProcessingQueue) {
-					while (mEventSignalized || !eventSafeguardProcessed) {
+					while ((mEventSignalized || !eventSafeguardProcessed) && !mProcessingStopped.load(std::memory_order_relaxed)) {
 						bool eventsProcessed = handleEvents();
 						if (eventsProcessed) {
 							eventSafeguardProcessed = false;
