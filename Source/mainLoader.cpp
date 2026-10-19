@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 	QCoreApplication a(argc, argv);
 
 	CLogger *logger = CLogger::getInstance();
+	int exitCode = 0;
 
 	try {
 
@@ -81,7 +82,7 @@ int main(int argc, char *argv[])
 		cmdLineLoader->init(loaderFactory);
 
 		cmdLineLoader->load();
-		a.exec();
+		exitCode = a.exec();
 		cmdLineLoader->exit();
 		delete cmdLineLoader;
 		delete loaderFactory;
@@ -96,7 +97,7 @@ int main(int argc, char *argv[])
 
 	logger->shutdownLogger();
 
-	return 0;
+	return exitCode;
 }
 
 
