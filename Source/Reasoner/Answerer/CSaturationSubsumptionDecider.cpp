@@ -324,7 +324,8 @@ namespace Konclude {
 						// critical, -600 not completed, -1100 cardinality or nominal flags, -1500 data value,
 						// -1600 nominal integrated, -1700 no label, -1000 functional role, -2500 and -3000
 						// universal restrictions reaching successors and self loops (-5300 those of a completed
-						// label's successors satisfied by the saturations of its existential restrictions), -3500 derived successor,
+						// label's successors satisfied by the saturations of its existential restrictions, -6510 one of those
+						// restrictions' fillers without a saturation), -3500 derived successor,
 						// and for the query side -4600 no node, -4700 unreliable, -4800 flags, -4900 data
 						// value or nominal, -5000 no label; for an existential restriction of the query -5600 no
 						// label, -5700 a successor with a range or a qualified or cardinality restriction,
@@ -1001,21 +1002,20 @@ namespace Konclude {
 
 			bool CSaturationSubsumptionDecider::completedLabelSuccessorsSatisfyUniversal(CCompletedLabel* label, const CMergeState* base, CRole* role, CConcept* universalConcept, bool negated) {
 				// A completed label is the root of a model of its class, its successors are those of its
-				// existential restrictions, and each of them, whether the tableau expanded it or left it to the
-				// saturation, holds at least what the saturation derives for it. So a universal restriction of
-				// the base that reaches these successors is satisfied if every successor of the class's saturation
-				// under the role satisfies the filler (saturationNodeSatisfies: present, or a plain nested
-				// universal restriction over a role the successor has no successor under), provided that the
-				// saturation lists the model's successors, every existential restriction of the label under the
-				// role being in the saturated label too (the completion may have added some through a choice),
-				// that nothing reaching the successors can add successors to them, every universal restriction
-				// of the base and of the label over a role above one of the existential restrictions' roles
-				// having a filler that adds none (isSuccessorNeutralFiller), and that no nested restriction leads
-				// back to the root over an inverse role, which the saturation does not model. The class's
-				// saturation may be unreliable for the decision of the class itself (a disjunction or a
-				// cardinality, say) and still list its successors, since the saturation derives only what holds;
-				// whether a successor's own saturation is complete enough to say what it lacks is checked at the
-				// successor (isUsableSuccessorSaturation).
+				// existential restrictions, and the successor of ∃r.F holds at least what the saturation derives
+				// for F, whether the tableau expanded it or left it to the saturation. So a universal restriction
+				// of the base that reaches these successors is satisfied if, for every existential restriction of
+				// the label under the role, the saturation of its filler satisfies the universal restriction's
+				// filler (saturationNodeSatisfies: present, or a plain nested universal restriction over a role the
+				// filler has no successor under, which asks for a saturation whose successors stand for the
+				// model's, isUsableSuccessorSaturation), provided that nothing reaching the successors can add
+				// successors to them, every universal restriction of the base and of the label over a role above
+				// one of the existential restrictions' roles having a filler that adds none
+				// (isSuccessorNeutralFiller), and that no nested restriction leads back to the root over an inverse
+				// role, which the saturation does not model. The successors are the fillers' own saturation nodes,
+				// not the successors of the class's saturation node: a node the saturation gave up on
+				// (insufficient) lists none of them although its label holds the existential restrictions, and a
+				// restriction would then count as satisfied by nothing (the OWL API scenario's primitive P2).
 				cint64 opCode = universalConcept->getOperatorCode();
 				if (!((opCode == CCALL && !negated) || (opCode == CCSOME && negated))) {
 					return false;
@@ -1023,13 +1023,9 @@ namespace Konclude {
 				if (!role || role->isDataRole() || !isSuccessorCreatingRole(role)) {
 					return false;
 				}
-				bool unsatisfiable = false;
-				CIndividualSaturationProcessNode* classNode = getSaturationNode(label->mConcept, &unsatisfiable, nullptr, false);
-				if (!classNode || unsatisfiable || classNode->getIndirectStatusFlags()->hasUnprocessedFlag() || getRepresentativeNode(classNode)->getIndirectStatusFlags()->hasUnprocessedFlag()) {
-					return false;
-				}
-				// the existential restrictions of the label under the role, and the universal restrictions of the label
+				// the existential restrictions of the label under the role, the saturation nodes of their fillers, and the universal restrictions of the label
 				QList<CRole*> existentialRoleList;
+				QList<CIndividualSaturationProcessNode*> successorNodeList;
 				QList<QPair<CConcept*,bool> > universalList;
 				for (const CCompletedLabelEntry& entry : label->mEntries) {
 					CConcept* entryConcept = entry.mConcept;
@@ -1046,15 +1042,25 @@ namespace Konclude {
 					if (universal) {
 						universalList.append(QPair<CConcept*,bool>(entryConcept, entry.mNegated));
 					} else if ((existential || automatonExistential || atLeast) && isSubRoleOf(entryRole, role)) {
-						if (automatonExistential || atLeast) {
-							// successors the saturation of the class does not stand for one by one
+						if (automatonExistential || atLeast || entryRole->isDataRole()) {
+							// successors a saturation node does not stand for one by one
 							return false;
 						}
-						if (!hasLabelConcept(classNode, entryConcept, entry.mNegated)) {
-							return false;
+						for (CSortedNegLinker<CConcept*>* opIt = entryConcept->getOperandList(); opIt; opIt = opIt->getNext()) {
+							bool unsatisfiable = false;
+							CIndividualSaturationProcessNode* fillerNode = getSaturationNode(opIt->getData(), &unsatisfiable, nullptr, opIt->isNegated() ^ entry.mNegated);
+							if (!fillerNode || unsatisfiable) {
+								// no saturation standing for the model's successor
+								mUndecidedMergeConceptCodeCounts[-13020] = mUndecidedMergeConceptCodeCounts.value(-13020, 0) + 1;
+								return false;
+							}
+							successorNodeList.append(fillerNode);
 						}
 						existentialRoleList.append(entryRole);
 					}
+				}
+				if (existentialRoleList.isEmpty()) {
+					return false;
 				}
 				// nothing else reaching the successors may add successors to them
 				for (const CMergeUniversal& baseUniversal : base->mUniversalList) {
@@ -1079,7 +1085,6 @@ namespace Konclude {
 						}
 					}
 				}
-				CIndividualSaturationProcessNode* repClassNode = getRepresentativeNode(classNode);
 				for (CSortedNegLinker<CConcept*>* opIt = universalConcept->getOperandList(); opIt; opIt = opIt->getNext()) {
 					CConcept* filler = opIt->getData();
 					bool fillerNegated = opIt->isNegated() ^ negated;
@@ -1094,8 +1099,10 @@ namespace Konclude {
 							}
 						}
 					}
-					if (hasSuccessorWithoutConcept(repClassNode, role, filler, fillerNegated, 1)) {
-						return false;
+					for (CIndividualSaturationProcessNode* successorNode : successorNodeList) {
+						if (!saturationNodeSatisfies(successorNode, filler, fillerNegated, 1)) {
+							return false;
+						}
 					}
 				}
 				return true;
