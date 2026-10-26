@@ -4253,6 +4253,12 @@ namespace Konclude {
 								}
 							}
 
+							if (individualNode->hasPartialProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENDNEIGHBOUREXPANSIONBLOCKED)) {
+								if (testIndividualNodeBackendCacheRoleCharacteristicsBlockingCritical(individualNode, calcAlgContext)) {
+									individualNode->clearProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENDNEIGHBOUREXPANSIONBLOCKED);
+								}
+							}
+
 							if (individualNode->hasPartialProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENDNEIGHBOUREXPANSIONBLOCKED | CIndividualProcessNode::PRFSYNCHRONIZEDBACKENDSUCCESSOREXPANSIONBLOCKED)) {
 								if (testIndividualNodeBackendCacheExpansionBlockingCriticalCardinality(individualNode, calcAlgContext)) {
 									individualNode->clearProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENDSUCCESSOREXPANSIONBLOCKED);
@@ -4280,6 +4286,40 @@ namespace Konclude {
 				}
 
 
+
+				void CCalculationTableauCompletionTaskHandleAlgorithm::clearCompletionGraphCaching(CIndividualProcessNode*& individualNode, CCalculationAlgorithmContextBase* calcAlgContext) {
+
+					trackIndividualExtendedDependence(individualNode->getIndividualNodeID(), calcAlgContext);
+
+					if (mConfCollectCachingUpdatedBlockableIndiNodes && individualNode->isBlockableIndividual()) {
+						CXLinker<CIndividualProcessNode*>* updatedCachedIndiNodeLinker = CObjectAllocator< CXLinker<CIndividualProcessNode*> >::allocateAndConstruct(calcAlgContext->getUsedProcessTaskMemoryAllocationManager());
+						updatedCachedIndiNodeLinker->initLinker(individualNode);
+						calcAlgContext->getUsedProcessingDataBox()->addBlockableIndividualNodeUpdatedLinker(updatedCachedIndiNodeLinker);
+					}
+
+					if (individualNode->hasPartialProcessingRestrictionFlags(CIndividualProcessNode::PRFCOMPLETIONGRAPHCACHED)) {
+						individualNode->clearProcessingRestrictionFlags(CIndividualProcessNode::PRFCOMPLETIONGRAPHCACHED);
+						reapplySatisfiableCachedAbsorbedDisjunctionConcepts(individualNode, calcAlgContext);
+						reapplySatisfiableCachedAbsorbedGeneratingConcepts(individualNode, calcAlgContext);
+					}
+					individualNode->addProcessingRestrictionFlags(CIndividualProcessNode::PRFCOMPLETIONGRAPHCACHINGINVALIDATED);
+
+					if (individualNode->isCachingLossNodeReactivationInstalled()) {
+						checkIndividualNodesReactivationDueToNominalCachingLoss(individualNode, calcAlgContext);
+					}
+
+
+					CProcessingDataBox* processingDataBox = calcAlgContext->getProcessingDataBox();
+					CIndividualReactivationProcessingQueue* reactProcQueue = nullptr;
+					if (mConfDelayCompletionGraphCachingReactivation) {
+						reactProcQueue = processingDataBox->getLateIndividualReactivationProcessingQueue(true);
+					} else {
+						reactProcQueue = processingDataBox->getEarlyIndividualReactivationProcessingQueue(true);
+					}
+					bool reactivatedIndis = mCompGraphCacheHandler->getReactivationIndividuals(individualNode, reactProcQueue, calcAlgContext);
+				}
+
+
 				bool CCalculationTableauCompletionTaskHandleAlgorithm::detectIndividualNodeCompletionGraphCached(CIndividualProcessNode*& individualNode, CCalculationAlgorithmContextBase* calcAlgContext) {
 					bool indiNodeCompGraphCached = false;
 					if (mCompGraphCacheHandler && mConfCompletionGraphCaching) {
@@ -4298,34 +4338,8 @@ namespace Konclude {
 								}
 							}
 							if (!indiNodeCompGraphCached) {
-								trackIndividualExtendedDependence(individualNode->getIndividualNodeID(),calcAlgContext);
 
-								if (mConfCollectCachingUpdatedBlockableIndiNodes && individualNode->isBlockableIndividual()) {
-									CXLinker<CIndividualProcessNode*>* updatedCachedIndiNodeLinker = CObjectAllocator< CXLinker<CIndividualProcessNode*> >::allocateAndConstruct(calcAlgContext->getUsedProcessTaskMemoryAllocationManager());
-									updatedCachedIndiNodeLinker->initLinker(individualNode);
-									calcAlgContext->getUsedProcessingDataBox()->addBlockableIndividualNodeUpdatedLinker(updatedCachedIndiNodeLinker);
-								}
-
-								if (individualNode->hasPartialProcessingRestrictionFlags(CIndividualProcessNode::PRFCOMPLETIONGRAPHCACHED)) {
-									individualNode->clearProcessingRestrictionFlags(CIndividualProcessNode::PRFCOMPLETIONGRAPHCACHED);
-									reapplySatisfiableCachedAbsorbedDisjunctionConcepts(individualNode,calcAlgContext);
-									reapplySatisfiableCachedAbsorbedGeneratingConcepts(individualNode,calcAlgContext);
-								}
-								individualNode->addProcessingRestrictionFlags(CIndividualProcessNode::PRFCOMPLETIONGRAPHCACHINGINVALIDATED);
-
-								if (individualNode->isCachingLossNodeReactivationInstalled()) {
-									checkIndividualNodesReactivationDueToNominalCachingLoss(individualNode,calcAlgContext);
-								}
-
-
-								CProcessingDataBox* processingDataBox = calcAlgContext->getProcessingDataBox();
-								CIndividualReactivationProcessingQueue* reactProcQueue = nullptr;
-								if (mConfDelayCompletionGraphCachingReactivation) {
-									reactProcQueue = processingDataBox->getLateIndividualReactivationProcessingQueue(true);
-								} else {
-									reactProcQueue = processingDataBox->getEarlyIndividualReactivationProcessingQueue(true);
-								}
-								bool reactivatedIndis = mCompGraphCacheHandler->getReactivationIndividuals(individualNode,reactProcQueue,calcAlgContext);
+								clearCompletionGraphCaching(individualNode, calcAlgContext);
 
 							} else {
 								individualNode->addProcessingRestrictionFlags(CIndividualProcessNode::PRFCOMPLETIONGRAPHCACHED);
@@ -8742,12 +8756,16 @@ namespace Konclude {
 
 							if (allowPreprocess || mCurrentRecProcDepth < mCurrentRecProcDepthLimit) {
 
-								if (mConfAllowBackendNeighbourExpansionBlocking) {
+								// Role characteristics (asymmetry, irreflexivity, role disjointness) can only
+								// be enforced by materialising the ABox role assertions, so they have the
+								// same effect as switching the neighbour expansion blocking off for this node.
+								bool neighbourExpansionBlockingAllowed = mConfAllowBackendNeighbourExpansionBlocking && !testIndividualNodeBackendCacheRoleCharacteristicsBlockingCritical(indiProcNode, calcAlgContext);
+								if (neighbourExpansionBlockingAllowed) {
 									indiProcNode->addProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENNEIGHBOURDPARTIALEXPANSION);
 								}
 								if (!expandDirectlyInfluencedIndividualNeighbourNodesFromBackendCache(indiProcNode, calcAlgContext)) {
 
-									if (!mConfAllowBackendNeighbourExpansionBlocking) {
+									if (!neighbourExpansionBlockingAllowed) {
 										indiProcNode->clearProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENNEIGHBOURDPARTIALEXPANSION);
 										indiProcNode->addProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENNEIGHBOURDFULLEXPANSION);
 									}
@@ -8922,13 +8940,17 @@ namespace Konclude {
 
 							if (allowPreprocess || mCurrentRecProcDepth < mCurrentRecProcDepthLimit) {
 
-								if (mConfAllowBackendNeighbourExpansionBlocking) {
+								// Role characteristics (asymmetry, irreflexivity, role disjointness) can only
+								// be enforced by materialising the ABox role assertions, so they have the
+								// same effect as switching the neighbour expansion blocking off for this node.
+								bool neighbourExpansionBlockingAllowed = mConfAllowBackendNeighbourExpansionBlocking && !testIndividualNodeBackendCacheRoleCharacteristicsBlockingCritical(indiProcNode, calcAlgContext);
+								if (neighbourExpansionBlockingAllowed) {
 									indiProcNode->addProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENNEIGHBOURDPARTIALEXPANSION);
 								}
 								if (!indiProcNode->getIndividualBackendCacheSynchronisationData(false) || !expandDirectlyInfluencedIndividualNeighbourNodesFromBackendCache(indiProcNode, calcAlgContext)) {
 
 
-									if (!mConfAllowBackendNeighbourExpansionBlocking) {
+									if (!neighbourExpansionBlockingAllowed) {
 										indiProcNode->clearProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENNEIGHBOURDPARTIALEXPANSION);
 										indiProcNode->addProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENNEIGHBOURDFULLEXPANSION);
 									}
@@ -21033,6 +21055,25 @@ namespace Konclude {
 					markIndividualNodeBackendNonConceptSetRelatedAndNeighbourLabelRelatedProcessing(mergeIntoIndividualNode, calcAlgContext);
 					markIndividualNodeBackendNonConceptSetRelatedAndNeighbourLabelRelatedProcessing(individual, calcAlgContext);
 
+
+
+
+					if (mCompGraphCacheHandler && mConfCompletionGraphCaching && individual->isNominalIndividualNode() && !mergeIntoIndividualNode->isNominalIndividualNode()) {
+						if (!individual->hasPartialProcessingRestrictionFlags(CIndividualProcessNode::PRFCOMPLETIONGRAPHCACHINGINVALIDATED) && individual->getIndividualNodeID() <= calcAlgContext->getMaxCompletionGraphCachedIndividualNodeID()) {
+							individual->addProcessingRestrictionFlags(CIndividualProcessNode::PRFCOMPLETIONGRAPHCACHEDNODELOCATED);
+
+							if (individual->hasPartialProcessingRestrictionFlags(CIndividualProcessNode::PRFRETESTCOMPLETIONGRAPHCACHEDDUEDIRECTMODIFIED)) {
+								individual->clearProcessingRestrictionFlags(CIndividualProcessNode::PRFRETESTCOMPLETIONGRAPHCACHEDDUEDIRECTMODIFIED);
+							}
+
+							clearCompletionGraphCaching(individual, calcAlgContext);
+
+						}
+					}
+
+
+
+
 					mergeIntoIndividualNode->setLastMergedIntoIndividualNode(individual);
 					individual->setMergedDependencyTrackPoint(mergeDepTrackPoint);
 
@@ -21513,9 +21554,10 @@ namespace Konclude {
 
 					if (individual->getIndividualBackendCacheSynchronisationData(false) && !mergeIntoIndividualNode->getIndividualBackendCacheSynchronisationData(false)) {
 						CIndividualNodeRepresentativeMemoryBackendCacheSynchronisationData* backendSyncData = CObjectParameterizingAllocator< CIndividualNodeRepresentativeMemoryBackendCacheSynchronisationData, CProcessContext* >::allocateAndConstructAndParameterize(calcAlgContext->getUsedProcessTaskMemoryAllocationManager(), calcAlgContext->getUsedProcessContext());
-						backendSyncData->initSynchronisationData((CBackendRepresentativeMemoryCacheIndividualAssociationData*)nullptr);
+						backendSyncData->initSynchronisationData((CBackendRepresentativeMemoryCacheIndividualAssociationData*)((CIndividualNodeRepresentativeMemoryBackendCacheSynchronisationData*)individual->getIndividualBackendCacheSynchronisationData(false))->getAssocitaionData());
 						backendSyncData->setBackendCacheSynchron(false);
 						mergeIntoIndividualNode->setIndividualBackendCacheSynchronisationData(backendSyncData);
+						addIndividualToBackendIndirectCompatibilityExpansionQueue(mergeIntoIndividualNode, calcAlgContext);
 					}
 
 
@@ -22569,7 +22611,9 @@ namespace Konclude {
 								expansionBlocked = true;
 							}
 							if (mConfAllowBackendNeighbourExpansionBlocking) {
-								indiNode->addProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENDNEIGHBOUREXPANSIONBLOCKED | CIndividualProcessNode::PRFRETESTBACKENDSYNCHRONIZATIONDUEDIRECTMODIFIED);
+								if (!testIndividualNodeBackendCacheRoleCharacteristicsBlockingCritical(indiNode, calcAlgContext)) {
+									indiNode->addProcessingRestrictionFlags(CIndividualProcessNode::PRFSYNCHRONIZEDBACKENDNEIGHBOUREXPANSIONBLOCKED | CIndividualProcessNode::PRFRETESTBACKENDSYNCHRONIZATIONDUEDIRECTMODIFIED);
+								}
 							}
 						}
 					}
@@ -24070,7 +24114,8 @@ namespace Konclude {
 
 					bool newMergingsHandled = false;
 					bool nonDeterministicMerged = backendSyncData->hasNonDeterministicallyMergedIndividuals();
-					if (mConfAllowBackendNeighbourExpansionBlocking && mConfNewMergingsOnlyInferringExpansion && !nonDeterministicMerged) {
+					bool neighbourExpansionBlockingAllowed = mConfAllowBackendNeighbourExpansionBlocking && !testIndividualNodeBackendCacheRoleCharacteristicsBlockingCritical(indiNode, calcAlgContext);
+					if (neighbourExpansionBlockingAllowed && mConfNewMergingsOnlyInferringExpansion && !nonDeterministicMerged) {
 						checkingMergingsLinker = backendSyncData->getLastInferringExpansionHandledMergedNodeLinker();
 						newMergingsHandled = true;
 						if (backendSyncData->getMergedIndividualNodeLinker() != backendSyncData->getLastInferringExpansionHandledMergedNodeLinker()) {
@@ -24086,7 +24131,7 @@ namespace Konclude {
 							locBackendSyncData->setNewlyMergedIndividuals(true);
 						}
 					}
-					if (!newMergingsHandled && (!mConfAllowBackendNeighbourExpansionBlocking || backendSyncData->getMergedIndividualNodeLinker() != backendSyncData->getLastDirectExpansionHandledMergedNodeLinker())) {
+					if (!newMergingsHandled && (!neighbourExpansionBlockingAllowed || backendSyncData->getMergedIndividualNodeLinker() != backendSyncData->getLastDirectExpansionHandledMergedNodeLinker())) {
 						checkingMergingsLinker = backendSyncData->getLastDirectExpansionHandledMergedNodeLinker();
 						newMergingsHandled = true;
 
@@ -26141,6 +26186,308 @@ namespace Konclude {
 
 
 
+				bool CCalculationTableauCompletionTaskHandleAlgorithm::hasRoleCharacteristic(CRole* role) {
+					if (!role) {
+						return false;
+					}
+					if (role->isAsymmetric() || role->isIrreflexive() || role->hasDisjointRoles()) {
+						return true;
+					}
+					CRole* inverseRole = role->getInverseRole();
+					if (inverseRole && (inverseRole->isAsymmetric() || inverseRole->isIrreflexive() || inverseRole->hasDisjointRoles())) {
+						return true;
+					}
+					// role characteristics are also relevant when they are declared for a super role
+					for (CSortedNegLinker<CRole*>* superRoleLinkerIt = role->getIndirectSuperRoleList(); superRoleLinkerIt; superRoleLinkerIt = superRoleLinkerIt->getNext()) {
+						CRole* superRole = superRoleLinkerIt->getData();
+						if (superRole && (superRole->isAsymmetric() || superRole->isIrreflexive() || superRole->hasDisjointRoles())) {
+							return true;
+						}
+					}
+					return false;
+				}
+
+
+				bool CCalculationTableauCompletionTaskHandleAlgorithm::addRoleToRoleSet(CRole** roleSet, cint64& roleSetSize, CRole* role, bool inversed) {
+					const cint64 maxRoleSetSize = 64;
+
+					if (!role) {
+						return false;
+					}
+					CRole* directedRole = role;
+					if (inversed) {
+						directedRole = role->getInverseRole();
+						if (!directedRole) {
+							return false;
+						}
+					}
+					// the indirect super roles have to be considered as well, since disjointness and irreflexivity
+					// may be declared for a super role of the role that is instantiated for the pair
+					bool rolePresent = false;
+					for (cint64 i = 0; i < roleSetSize && !rolePresent; ++i) {
+						rolePresent = roleSet[i] == directedRole;
+					}
+					if (!rolePresent) {
+						if (roleSetSize >= maxRoleSetSize) {
+							return false;
+						}
+						roleSet[roleSetSize++] = directedRole;
+					}
+					for (CSortedNegLinker<CRole*>* superRoleLinkerIt = directedRole->getIndirectSuperRoleList(); superRoleLinkerIt; superRoleLinkerIt = superRoleLinkerIt->getNext()) {
+						CRole* superRole = superRoleLinkerIt->getData();
+						if (!superRole) {
+							return false;
+						}
+						bool superRolePresent = false;
+						for (cint64 i = 0; i < roleSetSize && !superRolePresent; ++i) {
+							superRolePresent = roleSet[i] == superRole;
+						}
+						if (!superRolePresent) {
+							if (roleSetSize >= maxRoleSetSize) {
+								return false;
+							}
+							roleSet[roleSetSize++] = superRole;
+						}
+					}
+					return true;
+				}
+
+
+				bool CCalculationTableauCompletionTaskHandleAlgorithm::testRoleSetBlockingCritical(CRole** roleSet, cint64 roleSetSize, bool selfLoop) {
+					if (selfLoop) {
+						for (cint64 i = 0; i < roleSetSize; ++i) {
+							if (roleSet[i]->isIrreflexive()) {
+								return true;
+							}
+						}
+					}
+					for (cint64 i = 0; i < roleSetSize; ++i) {
+						CRole* role = roleSet[i];
+						for (cint64 j = i + 1; j < roleSetSize; ++j) {
+							CRole* otherRole = roleSet[j];
+							if (role == otherRole) {
+								continue;
+							}
+							if (role->hasDisjointRole(otherRole) || otherRole->hasDisjointRole(role)) {
+								// two disjoint roles on the same directed edge are a clash that the expansion would
+								// detect by creating the corresponding role links (asymmetry is compiled into
+								// disjointness with the inverse role, i.e., it is covered as well)
+								return true;
+							}
+						}
+					}
+					return false;
+				}
+
+
+				bool CCalculationTableauCompletionTaskHandleAlgorithm::testIndividualRoleAssertionPairBlockingCritical(CIndividual* nominalIndi, CIndividualProcessNode* indiNode, CIndividual* otherIndi) {
+					if (!otherIndi) {
+						return false;
+					}
+
+					const cint64 maxRoleSetSize = 64;
+					CRole* roleSet[64];
+					cint64 roleSetSize = 0;
+
+					// r(this, other) assertions
+					for (CRoleAssertionLinker* assertionRoleLinkerIt = indiNode->getAssertionRoleLinker(); assertionRoleLinkerIt; assertionRoleLinkerIt = assertionRoleLinkerIt->getNext()) {
+						if (assertionRoleLinkerIt->getIndividual() == otherIndi) {
+							if (!addRoleToRoleSet(roleSet, roleSetSize, assertionRoleLinkerIt->getRole(), false)) {
+								return true;
+							}
+						}
+					}
+					// r(other, this) assertions are the same edge as r^(-1)(this, other)
+					for (CReverseRoleAssertionLinker* reverseAssertionRoleLinkerIt = indiNode->getReverseAssertionRoleLinker(); reverseAssertionRoleLinkerIt; reverseAssertionRoleLinkerIt = reverseAssertionRoleLinkerIt->getNext()) {
+						if (reverseAssertionRoleLinkerIt->getIndividual() == otherIndi) {
+							if (!addRoleToRoleSet(roleSet, roleSetSize, reverseAssertionRoleLinkerIt->getRole(), true)) {
+								return true;
+							}
+						}
+					}
+					// role assertions that were pushed from the backend cache
+					for (CAdditionalProcessRoleAssertionsLinker* additionalRoleAssertionsLinkerIt = indiNode->getAdditionalRoleAssertionsLinker(); additionalRoleAssertionsLinkerIt; additionalRoleAssertionsLinkerIt = additionalRoleAssertionsLinkerIt->getNext()) {
+						for (CRoleAssertionLinker* assertionRoleLinkerIt = additionalRoleAssertionsLinkerIt->getRoleAssertionLinker(); assertionRoleLinkerIt; assertionRoleLinkerIt = assertionRoleLinkerIt->getNext()) {
+							if (assertionRoleLinkerIt->getIndividual() == otherIndi) {
+								if (!addRoleToRoleSet(roleSet, roleSetSize, assertionRoleLinkerIt->getRole(), false)) {
+									return true;
+								}
+							}
+						}
+						for (CReverseRoleAssertionLinker* reverseAssertionRoleLinkerIt = additionalRoleAssertionsLinkerIt->getReverseRoleAssertionLinker(); reverseAssertionRoleLinkerIt; reverseAssertionRoleLinkerIt = reverseAssertionRoleLinkerIt->getNext()) {
+							if (reverseAssertionRoleLinkerIt->getIndividual() == otherIndi) {
+								if (!addRoleToRoleSet(roleSet, roleSetSize, reverseAssertionRoleLinkerIt->getRole(), true)) {
+									return true;
+								}
+							}
+						}
+					}
+
+					return testRoleSetBlockingCritical(roleSet, roleSetSize, otherIndi == nominalIndi);
+				}
+
+
+				bool CCalculationTableauCompletionTaskHandleAlgorithm::testIndividualLocalRoleAssertionsBlockingCritical(CIndividualProcessNode* indiNode) {
+					if (!indiNode) {
+						return false;
+					}
+					CIndividual* nominalIndi = indiNode->getNominalIndividual();
+					if (!nominalIndi) {
+						return false;
+					}
+
+					const cint64 maxAnalyzedPairCount = 64;
+					CIndividual* analyzedIndiArray[64];
+					cint64 analyzedIndiCount = 0;
+					bool expansionBlockingCritical = false;
+
+					auto testPairFunction = [&](CIndividual* otherIndi, CRole* role)->bool {
+						if (!otherIndi || !hasRoleCharacteristic(role)) {
+							return true;
+						}
+						for (cint64 i = 0; i < analyzedIndiCount; ++i) {
+							if (analyzedIndiArray[i] == otherIndi) {
+								return true;
+							}
+						}
+						if (analyzedIndiCount >= maxAnalyzedPairCount) {
+							// too many characteristic related role assertions, do not suppress the neighbour expansion
+							expansionBlockingCritical = true;
+							return false;
+						}
+						analyzedIndiArray[analyzedIndiCount++] = otherIndi;
+						if (testIndividualRoleAssertionPairBlockingCritical(nominalIndi, indiNode, otherIndi)) {
+							expansionBlockingCritical = true;
+							return false;
+						}
+						return true;
+					};
+
+					for (CRoleAssertionLinker* assertionRoleLinkerIt = indiNode->getAssertionRoleLinker(); assertionRoleLinkerIt && !expansionBlockingCritical; assertionRoleLinkerIt = assertionRoleLinkerIt->getNext()) {
+						testPairFunction(assertionRoleLinkerIt->getIndividual(), assertionRoleLinkerIt->getRole());
+					}
+					for (CReverseRoleAssertionLinker* reverseAssertionRoleLinkerIt = indiNode->getReverseAssertionRoleLinker(); reverseAssertionRoleLinkerIt && !expansionBlockingCritical; reverseAssertionRoleLinkerIt = reverseAssertionRoleLinkerIt->getNext()) {
+						testPairFunction(reverseAssertionRoleLinkerIt->getIndividual(), reverseAssertionRoleLinkerIt->getRole());
+					}
+					for (CAdditionalProcessRoleAssertionsLinker* additionalRoleAssertionsLinkerIt = indiNode->getAdditionalRoleAssertionsLinker(); additionalRoleAssertionsLinkerIt && !expansionBlockingCritical; additionalRoleAssertionsLinkerIt = additionalRoleAssertionsLinkerIt->getNext()) {
+						for (CRoleAssertionLinker* assertionRoleLinkerIt = additionalRoleAssertionsLinkerIt->getRoleAssertionLinker(); assertionRoleLinkerIt && !expansionBlockingCritical; assertionRoleLinkerIt = assertionRoleLinkerIt->getNext()) {
+							testPairFunction(assertionRoleLinkerIt->getIndividual(), assertionRoleLinkerIt->getRole());
+						}
+						for (CReverseRoleAssertionLinker* reverseAssertionRoleLinkerIt = additionalRoleAssertionsLinkerIt->getReverseRoleAssertionLinker(); reverseAssertionRoleLinkerIt && !expansionBlockingCritical; reverseAssertionRoleLinkerIt = reverseAssertionRoleLinkerIt->getNext()) {
+							testPairFunction(reverseAssertionRoleLinkerIt->getIndividual(), reverseAssertionRoleLinkerIt->getRole());
+						}
+					}
+
+					return expansionBlockingCritical;
+				}
+
+
+				bool CCalculationTableauCompletionTaskHandleAlgorithm::testIndividualNodeAssociationNeighbourRoleSetBlockingCritical(CBackendRepresentativeMemoryCacheIndividualAssociationData* assocData, CBackendRepresentativeMemoryLabelCacheItem* neighbourRoleSetLabel, cint64 selfIndiId, cint64 neighbourIndiId, bool mirroredDirection, bool& characteristicRoleFound, CCalculationAlgorithmContextBase* calcAlgContext) {
+					const cint64 maxRoleSetSize = 64;
+					CRole* roleSet[64];
+					cint64 roleSetSize = 0;
+					bool roleSetOverflow = false;
+					bool nondeterministicRoleFound = false;
+					characteristicRoleFound = false;
+
+					mBackendCacheHandler->visitRolesOfAssociatedNeigbourRoleSetLabel(assocData, neighbourRoleSetLabel, [&](CRole* role, bool inversed, bool assertionLinkBase, bool nominalLinkBase, bool nondeterministic)->bool {
+						if (hasRoleCharacteristic(role)) {
+							characteristicRoleFound = true;
+						}
+						if (nondeterministic) {
+							// nondeterministic role entries are disjunctions of the label, i.e., the role connection
+							// may or may not be present in the current branch, so the expansion must not be suppressed
+							nondeterministicRoleFound = true;
+						}
+						// the label of an association describes the connection from the perspective of the associated
+						// individual, i.e., for the mirrored direction the role direction has to be swapped
+						bool addInversedRole = mirroredDirection ? !inversed : inversed;
+						if (!addRoleToRoleSet(roleSet, roleSetSize, role, addInversedRole)) {
+							roleSetOverflow = true;
+							return false;
+						}
+						return true;
+					});
+
+					if (roleSetOverflow) {
+						return true;
+					}
+					if (testRoleSetBlockingCritical(roleSet, roleSetSize, neighbourIndiId == selfIndiId)) {
+						return true;
+					}
+					return nondeterministicRoleFound;
+				}
+
+
+				bool CCalculationTableauCompletionTaskHandleAlgorithm::testIndividualNodeAssociationRoleSetsBlockingCritical(CBackendRepresentativeMemoryCacheIndividualAssociationData* assocData, CCalculationAlgorithmContextBase* calcAlgContext) {
+					bool expansionBlockingCritical = false;
+					CBackendRepresentativeMemoryCacheIndividualRoleSetNeighbourArray* neighbourRoleSetArray = assocData->getRoleSetNeighbourArray();
+					if (neighbourRoleSetArray) {
+						CBackendRepresentativeMemoryLabelCacheItemIndividualRoleSetNeighbourArrayIndexExtensionData* neighbourRoleSetArrayIndexData = neighbourRoleSetArray->getIndexData();
+						cint64 selfIndiId = assocData->getAssociatedIndividualId();
+						for (cint64 i = 0; i < neighbourRoleSetArrayIndexData->getArraySize() && !expansionBlockingCritical; ++i) {
+							CBackendRepresentativeMemoryLabelCacheItem* neighbourRoleSetLabel = neighbourRoleSetArrayIndexData->getNeighbourRoleSetLabel(i);
+							neighbourRoleSetArray->at(i).visitNeighbourIndividualIds([&](cint64 neighbourIndiId)->bool {
+								bool characteristicRoleFound = false;
+								expansionBlockingCritical = testIndividualNodeAssociationNeighbourRoleSetBlockingCritical(assocData, neighbourRoleSetLabel, selfIndiId, neighbourIndiId, false, characteristicRoleFound, calcAlgContext);
+								if (!expansionBlockingCritical && characteristicRoleFound && neighbourIndiId != selfIndiId) {
+									// the role set label of this association might only contain a part of the role
+									// assertions of the pair, so the association of the neighbour is consulted as well
+									CBackendRepresentativeMemoryCacheIndividualAssociationData* neighbourAssocData = mBackendCacheHandler->getIndividualAssociationData(neighbourIndiId, calcAlgContext);
+									if (neighbourAssocData && neighbourAssocData != assocData) {
+										CBackendRepresentativeMemoryCacheIndividualNeighbourRoleSetHash* neighbourRoleSetHash = neighbourAssocData->getNeighbourRoleSetHash();
+										if (neighbourRoleSetHash) {
+											CBackendRepresentativeMemoryLabelCacheItem* mirroredNeighbourRoleSetLabel = neighbourRoleSetHash->getNeighbourRoleSetLabel(selfIndiId);
+											if (mirroredNeighbourRoleSetLabel) {
+												bool mirroredCharacteristicRoleFound = false;
+												expansionBlockingCritical = testIndividualNodeAssociationNeighbourRoleSetBlockingCritical(neighbourAssocData, mirroredNeighbourRoleSetLabel, neighbourIndiId, selfIndiId, true, mirroredCharacteristicRoleFound, calcAlgContext);
+											}
+										}
+									}
+								}
+								return !expansionBlockingCritical;
+							});
+						}
+					}
+					return expansionBlockingCritical;
+				}
+
+
+				bool CCalculationTableauCompletionTaskHandleAlgorithm::testIndividualNodeBackendCacheRoleCharacteristicsBlockingCritical(CIndividualProcessNode* indiNode, CCalculationAlgorithmContextBase* calcAlgContext) {
+					CConcreteOntology* ontology = calcAlgContext->getUsedProcessingDataBox()->getOntology();
+					COntologyStructureSummary* structureSummary = ontology ? ontology->getStructureSummary() : nullptr;
+					if (!structureSummary) {
+						return true;
+					}
+					if (!structureSummary->hasRoleAsymmetrics() && !structureSummary->hasRoleIrreflexivitys() && !structureSummary->hasRoleDisjoints()) {
+						// without role characteristics, implicitly created neighbour links cannot cause any clash,
+						// i.e., the suppression of the neighbour expansion is not observable
+						return false;
+					}
+
+					if (testIndividualLocalRoleAssertionsBlockingCritical(indiNode)) {
+						return true;
+					}
+
+					CIndividualNodeRepresentativeMemoryBackendCacheSynchronisationData* backendSyncData = (CIndividualNodeRepresentativeMemoryBackendCacheSynchronisationData*)indiNode->getIndividualBackendCacheSynchronisationData(false);
+					if (backendSyncData) {
+						CBackendRepresentativeMemoryCacheIndividualAssociationData* assocData = backendSyncData->getAssocitaionData();
+						if (assocData && assocData->isCompletelyHandled() && testIndividualNodeAssociationRoleSetsBlockingCritical(assocData, calcAlgContext)) {
+							return true;
+						}
+						if (!assocData || !assocData->isCompletelyHandled()) {
+							// without completely handled cache data, it cannot be shown that suppressing the neighbour
+							// expansion is safe, so the neighbourhood is kept materialised
+							return true;
+						}
+					} else {
+						return true;
+					}
+
+					return false;
+				}
+
+
 				bool CCalculationTableauCompletionTaskHandleAlgorithm::testIndividualNodeConceptBackendCacheNeighbourExpansionBlockingCritical(CConcept* concept, bool conNegation, bool nondeterministic, CBackendRepresentativeMemoryCacheIndividualAssociationData* assocData, CCalculationAlgorithmContextBase* calcAlgContext) {
 					bool expansionBlockingCritical = false;
 					CConceptOperator* conOperator = concept->getConceptOperator();
@@ -26156,7 +26503,7 @@ namespace Konclude {
 					} else if (!conNegation && conOperator->hasPartialOperatorCodeFlag(CConceptOperator::CCFS_ALL_AQALL_TYPE | CConceptOperator::CCF_ATMOST) || conNegation && conOperator->hasPartialOperatorCodeFlag(CConceptOperator::CCFS_SOME_TYPE | CConceptOperator::CCF_ATLEAST | CConceptOperator::CCF_VALUE)) {
 						CRole* role = concept->getRole();
 						if (assocData->isCompletelyPropagated()) {
-							if (!mBackendCacheHandler || !nondeterministic && !mBackendCacheHandler->hasConceptInAssociatedFullConceptSetLabel(assocData, assocData->getLabelCacheEntry(CBackendRepresentativeMemoryLabelCacheItem::FULL_CONCEPT_SET_LABEL), concept, conNegation, !nondeterministic, calcAlgContext)) {
+							if (!mBackendCacheHandler || !mBackendCacheHandler->hasConceptInAssociatedFullConceptSetLabel(assocData, assocData->getLabelCacheEntry(CBackendRepresentativeMemoryLabelCacheItem::FULL_CONCEPT_SET_LABEL), concept, conNegation, !nondeterministic, calcAlgContext)) {
 								expansionBlockingCritical = true;
 							}
 						} else {
