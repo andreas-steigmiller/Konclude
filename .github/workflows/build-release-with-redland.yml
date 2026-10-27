@@ -488,13 +488,10 @@ jobs:
 
 
   # The Docker images are built from the repository konclude/KoncludeDocker and pushed to the
-  # Docker Hub account of Konclude, so the Docker jobs only run in the repository of Konclude.
-  # ATTENTION: the Dockerfiles of that repository still download Qt from a location that no
-  # longer exists, libxml2 from ftp://xmlsoft.org and rasqal via git://github.com, which is no
-  # longer served, so these jobs fail until KoncludeDocker is updated.
+  # Docker Hub account of Konclude. Forks build and test the images as well, but only the
+  # upstream repository is allowed to push them.
   prebuild_qt_docker:
     name: Ubuntu Latest Docker Qt Prebuild
-    if: github.repository == 'konclude/Konclude'
     runs-on: ubuntu-latest
     timeout-minutes: 600
     needs: tags
@@ -599,7 +596,6 @@ jobs:
 
   build_docker:
     name: Ubuntu Latest Docker Static
-    if: github.repository == 'konclude/Konclude'
     runs-on: ubuntu-latest
     timeout-minutes: 600
     needs: [tags, prebuild_qt_docker]
@@ -767,11 +763,11 @@ jobs:
           if-no-files-found: error
 
       - name: Log into registry
-        if: needs.tags.outputs.publish == 'true'
+        if: needs.tags.outputs.publish == 'true' && github.repository == 'konclude/Konclude'
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
       - name: Push image
-        if: needs.tags.outputs.publish == 'true'
+        if: needs.tags.outputs.publish == 'true' && github.repository == 'konclude/Konclude'
         run: |
           docker push konclude/konclude:latest
           docker push konclude/konclude:${{needs.tags.outputs.git_tag}}
