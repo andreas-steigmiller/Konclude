@@ -19,4 +19,22 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/equivalentClass/premises004#c1"/>
+        <ObjectIntersectionOf>
+            <ObjectExactCardinality cardinality="1">
+                <ObjectProperty IRI="http://www.w3.org/2002/03owlt/equivalentClass/premises004#p"/>
+                <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
+            </ObjectExactCardinality>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/equivalentClass/premises004#c2"/>
+        <ObjectIntersectionOf>
+            <ObjectExactCardinality cardinality="1">
+                <ObjectProperty IRI="http://www.w3.org/2002/03owlt/equivalentClass/premises004#p"/>
+                <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
+            </ObjectExactCardinality>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
 </Ontology>

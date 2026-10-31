@@ -37,6 +37,9 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent905#d"/>
+    </Declaration>
     <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent905#cardinality-N"/>
         <ObjectSomeValuesFrom>
@@ -64,6 +67,12 @@
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/consistent905#r-N-times-M-to-1"/>
             <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent905#only-d"/>
         </ObjectSomeValuesFrom>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent905#only-d"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent905#d"/>
+        </ObjectOneOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent905#only-d"/>

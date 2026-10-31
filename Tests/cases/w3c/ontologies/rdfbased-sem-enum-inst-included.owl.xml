@@ -7,4 +7,20 @@
 -->
 
 <Ontology xmlns="http://www.w3.org/2002/07/owl#">
+    <Declaration>
+        <Class IRI="http://www.example.org#e"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.example.org#x"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.example.org#y"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.example.org#e"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.example.org#x"/>
+            <NamedIndividual IRI="http://www.example.org#y"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
 </Ontology>

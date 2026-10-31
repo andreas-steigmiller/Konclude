@@ -20,7 +20,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:suiteName"/><NamedIndividual abbreviatedIRI="kt:suite-w3c"/><Literal>W3C-OWL2-Direct</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:suiteDirectory"/><NamedIndividual abbreviatedIRI="kt:suite-w3c"/><Literal>w3c</Literal></DataPropertyAssertion>
 
-
   <!-- bnode2somevaluesfrom: Shows that a BNode is an existential variable. -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-bnode2somevaluesfrom"/></ClassAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:task"/><NamedIndividual abbreviatedIRI="kt:w3c-bnode2somevaluesfrom"/><Literal>consistency</Literal></DataPropertyAssertion>
@@ -586,7 +585,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-rdfbased-sem-bool-complement-inst"/><Literal>ontologies/rdfbased-sem-bool-complement-inst.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-rdfbased-sem-bool-complement-inst"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-rdfbased-sem-bool-complement-inst"/><Literal>rdfbased-sem-bool-complement-inst</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-rdfbased-sem-bool-complement-inst"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-rdf-semantics-idioms"/></ObjectPropertyAssertion>
 
   <!-- rdfbased-sem-bool-intersection-inst-comp: An individual, which is an instance of every component class of an intersection, is an instance of the intersection class expression. -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-rdfbased-sem-bool-intersection-inst-comp"/></ClassAssertion>
@@ -1867,7 +1865,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-502"/><Literal>ontologies/webont-description-logic-502.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-502"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-502"/><Literal>WebOnt-description-logic-502</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-502"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-503: This is a different encoding of test 501. -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-503"/></ClassAssertion>
@@ -1889,7 +1886,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-601"/><Literal>ontologies/webont-description-logic-601.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-601"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-601"/><Literal>WebOnt-description-logic-601</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-601"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-602: DL Test: fact2.1 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-602"/></ClassAssertion>
@@ -1904,7 +1900,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-603"/><Literal>ontologies/webont-description-logic-603.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-603"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-603"/><Literal>WebOnt-description-logic-603</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-603"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-604: DL Test: fact4.1 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-604"/></ClassAssertion>
@@ -1912,7 +1907,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-604"/><Literal>ontologies/webont-description-logic-604.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-604"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-604"/><Literal>WebOnt-description-logic-604</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-604"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-605: DL Test: fact4.2 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-605"/></ClassAssertion>
@@ -1934,7 +1928,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-608"/><Literal>ontologies/webont-description-logic-608.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-608"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-608"/><Literal>WebOnt-description-logic-608</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-608"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-609: DL Test: t10.1 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-609"/></ClassAssertion>
@@ -1949,7 +1942,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-610"/><Literal>ontologies/webont-description-logic-610.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-610"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-610"/><Literal>WebOnt-description-logic-610</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-610"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-611: DL Test: t10.3 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-611"/></ClassAssertion>
@@ -1957,7 +1949,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-611"/><Literal>ontologies/webont-description-logic-611.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-611"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-611"/><Literal>WebOnt-description-logic-611</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-611"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-612: DL Test: t10.4 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-612"/></ClassAssertion>
@@ -1981,7 +1972,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-614"/><Literal>ontologies/webont-description-logic-614.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-614"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-614"/><Literal>WebOnt-description-logic-614</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-614"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-615: DL Test: t12.1 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-615"/></ClassAssertion>
@@ -1989,7 +1979,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-615"/><Literal>ontologies/webont-description-logic-615.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-615"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-615"/><Literal>WebOnt-description-logic-615</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-615"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-616: DL Test: t2.1 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-616"/></ClassAssertion>
@@ -2012,7 +2001,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-623"/><Literal>ontologies/webont-description-logic-623.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-623"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-623"/><Literal>WebOnt-description-logic-623</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-623"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-624: DL Test: t5.1 Non-finite model example from paper  The concept should be coherent but has no finite model -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-624"/></ClassAssertion>
@@ -2034,7 +2022,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-626"/><Literal>ontologies/webont-description-logic-626.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-626"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-626"/><Literal>WebOnt-description-logic-626</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-626"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-627: DL Test: t6f.1 Double blocking example.  The concept should be incoherent but needs double blocking -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-627"/></ClassAssertion>
@@ -2042,7 +2029,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-627"/><Literal>ontologies/webont-description-logic-627.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-627"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-627"/><Literal>WebOnt-description-logic-627</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-627"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-628: DL Test: t7.1 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-628"/></ClassAssertion>
@@ -2057,7 +2043,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-629"/><Literal>ontologies/webont-description-logic-629.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-629"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-629"/><Literal>WebOnt-description-logic-629</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-629"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-630: DL Test: t7.3 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-630"/></ClassAssertion>
@@ -2065,7 +2050,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-630"/><Literal>ontologies/webont-description-logic-630.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-630"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-630"/><Literal>WebOnt-description-logic-630</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-630"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-631: DL Test: t7f.1 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-631"/></ClassAssertion>
@@ -2080,7 +2064,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-632"/><Literal>ontologies/webont-description-logic-632.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-632"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-632"/><Literal>WebOnt-description-logic-632</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-632"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-633: DL Test: t7f.3 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-633"/></ClassAssertion>
@@ -2088,7 +2071,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-633"/><Literal>ontologies/webont-description-logic-633.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-633"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-633"/><Literal>WebOnt-description-logic-633</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-633"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-634: DL Test: t8.1 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-634"/></ClassAssertion>
@@ -2103,7 +2085,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-641"/><Literal>ontologies/webont-description-logic-641.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-641"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-641"/><Literal>WebOnt-description-logic-641</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-641"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-642: DL Test: heinsohn1.2 Tbox tests from Heinsohn et al.  Tests incoherency caused by disjoint concept -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-642"/></ClassAssertion>
@@ -2111,7 +2092,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-642"/><Literal>ontologies/webont-description-logic-642.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-642"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-642"/><Literal>WebOnt-description-logic-642</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-642"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-643: DL Test: heinsohn1.3 Tbox tests from Heinsohn et al.  Tests incoherency caused by disjoint concept -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-643"/></ClassAssertion>
@@ -2119,7 +2099,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-643"/><Literal>ontologies/webont-description-logic-643.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-643"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-643"/><Literal>WebOnt-description-logic-643</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-643"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-644: DL Test: heinsohn1.4 Tbox tests from Heinsohn et al.  Tests incoherency caused by disjoint concept -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-644"/></ClassAssertion>
@@ -2134,7 +2113,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-646"/><Literal>ontologies/webont-description-logic-646.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-646"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-646"/><Literal>WebOnt-description-logic-646</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-646"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-650: DL Test: heinsohn4.1 Tbox tests from Heinsohn et al.  Tests role restrictions -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-650"/></ClassAssertion>
@@ -2142,7 +2120,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-650"/><Literal>ontologies/webont-description-logic-650.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-650"/><Literal>inconsistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-650"/><Literal>WebOnt-description-logic-650</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-650"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/></ObjectPropertyAssertion>
 
   <!-- WebOnt-description-logic-661: DL Test: k_branch ABox test from DL98 systems comparison. -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-661"/></ClassAssertion>

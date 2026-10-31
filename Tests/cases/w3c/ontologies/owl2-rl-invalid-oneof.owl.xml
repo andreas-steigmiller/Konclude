@@ -13,6 +13,19 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://owl2.test/rules#X"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://owl2.test/rules#Y"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://owl2.test/rules#Cb"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://owl2.test/rules#X"/>
+            <NamedIndividual IRI="http://owl2.test/rules#Y"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
     <ClassAssertion>
         <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         <NamedIndividual IRI="http://owl2.test/rules#X"/>

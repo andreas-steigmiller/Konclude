@@ -83,11 +83,32 @@
         </DataExactCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C12"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C2.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C10.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C14"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
             <Class IRI="http://oiled.man.example.net/test#C12"/>
         </ObjectSomeValuesFrom>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C16"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C8"/>
+            <Class IRI="http://oiled.man.example.net/test#C14"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C18"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#TOP"/>
+            <Class IRI="http://oiled.man.example.net/test#C16"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C2"/>
@@ -125,11 +146,25 @@
         </ObjectMaxCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C6"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C2.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C4.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C8"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
             <Class IRI="http://oiled.man.example.net/test#C6"/>
         </ObjectSomeValuesFrom>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#TEST"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C18"/>
+            <Class IRI="http://oiled.man.example.net/test#TOP"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <ClassAssertion>
         <Class IRI="http://oiled.man.example.net/test#C10.comp"/>

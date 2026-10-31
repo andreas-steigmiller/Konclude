@@ -19,4 +19,11 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://owl2.test/rules#C"/>
+        <ObjectUnionOf>
+            <Class IRI="http://owl2.test/rules#C1"/>
+            <Class IRI="http://owl2.test/rules#C2"/>
+        </ObjectUnionOf>
+    </EquivalentClasses>
 </Ontology>

@@ -67,6 +67,13 @@
         <Class IRI="http://oiled.man.example.net/test#d1.comp"/>
     </SubClassOf>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#Unsatisfiable"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#c"/>
+            <Class IRI="http://oiled.man.example.net/test#d"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#d"/>
         <DataMaxCardinality cardinality="0">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent641#P.1"/>

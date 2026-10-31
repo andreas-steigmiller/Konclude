@@ -62,6 +62,16 @@
         </DataMinCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent633#A.2"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#p1"/>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#invF"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent633#V.3"/>
+            </ObjectAllValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent633#V.3"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#f"/>

@@ -44,6 +44,19 @@
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#Satisfiable"/>
+        <ObjectIntersectionOf>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#r"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent634#V.4"/>
+            </ObjectSomeValuesFrom>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#r"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent634#V.5"/>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#p"/>
         <DataMaxCardinality cardinality="0">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/consistent634#P.1"/>

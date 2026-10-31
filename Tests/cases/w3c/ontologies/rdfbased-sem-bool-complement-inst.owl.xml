@@ -7,6 +7,18 @@
 -->
 
 <Ontology xmlns="http://www.w3.org/2002/07/owl#">
+    <Declaration>
+        <Class IRI="http://www.example.org#c1"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="http://www.example.org#c2"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.example.org#c1"/>
+        <ObjectComplementOf>
+            <Class IRI="http://www.example.org#c2"/>
+        </ObjectComplementOf>
+    </EquivalentClasses>
     <ClassAssertion>
         <Class IRI="http://www.example.org#c1"/>
         <NamedIndividual IRI="http://www.example.org#x"/>

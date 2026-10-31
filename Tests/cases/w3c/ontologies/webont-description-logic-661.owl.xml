@@ -494,6 +494,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C102"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C100"/>
+            <Class IRI="http://oiled.man.example.net/test#C34"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C102"/>
         <DataMinCardinality cardinality="1">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.35"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
@@ -507,11 +514,25 @@
         </DataExactCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C104"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C34"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C106"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
             <Class IRI="http://oiled.man.example.net/test#C104"/>
         </ObjectSomeValuesFrom>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C108"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C106"/>
+            <Class IRI="http://oiled.man.example.net/test#C34.comp"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C108"/>
@@ -529,6 +550,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C110"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C102.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C108.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C110"/>
         <DataExactCardinality cardinality="0">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.37"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
@@ -540,6 +568,13 @@
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.37"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
         </DataMinCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C112"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C110.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C112"/>
@@ -556,6 +591,34 @@
         </DataExactCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C114"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C96.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C112.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C116"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C80"/>
+            <Class IRI="http://oiled.man.example.net/test#C114"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C118"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+            <Class IRI="http://oiled.man.example.net/test#C10.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C12"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C4.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C10"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C12"/>
         <DataMinCardinality cardinality="1">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.3"/>
@@ -570,6 +633,13 @@
         </DataExactCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C120"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C118"/>
+            <Class IRI="http://oiled.man.example.net/test#C34"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C122"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
@@ -577,11 +647,32 @@
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C124"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+            <Class IRI="http://oiled.man.example.net/test#C10.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C126"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C124"/>
+            <Class IRI="http://oiled.man.example.net/test#C34.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C128"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
             <Class IRI="http://oiled.man.example.net/test#C126"/>
         </ObjectSomeValuesFrom>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C130"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C122"/>
+            <Class IRI="http://oiled.man.example.net/test#C128"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C130"/>
@@ -599,6 +690,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C132"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+            <Class IRI="http://oiled.man.example.net/test#C4.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C132"/>
         <ObjectMinCardinality cardinality="1">
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.48"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
@@ -613,6 +711,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C134"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C130.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C132"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C134"/>
         <DataMinCardinality cardinality="1">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.45"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
@@ -624,6 +729,13 @@
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.45"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
         </DataExactCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C136"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C116"/>
+            <Class IRI="http://oiled.man.example.net/test#C134.comp"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C136"/>
@@ -661,6 +773,20 @@
         </DataExactCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C14"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C8.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C12.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C140"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C74"/>
+            <Class IRI="http://oiled.man.example.net/test#C138.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C16"/>
         <ObjectExactCardinality cardinality="0">
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.4"/>
@@ -673,6 +799,13 @@
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.4"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         </ObjectMinCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C18"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C16.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C18"/>
@@ -711,6 +844,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C22"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C20"/>
+            <Class IRI="http://oiled.man.example.net/test#C16"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C22"/>
         <ObjectMinCardinality cardinality="1">
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.6"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
@@ -724,11 +864,25 @@
         </ObjectMaxCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C24"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C16"/>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C26"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
             <Class IRI="http://oiled.man.example.net/test#C24"/>
         </ObjectSomeValuesFrom>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C28"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C26"/>
+            <Class IRI="http://oiled.man.example.net/test#C16.comp"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C28"/>
@@ -746,6 +900,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C30"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C22.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C28.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C30"/>
         <ObjectMinCardinality cardinality="1">
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.8"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
@@ -757,6 +918,13 @@
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.8"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         </ObjectExactCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C32"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C30.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C32"/>
@@ -787,6 +955,13 @@
         </DataExactCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C36"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C34.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C38"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
@@ -809,6 +984,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C40"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C38"/>
+            <Class IRI="http://oiled.man.example.net/test#C34"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C40"/>
         <DataMinCardinality cardinality="1">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.11"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
@@ -822,11 +1004,25 @@
         </DataMaxCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C42"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C34"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C44"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
             <Class IRI="http://oiled.man.example.net/test#C42"/>
         </ObjectSomeValuesFrom>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C46"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C44"/>
+            <Class IRI="http://oiled.man.example.net/test#C34.comp"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C46"/>
@@ -844,6 +1040,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C48"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C40.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C46.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C48"/>
         <DataExactCardinality cardinality="0">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.13"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
@@ -855,6 +1058,13 @@
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.13"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
         </DataMinCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C50"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C48.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C50"/>
@@ -871,6 +1081,41 @@
         </DataExactCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C52"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C32.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C50.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C54"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C14"/>
+            <Class IRI="http://oiled.man.example.net/test#C52"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C56"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+            <Class IRI="http://oiled.man.example.net/test#C10.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C58"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C56"/>
+            <Class IRI="http://oiled.man.example.net/test#C34"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C6"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+            <Class IRI="http://oiled.man.example.net/test#C4.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C60"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
@@ -878,11 +1123,32 @@
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C62"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+            <Class IRI="http://oiled.man.example.net/test#C10.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C64"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C62"/>
+            <Class IRI="http://oiled.man.example.net/test#C34.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C66"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
             <Class IRI="http://oiled.man.example.net/test#C64"/>
         </ObjectSomeValuesFrom>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C68"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C60"/>
+            <Class IRI="http://oiled.man.example.net/test#C66"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C68"/>
@@ -899,6 +1165,20 @@
         </ObjectExactCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C70"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+            <Class IRI="http://oiled.man.example.net/test#C4.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C72"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C68.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C70"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C72"/>
         <DataMinCardinality cardinality="1">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.21"/>
@@ -911,6 +1191,20 @@
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.21"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
         </DataMaxCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C74"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C54"/>
+            <Class IRI="http://oiled.man.example.net/test#C72.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C76"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C2.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C76"/>
@@ -928,6 +1222,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C78"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C4.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C10"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C78"/>
         <DataExactCardinality cardinality="0">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.25"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
@@ -942,6 +1243,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C8"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C2.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C8"/>
         <ObjectMinCardinality cardinality="1">
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.2"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
@@ -953,6 +1261,20 @@
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.2"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         </ObjectExactCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C80"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C76.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C78.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C82"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C16.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C82"/>
@@ -991,6 +1313,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C86"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C84"/>
+            <Class IRI="http://oiled.man.example.net/test#C16"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C86"/>
         <ObjectExactCardinality cardinality="0">
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.28"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
@@ -1002,6 +1331,13 @@
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.28"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         </ObjectMinCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C88"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C16"/>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C88"/>
@@ -1040,6 +1376,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C92"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C90"/>
+            <Class IRI="http://oiled.man.example.net/test#C16.comp"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C92"/>
         <DataMinCardinality cardinality="1">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.29"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
@@ -1051,6 +1394,13 @@
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.29"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
         </DataExactCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C94"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C86.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C92.comp"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C94"/>
@@ -1068,6 +1418,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C96"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C94.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C96"/>
         <ObjectMinCardinality cardinality="1">
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.38"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
@@ -1082,6 +1439,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C98"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C34.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C98"/>
         <DataMinCardinality cardinality="1">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.63"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
@@ -1093,6 +1457,13 @@
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises661#P.63"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
         </DataExactCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#TEST"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C6"/>
+            <Class IRI="http://oiled.man.example.net/test#C140"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <ClassAssertion>
         <Class IRI="http://oiled.man.example.net/test#C10.comp"/>

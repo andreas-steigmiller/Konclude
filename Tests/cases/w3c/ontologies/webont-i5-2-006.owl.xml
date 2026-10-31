@@ -90,6 +90,13 @@
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/I5.2/premises006#notAorB"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://www.w3.org/2002/03owlt/I5.2/premises006#notA"/>
+            <Class IRI="http://www.w3.org/2002/03owlt/I5.2/premises006#notB"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/I5.2/premises006#notAorB"/>
         <ObjectAllValuesFrom>
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/I5.2/premises006#s"/>
             <Class IRI="http://www.w3.org/2002/03owlt/I5.2/premises006#Nothing"/>

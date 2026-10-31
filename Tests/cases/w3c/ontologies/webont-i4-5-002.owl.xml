@@ -28,6 +28,35 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#BE"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#ES"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#FR"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#NL"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#PT"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#UK"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#EUCountry"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#UK"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#BE"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#ES"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#FR"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#NL"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#PT"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/I4.5/inconsistent002#EuroMP"/>
         <ObjectSomeValuesFrom>

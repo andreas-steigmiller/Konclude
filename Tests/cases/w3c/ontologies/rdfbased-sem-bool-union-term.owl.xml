@@ -7,4 +7,20 @@
 -->
 
 <Ontology xmlns="http://www.w3.org/2002/07/owl#">
+    <Declaration>
+        <Class IRI="http://www.example.org#c"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="http://www.example.org#x"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="http://www.example.org#y"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.example.org#c"/>
+        <ObjectUnionOf>
+            <Class IRI="http://www.example.org#x"/>
+            <Class IRI="http://www.example.org#y"/>
+        </ObjectUnionOf>
+    </EquivalentClasses>
 </Ontology>

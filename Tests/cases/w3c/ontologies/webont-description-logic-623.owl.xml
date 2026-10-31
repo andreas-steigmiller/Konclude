@@ -97,6 +97,35 @@
         </ObjectAllValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent623#A.2"/>
+        <ObjectIntersectionOf>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#r"/>
+                <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
+            </ObjectSomeValuesFrom>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#p"/>
+                <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
+            </ObjectSomeValuesFrom>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#r"/>
+                <Class IRI="http://oiled.man.example.net/test#c"/>
+            </ObjectAllValuesFrom>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#p"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent623#V.3"/>
+            </ObjectAllValuesFrom>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#p"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent623#V.4"/>
+            </ObjectAllValuesFrom>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#p"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent623#V.5"/>
+            </ObjectAllValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent623#V.3"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#r"/>

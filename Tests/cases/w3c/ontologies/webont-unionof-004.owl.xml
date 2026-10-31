@@ -19,6 +19,31 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#a"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#b"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#A"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#a"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#A-and-B"/>
+        <ObjectUnionOf>
+            <Class IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#A"/>
+            <Class IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#B"/>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#B"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#b"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
     <ClassAssertion>
         <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         <NamedIndividual IRI="http://www.w3.org/2002/03owlt/unionOf/premises004#a"/>

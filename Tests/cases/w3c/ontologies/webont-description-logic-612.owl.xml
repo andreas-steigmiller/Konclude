@@ -44,6 +44,23 @@
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#Unsatisfiable"/>
+        <ObjectIntersectionOf>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#f"/>
+                <Class IRI="http://oiled.man.example.net/test#p"/>
+            </ObjectSomeValuesFrom>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#s"/>
+                <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
+            </ObjectSomeValuesFrom>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#f1"/>
+                <Class IRI="http://oiled.man.example.net/test#p.comp"/>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#p"/>
         <DataMaxCardinality cardinality="0">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent612#P.1"/>

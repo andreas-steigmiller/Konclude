@@ -53,6 +53,19 @@
         </ObjectMaxCardinality>
     </SubClassOf>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#Satisfiable"/>
+        <ObjectIntersectionOf>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#f1"/>
+                <Class IRI="http://oiled.man.example.net/test#p1"/>
+            </ObjectSomeValuesFrom>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#f2"/>
+                <Class IRI="http://oiled.man.example.net/test#p2"/>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#p2"/>
         <DataMaxCardinality cardinality="0">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/consistent616#P.1"/>

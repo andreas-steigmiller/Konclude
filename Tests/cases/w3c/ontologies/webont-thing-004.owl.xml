@@ -13,6 +13,15 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/Thing/consistent004#s"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/Thing/consistent004#s"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
     <ClassAssertion>
         <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         <NamedIndividual IRI="http://www.w3.org/2002/03owlt/Thing/consistent004#s"/>

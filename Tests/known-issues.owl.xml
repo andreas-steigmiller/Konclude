@@ -15,7 +15,7 @@
           ontologyIRI="http://konclude.test/known-issues">
   <Prefix name="kt" IRI="http://konclude.test/vocabulary#"/>
 
-  <!-- issue-w3c-webont-description-logic: 28 test(s) -->
+  <!-- issue-w3c-webont-description-logic: 7 test(s) -->
   <ClassAssertion>
     <Class abbreviatedIRI="kt:Issue"/>
     <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
@@ -71,48 +71,6 @@
   <ObjectPropertyAssertion>
     <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
     <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-502"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-601"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-603"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-604"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-608"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-610"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-611"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
     <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-612"/>
   </ObjectPropertyAssertion>
 
@@ -125,94 +83,10 @@
   <ObjectPropertyAssertion>
     <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
     <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-614"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-615"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
     <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-617"/>
   </ObjectPropertyAssertion>
 
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-623"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-626"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-627"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-629"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-630"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-632"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-633"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-641"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-642"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-643"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-646"/>
-  </ObjectPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-webont-description-logic"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-webont-description-logic-650"/>
-  </ObjectPropertyAssertion>
-
-  <!-- issue-w3c-rdf-semantics-idioms: 10 test(s) -->
+  <!-- issue-w3c-rdf-semantics-idioms: 9 test(s) -->
   <ClassAssertion>
     <Class abbreviatedIRI="kt:Issue"/>
     <NamedIndividual abbreviatedIRI="kt:issue-w3c-rdf-semantics-idioms"/>
@@ -240,12 +114,6 @@
     <NamedIndividual abbreviatedIRI="kt:issue-w3c-rdf-semantics-idioms"/>
     <Literal>RDF-based equality/disjointness and negative-assertion idioms whose direct-semantics form is not unique. To be triaged.</Literal>
   </DataPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-rdf-semantics-idioms"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-rdfbased-sem-bool-complement-inst"/>
-  </ObjectPropertyAssertion>
 
   <ObjectPropertyAssertion>
     <ObjectProperty abbreviatedIRI="kt:affectsTest"/>

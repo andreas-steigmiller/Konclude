@@ -28,6 +28,35 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#BE"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#ES"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#FR"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#NL"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#PT"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#UK"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#EUCountry"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#UK"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#BE"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#ES"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#FR"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#NL"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#PT"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/I4.5/premises001#EuroMP"/>
         <ObjectSomeValuesFrom>

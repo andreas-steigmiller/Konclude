@@ -16,6 +16,19 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/SymmetricProperty/premises002#a"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/SymmetricProperty/premises002#b"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/SymmetricProperty/premises002#A"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/SymmetricProperty/premises002#a"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/SymmetricProperty/premises002#b"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
     <ObjectPropertyRange>
         <ObjectProperty IRI="http://www.w3.org/2002/03owlt/SymmetricProperty/premises002#equalityOnA"/>
         <Class IRI="http://www.w3.org/2002/03owlt/SymmetricProperty/premises002#A"/>

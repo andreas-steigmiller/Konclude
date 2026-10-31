@@ -54,6 +54,23 @@
         <Class IRI="http://oiled.man.example.net/test#d.comp"/>
     </SubClassOf>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#Unsatisfiable"/>
+        <ObjectIntersectionOf>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#r"/>
+                <Class IRI="http://oiled.man.example.net/test#e.comp"/>
+            </ObjectSomeValuesFrom>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#r"/>
+                <Class IRI="http://oiled.man.example.net/test#d"/>
+            </ObjectAllValuesFrom>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#r"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent650#C.4"/>
+            </ObjectAllValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#d"/>
         <ObjectMinCardinality cardinality="1">
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent650#P.2"/>
@@ -87,6 +104,13 @@
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent650#P.4"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         </ObjectMinCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent650#C.4.comp"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#e.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#d"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent650#C.4.comp"/>

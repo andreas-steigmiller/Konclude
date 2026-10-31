@@ -22,4 +22,21 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/I5.26/consistent003#notB"/>
+        <ObjectComplementOf>
+            <ObjectIntersectionOf>
+                <Class IRI="http://www.w3.org/2002/03owlt/I5.26/consistent003#B"/>
+            </ObjectIntersectionOf>
+        </ObjectComplementOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/I5.26/consistent003#u"/>
+        <ObjectUnionOf>
+            <ObjectIntersectionOf>
+                <Class IRI="http://www.w3.org/2002/03owlt/I5.26/consistent003#B"/>
+            </ObjectIntersectionOf>
+            <Class IRI="http://www.w3.org/2002/03owlt/I5.26/consistent003#A"/>
+        </ObjectUnionOf>
+    </EquivalentClasses>
 </Ontology>

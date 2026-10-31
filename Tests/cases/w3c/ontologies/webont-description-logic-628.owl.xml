@@ -66,6 +66,16 @@
         </ObjectMaxCardinality>
     </SubClassOf>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#Satisfiable"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#p1"/>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#r"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent628#V.5"/>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#p1"/>
         <DataMaxCardinality cardinality="0">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/consistent628#P.1"/>
@@ -80,11 +90,28 @@
         </DataMinCardinality>
     </EquivalentClasses>
     <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent628#A.4"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#p1"/>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#invR"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent628#C.2"/>
+            </ObjectAllValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent628#C.2"/>
         <ObjectExactCardinality cardinality="0">
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/consistent628#P.2"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         </ObjectExactCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent628#C.2.comp"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#p1"/>
+            <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent628#C.3"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent628#C.2.comp"/>

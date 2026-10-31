@@ -50,6 +50,13 @@
         <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises667#P.1"/>
     </Declaration>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C10"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C2"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C12"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://oiled.man.example.net/test#R1"/>
@@ -69,6 +76,13 @@
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises667#P.1"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
         </DataMinCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#C6"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C2.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C4"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#C6"/>
@@ -104,6 +118,13 @@
             <ObjectProperty IRI="http://www.w3.org/2002/03owlt/description-logic/premises667#P.2"/>
             <Class IRI="http://www.w3.org/2002/07/owl#Thing"/>
         </ObjectExactCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#TEST"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#C8.comp"/>
+            <Class IRI="http://oiled.man.example.net/test#C12"/>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <ClassAssertion>
         <Class IRI="http://oiled.man.example.net/test#C2"/>

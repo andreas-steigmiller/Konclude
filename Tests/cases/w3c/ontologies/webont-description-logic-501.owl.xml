@@ -13,6 +13,136 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#F"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#T"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus1"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus2"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus3"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus4"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus5"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus6"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus7"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus8"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus9"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus1"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus2"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus3"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus4"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus5"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus6"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus7"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus8"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus9"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#T"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#F"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus1"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus1"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus2"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus2"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus3"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus3"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus4"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus4"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus5"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus5"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus6"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus6"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus7"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus7"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus8"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus8"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#TorF"/>
+        <ObjectOneOf>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#plus9"/>
+            <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#minus9"/>
+        </ObjectOneOf>
+    </EquivalentClasses>
     <DifferentIndividuals>
         <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#T"/>
         <NamedIndividual IRI="http://www.w3.org/2002/03owlt/description-logic/consistent501#F"/>

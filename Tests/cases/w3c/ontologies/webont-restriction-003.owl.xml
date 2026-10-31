@@ -25,4 +25,24 @@
     <Declaration>
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/Restriction/consistent003#C"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://www.w3.org/2002/03owlt/Restriction/consistent003#superC"/>
+            <DataSomeValuesFrom>
+                <DataProperty IRI="http://www.w3.org/2002/03owlt/Restriction/consistent003#dp"/>
+                <Datatype IRI="http://www.w3.org/2001/XMLSchema#byte"/>
+            </DataSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/Restriction/consistent003#D"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://www.w3.org/2002/03owlt/Restriction/consistent003#superD"/>
+            <DataSomeValuesFrom>
+                <DataProperty IRI="http://www.w3.org/2002/03owlt/Restriction/consistent003#dp"/>
+                <Datatype IRI="http://www.w3.org/2001/XMLSchema#byte"/>
+            </DataSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
 </Ontology>

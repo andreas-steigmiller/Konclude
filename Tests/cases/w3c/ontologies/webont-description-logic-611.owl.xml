@@ -44,6 +44,19 @@
         <NamedIndividual IRI="http://konclude.test/anonymous-individual/1"/>
     </Declaration>
     <EquivalentClasses>
+        <Class IRI="http://oiled.man.example.net/test#Unsatisfiable"/>
+        <ObjectIntersectionOf>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#s"/>
+                <Class IRI="http://oiled.man.example.net/test#p.comp"/>
+            </ObjectAllValuesFrom>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#s"/>
+                <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent611#A.2"/>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
         <Class IRI="http://oiled.man.example.net/test#p"/>
         <DataMaxCardinality cardinality="0">
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent611#P.1"/>
@@ -56,6 +69,16 @@
             <DataProperty IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent611#P.1"/>
             <Datatype IRI="http://www.w3.org/2000/01/rdf-schema#Literal"/>
         </DataMinCardinality>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="http://www.w3.org/2002/03owlt/description-logic/inconsistent611#A.2"/>
+        <ObjectIntersectionOf>
+            <Class IRI="http://oiled.man.example.net/test#p"/>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="http://oiled.man.example.net/test#invS"/>
+                <Class IRI="http://oiled.man.example.net/test#p"/>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
     </EquivalentClasses>
     <SubObjectPropertyOf>
         <ObjectProperty IRI="http://oiled.man.example.net/test#s"/>
