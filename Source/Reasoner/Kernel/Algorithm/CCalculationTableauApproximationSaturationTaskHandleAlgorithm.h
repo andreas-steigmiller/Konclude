@@ -330,6 +330,8 @@ namespace Konclude {
 						bool markATMOSTRestrictedAncestorsAsInsufficient(CConceptSaturationDescriptor* conDes, CIndividualSaturationProcessNode* functionallyRestrictedSuccessorNode, CXNegLinker<CRole*>* functionallyRestrictedSuccessorCreationRoleLinker, CIndividualSaturationProcessNode*& indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext);
 						bool markNominalATMOSTRestrictedAncestorsAsInsufficient(CConceptSaturationDescriptor* conDes, CIndividualSaturationProcessNode*& indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext);
 
+						bool hasCriticalPredecessorRoleCardinality(CCriticalPredecessorRoleCardinalityHash* criticalPredRoleCardHash, CRole* role, CCalculationAlgorithmContextBase* calcAlgContext);
+
 						void updateExtractDisjunctCommonConcept(CIndividualSaturationProcessNode*& indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext);
 						void initializeExtractDisjunctCommonConcept(CIndividualSaturationProcessNode*& indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext);
 						void addDisjunctCommonConceptExtractionToProcessingQueue(CIndividualSaturationProcessNode*& indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext);

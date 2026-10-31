@@ -2948,6 +2948,29 @@ namespace Konclude {
 				}
 
 
+				bool CCalculationTableauApproximationSaturationTaskHandleAlgorithm::hasCriticalPredecessorRoleCardinality(CCriticalPredecessorRoleCardinalityHash* criticalPredRoleCardHash, CRole* role, CCalculationAlgorithmContextBase* calcAlgContext) {
+					if (!criticalPredRoleCardHash || !role) {
+						return false;
+					}
+					// an individual that is connected with a witness node by the role of an existential
+					// restriction is a successor of the witness for the inverse role; a critical at-most
+					// restriction of the witness for this role (or a super role of it) means that the
+					// individual may have to be merged with another successor, which the saturation
+					// cannot decide on its own
+					if (criticalPredRoleCardHash->hasCriticalPredecessorRoleCardinalityData(role)) {
+						return true;
+					}
+					CRole* inverseRole = getInverseRole(role,calcAlgContext);
+					if (inverseRole) {
+						for (CSortedNegLinker<CRole*>* superRoleIt = inverseRole->getIndirectSuperRoleList(); superRoleIt; superRoleIt = superRoleIt->getNext()) {
+							if (!superRoleIt->isNegated() && criticalPredRoleCardHash->hasCriticalPredecessorRoleCardinalityData(superRoleIt->getData())) {
+								return true;
+							}
+						}
+					}
+					return false;
+				}
+
 
 				bool CCalculationTableauApproximationSaturationTaskHandleAlgorithm::markATMOSTRestrictedAncestorsAsInsufficient(CConceptSaturationDescriptor* conDes, CIndividualSaturationProcessNode* functionallyRestrictedSuccessorNode, CXNegLinker<CRole*>* functionallyRestrictedSuccessorCreationRoleLinker, CIndividualSaturationProcessNode*& indiProcSatNode, CCalculationAlgorithmContextBase* calcAlgContext) {
 					bool ancestorsRestricted = false;
@@ -7148,6 +7171,14 @@ namespace Konclude {
 							updateDirectAddingIndividualStatusFlags(processIndi,CIndividualSaturationProcessNodeStatusFlags::INDSATFLAGINSUFFICIENT,mCalcAlgContext);
 							setInsufficientNodeOccured(mCalcAlgContext);
 						} else {
+							if (separatedMode && hasCriticalPredecessorRoleCardinality(existIndiNode->getCriticalPredecessorRoleCardinalityHash(false),role,mCalcAlgContext)) {
+								// the shared witness node has a critical at-most restriction for a role the
+								// individual is a successor of, so satisfying the existential restriction may
+								// require merging the individual with another successor, which the saturation
+								// cannot decide; the complete algorithm has to check the node
+								updateDirectAddingIndividualStatusFlags(processIndi,CIndividualSaturationProcessNodeStatusFlags::INDSATFLAGINSUFFICIENT,mCalcAlgContext);
+								setInsufficientNodeOccured(mCalcAlgContext);
+							}
 							CRoleBackwardSaturationPropagationHash* backPropHash = nullptr;
 							CReapplyConceptSaturationLabelSet* conSet = nullptr;
 							CSortedNegLinker<CRole*>* superRoleIt = role->getIndirectSuperRoleList();
