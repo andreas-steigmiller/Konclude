@@ -18,13 +18,21 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:task"/><NamedIndividual abbreviatedIRI="kt:realization-family"/><Literal>class-realization</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:realization-family"/><Literal>realization-family.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedFile"/><NamedIndividual abbreviatedIRI="kt:realization-family"/><Literal>expected/realization-family.owl.xml</Literal></DataPropertyAssertion>
-  <AnnotationAssertion><AnnotationProperty abbreviatedIRI="rdfs:comment"/><IRI>kt:realization-family</IRI><Literal>Realization must infer Woman/Mother/Parent/Grandparent for alice and Man/Father/Parent/Grandparent for bob.</Literal></AnnotationAssertion>
+  <DataPropertyAssertion>
+    <DataProperty abbreviatedIRI="kt:description"/>
+    <NamedIndividual abbreviatedIRI="kt:realization-family"/>
+    <Literal>Realization must infer Woman/Mother/Parent/Grandparent for alice and Man/Father/Parent/Grandparent for bob.</Literal>
+  </DataPropertyAssertion>
 
   <!-- Realization of nominals, role chains and cardinality classes. -->
   <ClassAssertion><Class abbreviatedIRI="kt:ClassRealizationTest"/><NamedIndividual abbreviatedIRI="kt:realization-classification-complex"/></ClassAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:task"/><NamedIndividual abbreviatedIRI="kt:realization-classification-complex"/><Literal>class-realization</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:realization-classification-complex"/><Literal>../owl2-features/classification-complex.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedFile"/><NamedIndividual abbreviatedIRI="kt:realization-classification-complex"/><Literal>expected/realization-classification-complex.owl.xml</Literal></DataPropertyAssertion>
-  <AnnotationAssertion><AnnotationProperty abbreviatedIRI="rdfs:comment"/><IRI>kt:realization-classification-complex</IRI><Literal>a is in the singleton I and in P; b is in B/J; both inherit A, M, L, R and Thing.</Literal></AnnotationAssertion>
+  <DataPropertyAssertion>
+    <DataProperty abbreviatedIRI="kt:description"/>
+    <NamedIndividual abbreviatedIRI="kt:realization-classification-complex"/>
+    <Literal>a is in the singleton I and in P; b is in B/J; both inherit A, M, L, R and Thing.</Literal>
+  </DataPropertyAssertion>
 
 </Ontology>

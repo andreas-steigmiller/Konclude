@@ -83,6 +83,7 @@
   <Declaration><DataProperty abbreviatedIRI="kt:verifiedResultByReasonerOnVersion"/></Declaration>
   <Declaration><DataProperty abbreviatedIRI="kt:divergingResultByReasonerOnVersion"/></Declaration>
   <!-- on the issue -->
+  <Declaration><DataProperty abbreviatedIRI="kt:description"/></Declaration>
   <Declaration><DataProperty abbreviatedIRI="kt:tracker"/></Declaration>
   <Declaration><DataProperty abbreviatedIRI="kt:affectsConfig"/></Declaration>
   <Declaration><DataProperty abbreviatedIRI="kt:affectsOS"/></Declaration>
