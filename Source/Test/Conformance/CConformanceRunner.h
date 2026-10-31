@@ -43,6 +43,7 @@
 #include "CConformanceRunConfig.h"
 #include "CConformanceTestSuite.h"
 #include "CConformanceReporter.h"
+#include "CConformanceKnownIssue.h"
 
 // Logger includes
 #include "Logger/CLogger.h"
@@ -185,6 +186,13 @@ namespace Konclude {
 					//! Logs one indented line per outcome of the given counts.
 					void logOutcomeLines(const QMap<CConformanceOutcome::TYPE, int>& outcomeCounts, bool includeZeroOutcomes);
 
+					//! Logs only the non-PASS outcomes with a non-zero count.
+					void logNonPassingOutcomeLines(const QMap<CConformanceOutcome::TYPE, int>& outcomeCounts);
+
+					//! Logs the KNOWN results grouped by issue type, with issue counts and
+					//! descriptions.
+					void logKnownIssueSummary(const QList<CConformanceTestResult>& results);
+
 					//! Resolves the IRI or abbreviatedIRI of an element.
 					static QString elementIRI(const QDomElement& element);
 
@@ -217,7 +225,8 @@ namespace Konclude {
 					QHash<QString, QString> mSuiteIdByDirectory;
 					QHash<QString, QStringList> mRunConfigAssignments;		// subject (test/suite) -> run config ids
 					QHash<QString, QStringList> mSystemConfigAssignments;	// subject (test/suite) -> '-c' file paths
-					QSet<QString> mKnownIssueTestIds;						// test ids affected by an open known issue
+					QHash<QString, CConformanceKnownIssue> mKnownIssues;	// issue id -> metadata
+					QHash<QString, QStringList> mKnownIssuesByTest;			// test id -> issue ids
 			};
 
 		}; // end namespace Conformance

@@ -253,6 +253,7 @@ HEADERS += \
    ./Source\Control\Interface\CommandLine\CConformanceCommandLinePreparationTranslator.h \
    ./Source\Control\Loader\CConformanceLoader.h \
    ./Source\Test\Conformance\CConformanceRunner.h \
+   ./Source\Test\Conformance\CConformanceKnownIssue.h \
    ./Source\Test\Conformance\CClassificationResultComparator.h \
     ./Source\Test\Conformance\CRealizationResultComparator.h \
    ./Source\Test\Conformance\CConformanceReporter.h \

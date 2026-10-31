@@ -56,6 +56,8 @@
   <Declaration><ObjectProperty abbreviatedIRI="kt:knownFailure"/></Declaration>
   <!-- on an issue: the tests affected by the issue (same issue can affect many tests) -->
   <Declaration><ObjectProperty abbreviatedIRI="kt:affectsTest"/></Declaration>
+  <!-- on a test result: the known issue(s) that made it KNOWN -->
+  <Declaration><ObjectProperty abbreviatedIRI="kt:knownIssue"/></Declaration>
   <Declaration><ObjectProperty abbreviatedIRI="kt:defaultConfig"/></Declaration>
   <Declaration><ObjectProperty abbreviatedIRI="kt:resultOf"/></Declaration>
   <!-- on a test result: the suite individual the result belongs to -->
@@ -87,6 +89,8 @@
   <Declaration><DataProperty abbreviatedIRI="kt:tracker"/></Declaration>
   <Declaration><DataProperty abbreviatedIRI="kt:affectsConfig"/></Declaration>
   <Declaration><DataProperty abbreviatedIRI="kt:affectsOS"/></Declaration>
+  <Declaration><DataProperty abbreviatedIRI="kt:knownIssueType"/></Declaration>
+  <Declaration><DataProperty abbreviatedIRI="kt:knownIssueDescription"/></Declaration>
   <Declaration><DataProperty abbreviatedIRI="kt:status"/></Declaration>
   <!-- on the test result -->
   <Declaration><DataProperty abbreviatedIRI="kt:outcome"/></Declaration>

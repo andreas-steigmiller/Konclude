@@ -70,6 +70,7 @@ namespace Konclude {
 					QString mControlFile;                    // originating *.kt.owl.xml (for messages)
 					QString mSuiteId;                        // suite the control ontology declares/derives
 					bool mKnownFailure;                      // marked via kt:knownFailure or kt:flaky
+					QStringList mKnownIssueIds;              // issues the test is linked to
 			};
 
 
