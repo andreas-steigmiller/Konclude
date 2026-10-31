@@ -536,41 +536,6 @@
     <NamedIndividual abbreviatedIRI="kt:consistency-keys"/>
   </ObjectPropertyAssertion>
 
-  <!-- issue-are-classes-disjoint: 1 test(s) -->
-  <ClassAssertion>
-    <Class abbreviatedIRI="kt:Issue"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-are-classes-disjoint"/>
-  </ClassAssertion>
-
-  <ClassAssertion>
-    <Class abbreviatedIRI="kt:ReasonerBug"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-are-classes-disjoint"/>
-  </ClassAssertion>
-
-  <DataPropertyAssertion>
-    <DataProperty abbreviatedIRI="kt:status"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-are-classes-disjoint"/>
-    <Literal>open</Literal>
-  </DataPropertyAssertion>
-
-  <DataPropertyAssertion>
-    <DataProperty abbreviatedIRI="kt:tracker"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-are-classes-disjoint"/>
-    <Literal>https://www.w3.org/TR/owllink/</Literal>
-  </DataPropertyAssertion>
-
-  <DataPropertyAssertion>
-    <DataProperty abbreviatedIRI="kt:description"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-are-classes-disjoint"/>
-    <Literal>OWLlink AreClassesDisjoint returns false for a declared disjoint pair and for a non-disjoint pair.</Literal>
-  </DataPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-are-classes-disjoint"/>
-    <NamedIndividual abbreviatedIRI="kt:request-classes-disjoint"/>
-  </ObjectPropertyAssertion>
-
   <!-- issue-sparql-optional-empty: 1 test(s) -->
   <ClassAssertion>
     <Class abbreviatedIRI="kt:Issue"/>

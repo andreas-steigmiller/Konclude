@@ -16,9 +16,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:suiteName"/><NamedIndividual abbreviatedIRI="kt:suite-owllink-requests"/><Literal>OWLlink-request-types</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:suiteDirectory"/><NamedIndividual abbreviatedIRI="kt:suite-owllink-requests"/><Literal>owllink/request-types</Literal></DataPropertyAssertion>
 
-  <!-- Pre-existing divergence: AreClassesDisjoint answers false for a
-       declared disjoint pair; tracked as a known issue. -->
-
   <!-- kb-satisfiable -->
   <ClassAssertion><Class abbreviatedIRI="kt:SatisfiabilityTest"/><NamedIndividual abbreviatedIRI="kt:request-kb-satisfiable"/></ClassAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:task"/><NamedIndividual abbreviatedIRI="kt:request-kb-satisfiable"/><Literal>owllink</Literal></DataPropertyAssertion>
@@ -66,7 +63,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:task"/><NamedIndividual abbreviatedIRI="kt:request-classes-disjoint"/><Literal>owllink</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:request-classes-disjoint"/><Literal>classes-disjoint-request.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:request-classes-disjoint"/><Literal>true</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:request-classes-disjoint"/><NamedIndividual abbreviatedIRI="kt:issue-are-classes-disjoint"/></ObjectPropertyAssertion>
 
   <!-- subclasses -->
   <ClassAssertion><Class abbreviatedIRI="kt:SatisfiabilityTest"/><NamedIndividual abbreviatedIRI="kt:request-get-subclasses"/></ClassAssertion>
