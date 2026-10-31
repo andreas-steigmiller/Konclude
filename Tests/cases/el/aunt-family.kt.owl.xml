@@ -28,7 +28,7 @@
 
   <!-- ============ Test 1: classification (default matrix) ============ -->
   <ClassAssertion>
-    <Class abbreviatedIRI="kt:ClassificationTest"/>
+    <Class abbreviatedIRI="kt:ClassClassificationTest"/>
     <NamedIndividual abbreviatedIRI="kt:aunt-family-classification"/>
   </ClassAssertion>
   <!-- shared ontology from the pool, stored once, referenced relatively -->

@@ -171,6 +171,9 @@ namespace Konclude {
 
 				for (CConformanceTestCase& testCase : caseById) {
 					if (finalizeTestCase(testCase)) {
+						if (mKnownIssueTestIds.contains(testCase.mId)) {
+							testCase.mKnownFailure = true;
+						}
 						mTestCases.append(testCase);
 					} else {
 						LOG(INFO, getLogDomain(), logTr("Skipping incomplete or unsupported test '%1' in '%2'.").arg(testCase.mId).arg(filePath), this);
@@ -341,6 +344,10 @@ namespace Konclude {
 						testCase.mExpectedResultTexts.append(value);
 					} else if (propertyName.endsWith("testClass")) {
 						testCase.mTestClass = value;
+					} else if (propertyName.endsWith("testIndividual")) {
+						// Optional restriction for a realization test: only this
+						// individual is realized ('realization -x').
+						testCase.mTestIndividual = value;
 					} else if (propertyName.endsWith("timeoutSeconds")) {
 						LOG(WARN, getLogDomain(), logTr("kt:timeoutSeconds on test '%1' in '%2' is ignored; declare a kt:RunConfig and assign it with kt:usesTestRunConfig.").arg(individualName).arg(filePath), this);
 					} else if (propertyName.endsWith("flaky")) {
@@ -402,16 +409,96 @@ namespace Konclude {
 			}
 
 
+			void CConformanceRunner::loadKnownIssues() {
+				// The known-issue ontology is shared by all suites and is therefore
+				// searched next to the input directory and in its ancestors. An
+				// explicit Konclude.Conformance.KnownIssuesFile wins.
+				QString knownIssuesFile = mKnownIssuesFile;
+				if (knownIssuesFile.isEmpty()) {
+					QDir searchDirectory(QFileInfo(mInputDirectory).absoluteFilePath());
+					for (int level = 0; level < 4 && !searchDirectory.isRoot(); ++level) {
+						QString candidate = searchDirectory.absoluteFilePath("known-issues.owl.xml");
+						if (QFile::exists(candidate)) {
+							knownIssuesFile = candidate;
+							break;
+						}
+						if (!searchDirectory.cdUp()) {
+							break;
+						}
+					}
+				}
+				if (knownIssuesFile.isEmpty() || !QFile::exists(knownIssuesFile)) {
+					return;
+				}
+
+				QFile file(knownIssuesFile);
+				if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+					LOG(WARN, getLogDomain(), logTr("Cannot open known-issue ontology '%1'.").arg(knownIssuesFile), this);
+					return;
+				}
+				QDomDocument document;
+				QString errorMessage;
+				int errorLine = 0;
+				int errorColumn = 0;
+				bool parsed = document.setContent(&file, &errorMessage, &errorLine, &errorColumn);
+				file.close();
+				if (!parsed) {
+					LOG(WARN, getLogDomain(), logTr("Cannot parse known-issue ontology '%1' (%2 at line %3).").arg(knownIssuesFile).arg(errorMessage).arg(errorLine), this);
+					return;
+				}
+
+				QDomElement root = document.documentElement();
+				QHash<QString, QString> statusByIssue;
+				QDomNodeList dataAssertions = root.elementsByTagName("DataPropertyAssertion");
+				for (int i = 0; i < dataAssertions.count(); ++i) {
+					QDomElement assertion = dataAssertions.at(i).toElement();
+					QString propertyName = CConformanceTask::localName(elementIRI(assertion.firstChildElement("DataProperty")));
+					QString issueName = elementIRI(assertion.firstChildElement("NamedIndividual"));
+					QDomElement literal = assertion.firstChildElement("Literal");
+					if (QString::compare(propertyName, "status", Qt::CaseInsensitive) == 0 && !issueName.isEmpty() && !literal.isNull()) {
+						statusByIssue.insert(issueName, literal.text().trimmed().toLower());
+					}
+				}
+
+				QSet<QString> affectedTestIds;
+				QSet<QString> issues;
+				QDomNodeList objectAssertions = root.elementsByTagName("ObjectPropertyAssertion");
+				for (int i = 0; i < objectAssertions.count(); ++i) {
+					QDomElement assertion = objectAssertions.at(i).toElement();
+					QString propertyName = CConformanceTask::localName(elementIRI(assertion.firstChildElement("ObjectProperty")));
+					if (QString::compare(propertyName, "affectsTest", Qt::CaseInsensitive) != 0) {
+						continue;
+					}
+					QString issueName = elementIRI(assertion.firstChildElement("NamedIndividual"));
+					QDomElement target = assertion.firstChildElement("NamedIndividual").nextSiblingElement("NamedIndividual");
+					if (issueName.isEmpty() || target.isNull()) {
+						continue;
+					}
+					QString status = statusByIssue.value(issueName, QString("open"));
+					if (status == QString("fixed") || status == QString("closed")) {
+						continue;
+					}
+					issues.insert(issueName);
+					affectedTestIds.insert(elementIRI(target));
+				}
+				mKnownIssueTestIds = affectedTestIds;
+				LOG(INFO, getLogDomain(), logTr("Loaded %1 open known issue(s) affecting %2 test(s) from '%3'.")
+						.arg(issues.count()).arg(affectedTestIds.count()).arg(knownIssuesFile), this);
+			}
+
+
 			bool CConformanceRunner::finalizeTestCase(CConformanceTestCase& testCase) {
 				if (!testCase.mHasTask || testCase.mOntologyFile.isEmpty()) {
 					return false;
 				}
 
 				testCase.mExpectedVerdicts.clear();
-				// Classification always compares result files; OWLlink and SPARQL do so
-				// when the description declares kt:expectedFile. Otherwise those tasks
-				// compare the boolean answer(s) declared with kt:expectedResult.
-				bool fileComparison = (testCase.mTask == CConformanceTask::TYPE::CLASSIFICATION)
+				// Classification and realization always compare result files; OWLlink
+				// and SPARQL do so when the description declares kt:expectedFile.
+				// Otherwise those tasks compare the boolean answer(s) declared with
+				// kt:expectedResult.
+				bool fileComparison = (testCase.mTask == CConformanceTask::TYPE::CLASS_CLASSIFICATION
+						|| testCase.mTask == CConformanceTask::TYPE::CLASS_REALIZATION)
 						|| ((testCase.mTask == CConformanceTask::TYPE::OWLLINK || testCase.mTask == CConformanceTask::TYPE::SPARQL)
 							&& !testCase.mExpectedFile.isEmpty());
 				if (fileComparison) {
@@ -615,7 +702,7 @@ namespace Konclude {
 
 				QString fileName = resolveExecutionFileBase(execution, runIndex);
 				switch (execution.mTestCase.mTask) {
-					case CConformanceTask::TYPE::CLASSIFICATION:
+					case CConformanceTask::TYPE::CLASS_CLASSIFICATION:
 						fileName += "-classification.owl.xml";
 						break;
 					case CConformanceTask::TYPE::OWLLINK:
@@ -748,6 +835,7 @@ namespace Konclude {
 
 				LOG(INFO, getLogDomain(), logTr("Starting conformance run in '%1'.").arg(mInputDirectory), this);
 
+				loadKnownIssues();
 				QStringList controlFiles = discoverControlOntologies();
 				LOG(INFO, getLogDomain(), logTr("Discovered %1 control ontologies (*.kt.owl.xml).").arg(controlFiles.count()), this);
 				for (const QString& controlFile : controlFiles) {

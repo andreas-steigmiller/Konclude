@@ -27,6 +27,7 @@
 #include <QList>
 #include <QHash>
 #include <QMap>
+#include <QSet>
 #include <QDir>
 #include <QFileInfo>
 #include <QFile>
@@ -131,6 +132,10 @@ namespace Konclude {
 					//! Returns the suite with the given id, or a suite derived from the id.
 					CConformanceTestSuite suiteFor(const QString& suiteId) const;
 
+					//! Loads known-issues.owl.xml and collects the tests it declares
+					//! affected by an open issue. An issue can affect many tests.
+					void loadKnownIssues();
+
 					//! Resolves a run configuration id, filling in the runner defaults.
 					CConformanceRunConfig resolveRunConfig(const QString& runConfigId);
 
@@ -212,6 +217,7 @@ namespace Konclude {
 					QHash<QString, QString> mSuiteIdByDirectory;
 					QHash<QString, QStringList> mRunConfigAssignments;		// subject (test/suite) -> run config ids
 					QHash<QString, QStringList> mSystemConfigAssignments;	// subject (test/suite) -> '-c' file paths
+					QSet<QString> mKnownIssueTestIds;						// test ids affected by an open known issue
 			};
 
 		}; // end namespace Conformance

@@ -254,6 +254,7 @@ HEADERS += \
    ./Source\Control\Loader\CConformanceLoader.h \
    ./Source\Test\Conformance\CConformanceRunner.h \
    ./Source\Test\Conformance\CClassificationResultComparator.h \
+    ./Source\Test\Conformance\CRealizationResultComparator.h \
    ./Source\Test\Conformance\CConformanceReporter.h \
    ./Source\Test\Conformance\CConformanceTestCase.h \
    ./Source\Test\Conformance\CConformanceTestResult.h \
@@ -2659,7 +2660,7 @@ HEADERS += \
    ./Source\Utilities\Memory\CAllocationLimitationProvider.h \
    ./Source\Utilities\Memory\CMemoryPoolAllocationManager.h \
    ./Source\Utilities\Memory\CMemoryPoolContainer.h \
-
+
 SOURCES += \
    ./Source/CKoncludeInfo.cpp \
    ./Source/mainLoader.cpp \
@@ -2915,12 +2916,14 @@ SOURCES += \
    ./Source/Test/Conformance/CConformanceTaskHandlerFactory.cpp \
    ./Source/Test/Conformance/CConformanceCliBooleanTaskHandler.cpp \
    ./Source/Test/Conformance/CClassificationTaskHandler.cpp \
+    ./Source/Test/Conformance/CRealizationTaskHandler.cpp \
    ./Source/Test/Conformance/COWLLinkBooleanTaskHandler.cpp \
    ./Source/Test/Conformance/CSPARQLBooleanTaskHandler.cpp \
    ./Source/Test/Conformance/CConformanceResultWriter.cpp \
    ./Source/Test/Conformance/CConformanceResultWriterFactory.cpp \
    ./Source/Test/Conformance/CConformanceOWLXMLResultWriter.cpp \
    ./Source/Test/Conformance/CClassificationResultComparator.cpp \
+    ./Source/Test/Conformance/CRealizationResultComparator.cpp \
    ./Source/Test/Conformance/CConformanceXMLResultComparator.cpp \
    ./Source/Test/Conformance/CConformanceReporter.cpp \
    ./Source/Control/Interface/CommandLine/CHelpComandLinePreparationTranslator.cpp \
