@@ -4,9 +4,6 @@
  <OK/>
  <SetOfClassSynsets>
   <ClassSynset>
-   <owl:Class IRI="http://www.w3.org/2002/07/owl#Nothing"/>
-  </ClassSynset>
-  <ClassSynset>
    <owl:Class IRI="#B"/>
    <owl:Class IRI="#F"/>
   </ClassSynset>

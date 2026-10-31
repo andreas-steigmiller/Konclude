@@ -96,7 +96,6 @@
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:usesOntology"/><NamedIndividual abbreviatedIRI="kt:w3c-datatype-datacomplementof-001"/><Literal>ontologies/datatype-datacomplementof-001.owl.xml</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:expectedResult"/><NamedIndividual abbreviatedIRI="kt:w3c-datatype-datacomplementof-001"/><Literal>consistent</Literal></DataPropertyAssertion>
   <DataPropertyAssertion><DataProperty abbreviatedIRI="kt:sourceCase"/><NamedIndividual abbreviatedIRI="kt:w3c-datatype-datacomplementof-001"/><Literal>Datatype-DataComplementOf-001</Literal></DataPropertyAssertion>
-  <ObjectPropertyAssertion><ObjectProperty abbreviatedIRI="kt:knownFailure"/><NamedIndividual abbreviatedIRI="kt:w3c-datatype-datacomplementof-001"/><NamedIndividual abbreviatedIRI="kt:issue-w3c-datatypes"/></ObjectPropertyAssertion>
 
   <!-- Datatype-Float-Discrete-001: The value space of xsd:float is discrete, shown with range defined on 0x00000000 and 0x00000001 -->
   <ClassAssertion><Class abbreviatedIRI="kt:ConsistencyTest"/><NamedIndividual abbreviatedIRI="kt:w3c-datatype-float-discrete-001"/></ClassAssertion>

@@ -240,7 +240,9 @@
     <NamedIndividual abbreviatedIRI="kt:w3c-new-feature-rational-002"/>
   </ObjectPropertyAssertion>
 
-  <!-- issue-w3c-datatypes: 5 test(s) -->
+  <!-- issue-w3c-datatypes: 4 test(s); kt:w3c-datatype-datacomplementof-001
+       passes since the datatype value-space fix of the merged fork (PR #103),
+       so it is no longer listed as affected. -->
   <ClassAssertion>
     <Class abbreviatedIRI="kt:Issue"/>
     <NamedIndividual abbreviatedIRI="kt:issue-w3c-datatypes"/>
@@ -268,12 +270,6 @@
     <NamedIndividual abbreviatedIRI="kt:issue-w3c-datatypes"/>
     <Literal>Datatype value-space differences: datatype complements, float discreteness, infinities, signed zero and integer/real equality.</Literal>
   </DataPropertyAssertion>
-
-  <ObjectPropertyAssertion>
-    <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
-    <NamedIndividual abbreviatedIRI="kt:issue-w3c-datatypes"/>
-    <NamedIndividual abbreviatedIRI="kt:w3c-datatype-datacomplementof-001"/>
-  </ObjectPropertyAssertion>
 
   <ObjectPropertyAssertion>
     <ObjectProperty abbreviatedIRI="kt:affectsTest"/>
